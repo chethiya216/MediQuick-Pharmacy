@@ -22,4 +22,7 @@ CREATE TABLE staff (
 	status         NVARCHAR(20)  NOT NULL DEFAULT 'active', 
 	hire_date DATE NOT NULL DEFAULT GETDATE(),
 
+
+
+
 	);
