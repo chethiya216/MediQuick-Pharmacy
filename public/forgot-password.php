@@ -1,6 +1,7 @@
 <?php
 session_start();
-require 'db.php';
+require 'db.php';  
+
 
 $message = '';
 $alert_type = 'danger';

@@ -2,7 +2,8 @@
 session_start();
 require 'db.php';
 
-$message = '';
+$message = ''; 
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $name = trim($_POST['name']);
