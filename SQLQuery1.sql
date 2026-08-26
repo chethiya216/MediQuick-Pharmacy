@@ -1,3 +1,7 @@
+DROP DATABASE IF EXISTS mediquick_pharmacy;
+CREATE DATABASE mediquick_pharmacy;
+USE mediquick_pharmacy;
+
 DROP TABLE IF EXISTS cart_items;
 DROP TABLE IF EXISTS carts;
 DROP TABLE IF EXISTS payments;
