@@ -3,7 +3,7 @@ session_start();
 require_once '../includes/db.php';
 
 $message = '';
-$alert_type = 'danger';
+$alert_type = 'danger'; 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
