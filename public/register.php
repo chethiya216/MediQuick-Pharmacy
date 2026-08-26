@@ -2,6 +2,7 @@
 session_start();
 require_once '../includes/db.php';
 
+
 $message = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

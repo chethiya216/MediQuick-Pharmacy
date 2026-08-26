@@ -2,6 +2,7 @@
 session_start();
 require_once '../includes/db.php';
 
+
 $message = '';
 $alert_type = 'danger'; 
 
