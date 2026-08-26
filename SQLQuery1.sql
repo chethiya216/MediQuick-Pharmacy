@@ -1,5 +1,5 @@
 CREATE TABLE	CUSTOMER(
-	customer_id 	NVARCHAR(50)  NOT NULL,
+	customer_id 	NVARCHAR(50)  NOT NULL PRIMARY KEY,
 	 first_name     NVARCHAR(100)  NOT NULL,
 	 last_name      NVARCHAR(100)  NOT NULL,
 	 email          NVARCHAR(255)  NOT NULL,

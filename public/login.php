@@ -1,81 +1,462 @@
 <?php
+
 session_start();
-require 'db.php';
+
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../includes/auth_functions.php';
+
+
+/*
+|--------------------------------------------------------------------------
+| If Already Logged In
+|--------------------------------------------------------------------------
+*/
+
+if (isLoggedIn()) {
+
+    $role = $_SESSION['role'] ?? '';
+
+    switch ($role) {
+
+        case 'customer':
+            header(
+                "Location: customer/dashboard.php"
+            );
+            exit;
+
+        case 'admin':
+            header(
+                "Location: admin/dashboard.php"
+            );
+            exit;
+
+        case 'pharmacist':
+            header(
+                "Location: pharmacist/dashboard.php"
+            );
+            exit;
+
+        case 'superadmin':
+            header(
+                "Location: superadmin/dashboard.php"
+            );
+            exit;
+    }
+}
+
 
 $error = '';
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
 
-    $stmt = $conn->prepare("SELECT id, name, password FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+/*
+|--------------------------------------------------------------------------
+| LOGIN
+|--------------------------------------------------------------------------
+*/
 
-    if ($user = $result->fetch_assoc()) {
-        if (password_verify($password, $user['password'])) {
-            $_SESSION['user_id'] = $user['id'];
-            $_SESSION['user_name'] = $user['name'];
-            header("Location: index.php");
-            exit;
-        } else {
-            $error = "Invalid password.";
-        }
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $email =
+        strtolower(
+            trim(
+                $_POST['email'] ?? ''
+            )
+        );
+
+    $password =
+        (string)(
+            $_POST['password'] ?? ''
+        );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validate
+    |--------------------------------------------------------------------------
+    */
+
+    $validationError =
+        validateLoginInput(
+            $email,
+            $password
+        );
+
+
+    if ($validationError !== null) {
+
+        $error =
+            $validationError;
+
     } else {
-        $error = "No user found with this email.";
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | STEP 1
+        | CUSTOMER
+        |--------------------------------------------------------------------------
+        */
+
+        $customer =
+            findCustomerByEmail(
+                $conn,
+                $email
+            );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | CUSTOMER FOUND
+        |--------------------------------------------------------------------------
+        */
+
+        if ($customer) {
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Check Status
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $customer['status']
+                !== 'active'
+            ) {
+
+                $error =
+                    "This account is not active.";
+
+            }
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Verify Password
+            |--------------------------------------------------------------------------
+            */
+
+            elseif (
+                password_verify(
+                    $password,
+                    $customer['password_hash']
+                )
+            ) {
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | LOGIN CUSTOMER
+                |--------------------------------------------------------------------------
+                */
+
+                loginCustomer(
+                    $customer
+                );
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | CUSTOMER DASHBOARD
+                |--------------------------------------------------------------------------
+                */
+
+                header(
+                    "Location: customer/dashboard.php"
+                );
+
+                exit;
+
+            } else {
+
+                $error =
+                    "Invalid email or password.";
+            }
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | NO CUSTOMER
+        | CHECK STAFF
+        |--------------------------------------------------------------------------
+        */
+
+        } else {
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | STEP 2
+            | STAFF
+            |--------------------------------------------------------------------------
+            */
+
+            $staff =
+                findStaffByEmail(
+                    $conn,
+                    $email
+                );
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | STAFF FOUND
+            |--------------------------------------------------------------------------
+            */
+
+            if ($staff) {
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Check Status
+                |--------------------------------------------------------------------------
+                */
+
+                if (
+                    $staff['status']
+                    !== 'active'
+                ) {
+
+                    $error =
+                        "This staff account is not active.";
+
+                }
+
+
+                /*
+                |--------------------------------------------------------------------------
+                | Verify Password
+                |--------------------------------------------------------------------------
+                */
+
+                elseif (
+                    password_verify(
+                        $password,
+                        $staff['password_hash']
+                    )
+                ) {
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | LOGIN STAFF
+                    |--------------------------------------------------------------------------
+                    */
+
+                    loginStaff(
+                        $staff
+                    );
+
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | STEP 3
+                    | CHECK ROLE
+                    |--------------------------------------------------------------------------
+                    */
+
+                    switch (
+                        strtolower(
+                            $staff['role']
+                        )
+                    ) {
+
+                        case 'admin':
+
+                            header(
+                                "Location: admin/dashboard.php"
+                            );
+
+                            exit;
+
+
+                        case 'pharmacist':
+
+                            header(
+                                "Location: pharmacist/dashboard.php"
+                            );
+
+                            exit;
+
+
+                        case 'superadmin':
+
+                            header(
+                                "Location: superadmin/dashboard.php"
+                            );
+
+                            exit;
+
+
+                        default:
+
+                            $error =
+                                "Invalid staff role.";
+
+                            break;
+                    }
+
+                } else {
+
+                    $error =
+                        "Invalid email or password.";
+                }
+
+            } else {
+
+                $error =
+                    "Invalid email or password.";
+            }
+        }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
-    <title>Login</title>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Login | MediQuick Pharmacy
+    </title>
+
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+
 </head>
-<body>
-    <?php include 'partials/spinner.php'; ?>
 
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="card shadow border-0 rounded-3 p-4">
-                    <h3 class="text-center mb-4">Login to Your Account</h3>
 
-                    <?php if (isset($_SESSION['success'])): ?>
-                        <div class="alert alert-success"><?= $_SESSION['success']; unset($_SESSION['success']); ?></div>
+<body class="bg-light">
+
+
+<div class="container">
+
+    <div class="row justify-content-center">
+
+        <div class="col-md-5 mt-5">
+
+            <div class="card shadow">
+
+                <div class="card-body p-4">
+
+
+                    <h2 class="text-center">
+                        MediQuick Pharmacy
+                    </h2>
+
+                    <p class="text-center text-muted">
+                        Login to your account
+                    </p>
+
+
+                    <?php if ($error !== ''): ?>
+
+                        <div
+                            class="alert alert-danger"
+                        >
+
+                            <?= htmlspecialchars(
+                                $error
+                            ) ?>
+
+                        </div>
+
                     <?php endif; ?>
 
-                    <?php if ($error): ?>
-                        <div class="alert alert-danger"><?= htmlspecialchars($error) ?></div>
-                    <?php endif; ?>
 
-                    <form action="login.php" method="POST">
+                    <form
+                        method="POST"
+                        action=""
+                    >
+
+
                         <div class="mb-3">
-                            <label class="form-label">Email address</label>
-                            <input type="email" name="email" class="form-control" required>
+
+                            <label
+                                for="email"
+                                class="form-label"
+                            >
+                                Email
+                            </label>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                class="form-control"
+                                required
+                            >
+
                         </div>
+
+
                         <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control" required>
+
+                            <label
+                                for="password"
+                                class="form-label"
+                            >
+                                Password
+                            </label>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                class="form-control"
+                                required
+                            >
+
                         </div>
-                        <div class="d-flex justify-content-between mb-3">
-                            <div class="form-check">
-                                <input type="checkbox" class="form-check-input" id="remember">
-                                <label class="form-check-label" for="remember">Remember me</label>
-                            </div>
-                            <a href="password-reset.php" class="text-primary">Forgot password?</a>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Login</button>
+
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary w-100"
+                        >
+                            Login
+                        </button>
+
+
                     </form>
+
+
                     <div class="text-center mt-3">
-                        <p class="mb-0">Don't have an account? <a href="register.php" class="text-primary">Register here</a></p>
+
+                        Don't have an account?
+
+                        <a href="register.php">
+                            Register
+                        </a>
+
                     </div>
+
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
 
-    <?php include 'partials/scripts.php'; ?>
+</div>
+
+
 </body>
+
 </html>
