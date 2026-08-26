@@ -17,7 +17,7 @@ CREATE TABLE	CUSTOMER(
 
 	
 CREATE TABLE staff (
-	staff_id       NVARCHAR(50)  NOT NULL,
+	staff_id       NVARCHAR(50)  NOT NULL PRIMARY KEY,
 	first_name     NVARCHAR(100) NOT NULL,
 	last_name      NVARCHAR(100) NOT NULL,
 	email          NVARCHAR(255) NOT NULL,
@@ -28,13 +28,17 @@ CREATE TABLE staff (
 	created_at    DATETIME2     NOT NULL DEFAULT GETDATE(),
 
 
+
     CONSTRAINT chk_staff_status CHECK (status IN ('active', 'inactive', 'terminated'))
+    ALTER TABLE staff
+    ADD CONSTRAINT chk_staff_role
+    CHECK (role IN ('admin', 'pharmacist', 'superadmin'));
 );
 
 
 
 CREATE TABLE orders (
-    order_id      NVARCHAR(50)  NOT NULL,
+    order_id      NVARCHAR(50)  NOT NULL PRIMARY KEY,
     customer_id   NVARCHAR(50)  NOT NULL,
     order_date    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
     status        NVARCHAR(20)  NOT NULL DEFAULT 'pending',
