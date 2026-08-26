@@ -33,5 +33,31 @@ CREATE TABLE staff (
 
 
 
+CREATE TABLE orders (
+    order_id      NVARCHAR(50)  NOT NULL,
+    customer_id   NVARCHAR(50)  NOT NULL,
+    order_date    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    status        NVARCHAR(20)  NOT NULL DEFAULT 'pending',
+    subtotal      DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    tax_amount    DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+    shipping_fee  DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
 
-	
+    CONSTRAINT pk_orders PRIMARY KEY (order_id),
+    CONSTRAINT chk_orders_status CHECK (status IN ('pending', 'processing', 'shipped', 'delivered', 'cancelled')),
+    CONSTRAINT chk_orders_subtotal_nonneg CHECK (subtotal >= 0),
+    CONSTRAINT chk_orders_tax_nonneg CHECK (tax_amount >= 0),
+    CONSTRAINT chk_orders_shipping_nonneg CHECK (shipping_fee >= 0)
+);
+
+CREATE TABLE order_items (
+    order_item_id           NVARCHAR(20) PRIMARY KEY,
+    order_id                NVARCHAR(50) NOT NULL,
+    product_id              INT NOT NULL,
+    quantity                INT NOT NULL,
+    unit_price_at_purchase  DECIMAL(10,2) NOT NULL,
+
+    CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES orders(order_id) ON DELETE CASCADE,
+    CONSTRAINT chk_order_items_quantity_pos CHECK (quantity > 0),
+    CONSTRAINT chk_order_items_price_nonneg CHECK (unit_price_at_purchase >= 0),
+    CONSTRAINT uq_order_items_order_product UNIQUE (order_id, product_id)
+);
