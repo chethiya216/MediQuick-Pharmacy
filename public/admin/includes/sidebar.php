@@ -43,7 +43,7 @@
       </a>
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="product-manage.php" class="menu-link">
+          <a href="../admin/manage-products.php" class="menu-link">
             <div data-i18n="Manage">Manage Products</div>
           </a>
         </li>
@@ -142,9 +142,8 @@
     </a>
 
     <ul class="menu-sub">
-        <li class="menu-item">
-            
-            <a href="/GitHub/MediQuick-Pharmacy/public/admin/show-payments.php" class="menu-link">
+        <li class="menu-item"> 
+            <a href="../admin/show-payments.php" class="menu-link">
     <div data-i18n="Payment Management">
         Payment Management
     </div>
