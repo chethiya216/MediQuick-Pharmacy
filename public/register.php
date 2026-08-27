@@ -1,81 +1,405 @@
 <?php
+
 session_start();
-require 'db.php';
 
-$message = ''; 
+require_once '../includes/db.php';
+
+$message = '';
+$messageType = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+
+    $firstName = trim($_POST['first_name'] ?? '');
+    $lastName = trim($_POST['last_name'] ?? '');
+    $email = strtolower(trim($_POST['email'] ?? ''));
+    $phone = trim($_POST['phone'] ?? '');
+    $address = trim($_POST['address'] ?? '');
+
+    $password = $_POST['password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
 
 
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $name = trim($_POST['name']);
-    $email = trim($_POST['email']);
-    $password = $_POST['password'];
-    $confirm_password = $_POST['confirm_password'];
+    /*
+    |--------------------------------------------------------------------------
+    | Validation
+    |--------------------------------------------------------------------------
+    */
 
-    if ($password !== $confirm_password) {
-        $message = "Passwords do not match!";
+    if (
+        $firstName === '' ||
+        $lastName === '' ||
+        $email === '' ||
+        $phone === '' ||
+        $address === '' ||
+        $password === '' ||
+        $confirmPassword === ''
+    ) {
+
+        $message = "Please fill in all required fields.";
+        $messageType = "error";
+
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+
+        $message = "Please enter a valid email address.";
+        $messageType = "error";
+
+    } elseif ($password !== $confirmPassword) {
+
+        $message = "Passwords do not match.";
+        $messageType = "error";
+
+    } elseif (strlen($password) < 8) {
+
+        $message = "Password must be at least 8 characters.";
+        $messageType = "error";
+
     } else {
-        // Hash the password securely
-        $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-        $stmt = $conn->prepare("INSERT INTO users (name, email, password) VALUES (?, ?, ?)");
-        $stmt->bind_param("sss", $name, $email, $hashed_password);
+        /*
+        |--------------------------------------------------------------------------
+        | Check Existing Customer
+        |--------------------------------------------------------------------------
+        */
 
-        if ($stmt->execute()) {
-            $_SESSION['success'] = "Registration successful! Please login.";
-            header("Location: login.php");
-            exit;
+        $sql = "
+            SELECT customer_id
+            FROM customers
+            WHERE email = ?
+            LIMIT 1
+        ";
+
+        $stmt = $conn->prepare($sql);
+
+        if (!$stmt) {
+
+            $message = "Database error: " . $conn->error;
+            $messageType = "error";
+
         } else {
-            $message = "Email already registered or registration failed.";
+
+            $stmt->bind_param("s", $email);
+
+            $stmt->execute();
+
+            $stmt->store_result();
+
+            $customerExists = $stmt->num_rows > 0;
+
+            $stmt->close();
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Check Existing Staff
+            |--------------------------------------------------------------------------
+            */
+
+            $sql = "
+                SELECT staff_id
+                FROM staff
+                WHERE email = ?
+                LIMIT 1
+            ";
+
+            $stmt = $conn->prepare($sql);
+
+            if (!$stmt) {
+
+                $message = "Database error: " . $conn->error;
+                $messageType = "error";
+
+            } else {
+
+                $stmt->bind_param("s", $email);
+
+                $stmt->execute();
+
+                $stmt->store_result();
+
+                $staffExists = $stmt->num_rows > 0;
+
+                $stmt->close();
+
+
+                if ($customerExists || $staffExists) {
+
+                    $message = "This email is already registered.";
+                    $messageType = "error";
+
+                } else {
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | Create Customer
+                    |--------------------------------------------------------------------------
+                    */
+
+                    $customerId =
+                        'CUS-' .
+                        strtoupper(
+                            bin2hex(random_bytes(4))
+                        );
+
+                    $passwordHash = password_hash(
+                        $password,
+                        PASSWORD_DEFAULT
+                    );
+
+
+                    $sql = "
+                        INSERT INTO customers
+                        (
+                            customer_id,
+                            first_name,
+                            last_name,
+                            email,
+                            phone,
+                            address,
+                            password_hash,
+                            status
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?, 'active')
+                    ";
+
+                    $stmt = $conn->prepare($sql);
+
+                    if (!$stmt) {
+
+                        $message =
+                            "Database error: " .
+                            $conn->error;
+
+                        $messageType = "error";
+
+                    } else {
+
+                        $stmt->bind_param(
+                            "sssssss",
+                            $customerId,
+                            $firstName,
+                            $lastName,
+                            $email,
+                            $phone,
+                            $address,
+                            $passwordHash
+                        );
+
+                        if ($stmt->execute()) {
+
+                            $message =
+                                "Registration successful! You can now login.";
+
+                            $messageType = "success";
+
+                        } else {
+
+                            $message =
+                                "Registration failed: " .
+                                $stmt->error;
+
+                            $messageType = "error";
+                        }
+
+                        $stmt->close();
+                    }
+                }
+            }
         }
     }
 }
+
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <title>Register</title>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Customer Registration</title>
+
+    <style>
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #f2f4f7;
+            padding: 40px 20px;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,.1);
+        }
+
+        h2 {
+            text-align: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 15px;
+            font-weight: bold;
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 11px;
+            margin-top: 6px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        textarea {
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 20px;
+            border: none;
+            border-radius: 5px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 12px;
+            margin-bottom: 15px;
+        }
+
+        .login {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+    </style>
+
 </head>
+
 <body>
-    <?php include 'partials/spinner.php'; ?>
 
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="card shadow border-0 rounded-3 p-4">
-                    <h3 class="text-center mb-4">Create an Account</h3>
+<div class="container">
 
-                    <?php if ($message): ?>
-                        <div class="alert alert-danger"><?= htmlspecialchars($message) ?></div>
-                    <?php endif; ?>
+    <h2>Create Customer Account</h2>
 
-                    <form action="register.php" method="POST">
-                        <div class="mb-3">
-                            <label class="form-label">Full Name</label>
-                            <input type="text" name="name" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Email address</label>
-                            <input type="email" name="email" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Password</label>
-                            <input type="password" name="password" class="form-control" required>
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label">Confirm Password</label>
-                            <input type="password" name="confirm_password" class="form-control" required>
-                        </div>
-                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Register</button>
-                    </form>
-                    <div class="text-center mt-3">
-                        <p class="mb-0">Already have an account? <a href="login.php" class="text-primary">Login here</a></p>
-                    </div>
-                </div>
-            </div>
+    <?php if ($message !== ''): ?>
+
+        <div class="<?= htmlspecialchars($messageType) ?>">
+            <?= htmlspecialchars($message) ?>
         </div>
+
+    <?php endif; ?>
+
+
+    <form method="POST">
+
+        <label>First Name</label>
+
+        <input
+            type="text"
+            name="first_name"
+            required
+        >
+
+
+        <label>Last Name</label>
+
+        <input
+            type="text"
+            name="last_name"
+            required
+        >
+
+
+        <label>Email</label>
+
+        <input
+            type="email"
+            name="email"
+            required
+        >
+
+
+        <label>Phone Number</label>
+
+        <input
+            type="tel"
+            name="phone"
+            required
+        >
+
+
+        <label>Address</label>
+
+        <textarea
+            name="address"
+            required
+        ></textarea>
+
+
+        <label>Password</label>
+
+        <input
+            type="password"
+            name="password"
+            minlength="8"
+            required
+        >
+
+
+        <label>Confirm Password</label>
+
+        <input
+            type="password"
+            name="confirm_password"
+            minlength="8"
+            required
+        >
+
+
+        <button type="submit">
+            Register
+        </button>
+
+    </form>
+
+
+    <div class="login">
+
+        Already have an account?
+
+        <a href="login.php">
+            Login
+        </a>
+
     </div>
 
-    <?php include 'partials/scripts.php'; ?>
+</div>
+
 </body>
+
 </html>

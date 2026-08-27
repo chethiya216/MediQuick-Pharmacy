@@ -1,4 +1,60 @@
 <?php
+
+require_once '../../includes/auth.php';
+
+requireAdmin();
+
+?>
+
+<!DOCTYPE html>
+<html>
+
+<head>
+
+    <title>Admin Dashboard</title>
+
+</head>
+
+<body>
+
+<h1>
+    MediQuick Admin Dashboard
+</h1>
+
+
+<p>
+    Welcome,
+    <?= htmlspecialchars($_SESSION['first_name']) ?>
+</p>
+
+
+<p>
+    Role:
+    <?= htmlspecialchars($_SESSION['role']) ?>
+</p>
+
+
+<hr>
+
+
+<h3>Staff Management</h3>
+
+<a href="create_staff.php">
+    Create Staff Account
+</a>
+
+
+<br><br>
+
+
+<a href="../logout.php">
+    Logout
+</a>
+
+</body>
+
+</html>
+<?php
 // Dynamic Data Setup
 $user_name = "John";
 $sales_percentage = 72;
