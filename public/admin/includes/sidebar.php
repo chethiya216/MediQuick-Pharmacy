@@ -135,19 +135,24 @@
       </ul>
     </li>
 
-    <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
+   <li class="menu-item">
+    <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-credit-card"></i>
         <div data-i18n="Payments">Payments</div>
-      </a>
-      <ul class="menu-sub">
+    </a>
+
+    <ul class="menu-sub">
         <li class="menu-item">
-          <a href="payments-show.php" class="menu-link">
-            <div data-i18n="Show Payment">Manage Payments</div>
-          </a>
+            
+            <a href="/GitHub/MediQuick-Pharmacy/public/admin/show-payments.php" class="menu-link">
+    <div data-i18n="Payment Management">
+        Payment Management
+    </div>
+</a>
+            </a>
         </li>
-      </ul>
-    </li>
+    </ul>
+</li>
 
     <li class="menu-item menu-logout">
       <a href="../admin/create-staff.php" class="menu-link">
