@@ -1,6 +1,6 @@
 <?php
 
-require_once '../../includes/auth.php';
+include __DIR__ . '/includes/db.php';
 
 requireAdmin();
 
