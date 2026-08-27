@@ -472,7 +472,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <div class="back">
 
-        <a href="dashboard.php">
+        <a href="../admin/index.php">
             Back to Dashboard
         </a>
 

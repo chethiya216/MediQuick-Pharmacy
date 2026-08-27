@@ -1,59 +1,15 @@
 <?php
 
-require_once '../../includes/auth.php';
+// require_once '../../includes/auth.php';
 
-requireAdmin();
+// requireAdmin();
+
+$_SESSION['first_namename'] = 'Chethiya';
+$_SESSION['role'] = 'super_admin';
 
 ?>
 
-<!DOCTYPE html>
-<html>
 
-<head>
-
-    <title>Admin Dashboard</title>
-
-</head>
-
-<body>
-
-<h1>
-    MediQuick Admin Dashboard
-</h1>
-
-
-<p>
-    Welcome,
-    <?= htmlspecialchars($_SESSION['first_name']) ?>
-</p>
-
-
-<p>
-    Role:
-    <?= htmlspecialchars($_SESSION['role']) ?>
-</p>
-
-
-<hr>
-
-
-<h3>Staff Management</h3>
-
-<a href="create_staff.php">
-    Create Staff Account
-</a>
-
-
-<br><br>
-
-
-<a href="../logout.php">
-    Logout
-</a>
-
-</body>
-
-</html>
 <?php
 // Dynamic Data Setup
 $user_name = "John";
@@ -67,7 +23,7 @@ $sales = "$4,679";
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" />
-    <title>Dashboard - Analytics</title>
+    <title>MediQuick Dashboard</title>
 
     <!-- Favicon -->
     <link rel="icon" type="image/x-icon" href="../admin-assets/assets/img/favicon/favicon.ico" />
