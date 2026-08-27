@@ -43,7 +43,7 @@
       </a>
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="product-manage.php" class="menu-link">
+          <a href="../admin/manage-products.php" class="menu-link">
             <div data-i18n="Manage">Manage Products</div>
           </a>
         </li>
