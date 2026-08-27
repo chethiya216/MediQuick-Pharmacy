@@ -2,6 +2,7 @@
 
 session_start();
 
+
 require_once '../includes/db.php';
 
 $message = '';
@@ -95,7 +96,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['role'] =
                     'customer';
 
-                header("Location: customer/dashboard.php");
+                header("Location: ../public/index.html");
 
                 exit;
 
@@ -185,7 +186,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 */
 
                 header(
-                    "Location: admin/dashboard.php"
+                    "Location: ../public/admin/index.php"
                 );
 
                 exit;
