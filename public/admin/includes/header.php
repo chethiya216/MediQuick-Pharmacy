@@ -1,3 +1,4 @@
+
 <nav
     class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
     id="layout-navbar"
@@ -65,7 +66,7 @@
           </g>
         </svg>
       </span>
-      <span class="app-brand-text demo menu-text fw-bolder ms-2">MediQuick admin dahsboard</span>
+      <span class="app-brand-text demo menu-text fw-bolder ms-2">MediQuick admin</span>
     </a>
             </div>
         </div>

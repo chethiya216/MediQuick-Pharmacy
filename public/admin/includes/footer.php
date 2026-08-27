@@ -13,4 +13,18 @@
         class="footer-link">Support</a>
     </div>
   </div>
+
+      <!-- Core JS -->
+    <script src="../admin-assets/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="../admin-assets/assets/vendor/libs/popper/popper.js"></script>
+    <script src="../admin-assets/assets/vendor/js/bootstrap.js"></script>
+    <script src="../admin-assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="../admin-assets/assets/vendor/js/menu.js"></script>
+
+    <!-- Vendors JS -->
+    <script src="../admin-assets/assets/vendor/libs/apex-charts/apexcharts.js"></script>
+
+    <!-- Main JS -->
+    <script src="../admin-assets/assets/js/main.js"></script>
+    <script src="../admin-assets/assets/js/dashboards-analytics.js"></script>
 </footer>
