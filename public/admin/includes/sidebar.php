@@ -121,19 +121,20 @@
       </ul>
     </li>
 
-    <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
+<li class="menu-item">
+    <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-capsule"></i>
-        <div data-i18n="Products">Orders</div>
-      </a>
-      <ul class="menu-sub">
+        <div data-i18n="Orders">Orders</div>
+    </a>
+
+    <ul class="menu-sub">
         <li class="menu-item">
-          <a href="product-manage.php" class="menu-link">
-            <div data-i18n="Manage">Manage Orders</div>
-          </a>
+            <a href="/GitHub/MediQuick-Pharmacy/public/admin/manage-order.php" class="menu-link">
+                <div data-i18n="Manage">Manage-Orders</div>
+            </a>
         </li>
-      </ul>
-    </li>
+    </ul>
+</li>
 
    <li class="menu-item">
     <a href="javascript:void(0);" class="menu-link menu-toggle">
