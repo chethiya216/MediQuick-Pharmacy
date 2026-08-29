@@ -27,4 +27,5 @@
     <!-- Helpers -->
     <script src="../admin-assets/assets/vendor/js/helpers.js"></script>
     <script src="../admin-assets/assets/js/config.js"></script>
+    <script src="../admin-assets/js/image-preview.js"></script>
 </head>

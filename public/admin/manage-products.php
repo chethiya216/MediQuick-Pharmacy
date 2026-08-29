@@ -9,9 +9,9 @@ requireLogin();
 
 require_once __DIR__ . '/../../includes/db.php';
 
-if (!isset($conn)) {
-    die("Database connection failed: \$conn is not defined.");
-}
+// if (!isset($conn)) {
+//     die("Database connection failed: \$conn is not defined.");
+// }
 
 // Fetch products with their category and supplier details
 $sql = "
@@ -91,7 +91,7 @@ $pageTitle = "Product Management - MediQuick";
                         <h4 class="fw-bold m-0">
                             <span class="text-muted fw-light">Products /</span> Product Management
                         </h4>
-                        <a href="product-add.php" class="btn btn-primary">
+                        <a href="add-products.php" class="btn btn-primary">
                             <i class="bx bx-plus me-1"></i> Add New Product
                         </a>
                     </div>

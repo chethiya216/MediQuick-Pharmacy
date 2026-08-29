@@ -26,5 +26,6 @@
 
     <!-- Main JS -->
     <script src="../admin-assets/assets/js/main.js"></script>
+    <script src="../admin-assets/assets/js/scripts.js"></script>
     <script src="../admin-assets/assets/js/dashboards-analytics.js"></script>
 </footer>
