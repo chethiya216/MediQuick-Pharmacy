@@ -9,50 +9,59 @@ requireLogin();
 
 require_once __DIR__ . '/../../includes/db.php';
 
-if (!isset($conn)) {
-    die("Database connection failed: \$conn is not defined.");
-}
+$pageTitle = "Product Management - MediQuick";
 
-// Fetch products with their category and supplier details
+/*
+|--------------------------------------------------------------------------
+| Pagination Setup
+|--------------------------------------------------------------------------
+*/
+$limit = 20; 
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) { $page = 1; }
+$offset = ($page - 1) * $limit;
+
+// Preserve existing search or filter parameters in pagination links
+$queryParams = $_GET;
+
+// 1. Get total number of products
+$countSql = "SELECT COUNT(*) AS total FROM products";
+$countResult = $conn->query($countSql);
+$totalProducts = $countResult->fetch_assoc()['total'] ?? 0;
+
+$totalPages = ceil($totalProducts / $limit);
+if ($totalPages < 1) { $totalPages = 1; }
+if ($page > $totalPages) { $page = $totalPages; }
+
+// 2. Fetch paginated products with category details
 $sql = "
     SELECT 
         p.product_id,
         p.product_name,
+        p.product_image,
+        p.sku,
+        p.created_at,
         c.category_name,
-        latest_supplier.supplier_name,
         p.unit_price,
         p.requires_prescription,
         p.status
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.category_id
-    LEFT JOIN (
-        SELECT
-            poi.product_id,
-            s.name AS supplier_name,
-            po.order_date,
-            ROW_NUMBER() OVER (
-                PARTITION BY poi.product_id
-                ORDER BY po.order_date DESC
-            ) AS rn
-        FROM purchase_order_items poi
-        JOIN purchase_orders po ON poi.po_id = po.po_id
-        JOIN suppliers s ON po.supplier_id = s.supplier_id
-    ) latest_supplier
-        ON latest_supplier.product_id = p.product_id
-        AND latest_supplier.rn = 1
     ORDER BY p.product_id DESC
+    LIMIT ? OFFSET ?
 ";
 
-$result = mysqli_query($conn, $sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ii", $limit, $offset);
+$stmt->execute();
+$productsResult = $stmt->get_result();
 
-if (!$result) {
-    die(
-        "Product query failed:<br>" .
-        htmlspecialchars(mysqli_error($conn))
-    );
+// Function to generate page URLs while retaining existing search/filter query parameters
+function getPageUrl($pageNumber, $queryParams) {
+    $queryParams['page'] = $pageNumber;
+    return '?' . http_build_query($queryParams);
 }
 
-$pageTitle = "Product Management - MediQuick";
 ?>
 
 <!DOCTYPE html>
@@ -91,7 +100,7 @@ $pageTitle = "Product Management - MediQuick";
                         <h4 class="fw-bold m-0">
                             <span class="text-muted fw-light">Products /</span> Product Management
                         </h4>
-                        <a href="product-add.php" class="btn btn-primary">
+                        <a href="add-products.php" class="btn btn-primary">
                             <i class="bx bx-plus me-1"></i> Add New Product
                         </a>
                     </div>
@@ -112,12 +121,13 @@ $pageTitle = "Product Management - MediQuick";
                                 <thead>
                                     <tr>
                                         <th>Product ID</th>
+                                        <th>Product Image</th>
                                         <th>Product Name</th>
                                         <th>SKU</th>
                                         <th>Category</th>
-                                        <th>Supplier</th>
                                         <th>Price</th>
                                         <th>Status</th>
+                                        <th>Created At</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -125,9 +135,9 @@ $pageTitle = "Product Management - MediQuick";
                                 <!-- TABLE BODY -->
                                 <tbody class="table-border-bottom-0">
 
-                                <?php if (mysqli_num_rows($result) > 0): ?>
+                                <?php if ($productsResult && $productsResult->num_rows > 0): ?>
 
-                                    <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                                    <?php while ($row = $productsResult->fetch_assoc()): ?>
 
                                         <tr>
 
@@ -136,6 +146,18 @@ $pageTitle = "Product Management - MediQuick";
                                                 <strong>
                                                     #<?= htmlspecialchars($row['product_id']); ?>
                                                 </strong>
+                                            </td>
+
+                                            <!-- PRODUCT IMAGE -->
+                                            <td>
+                                                <?php if (!empty($row['product_image'])): ?>
+                                                    <img src="../<?= htmlspecialchars($row['product_image']); ?>" 
+                                                        alt="Product Image" 
+                                                        class="img-thumbnail" 
+                                                        style="width: 150px; height: 100px; object-fit: cover;">
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary">No Image</span>
+                                                <?php endif; ?>
                                             </td>
 
                                             <!-- PRODUCT NAME -->
@@ -153,11 +175,6 @@ $pageTitle = "Product Management - MediQuick";
                                             <!-- CATEGORY -->
                                             <td>
                                                 <?= htmlspecialchars($row['category_name'] ?? 'Uncategorized'); ?>
-                                            </td>
-
-                                            <!-- SUPPLIER -->
-                                            <td>
-                                                <?= htmlspecialchars($row['supplier_name'] ?? 'N/A'); ?>
                                             </td>
 
                                             <!-- PRICE -->
@@ -186,6 +203,11 @@ $pageTitle = "Product Management - MediQuick";
                                                 </span>
                                             </td>
 
+                                            <!-- CREATED AT -->
+                                            <td>
+                                                <?= htmlspecialchars($row['created_at'] ?? 'N/A'); ?>
+                                            </td>
+
                                             <!-- ACTIONS -->
                                             <td>
                                                 <div class="dropdown">
@@ -193,7 +215,7 @@ $pageTitle = "Product Management - MediQuick";
                                                         <i class="bx bx-dots-vertical-rounded"></i>
                                                     </button>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="product-edit.php?id=<?= $row['product_id']; ?>">
+                                                        <a class="dropdown-item" href="add-products.php?id=<?= $row['product_id']; ?>">
                                                             <i class="bx bx-edit-alt me-1"></i> Edit
                                                         </a>
                                                         <a class="dropdown-item text-danger" href="product-delete.php?id=<?= $row['product_id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');">
@@ -211,7 +233,7 @@ $pageTitle = "Product Management - MediQuick";
 
                                     <!-- NO PRODUCTS FOUND -->
                                     <tr>
-                                        <td colspan="8" class="text-center">
+                                        <td colspan="9" class="text-center">
                                             No products found.
                                         </td>
                                     </tr>
@@ -221,9 +243,42 @@ $pageTitle = "Product Management - MediQuick";
                                 </tbody>
 
                             </table>
+                            
                         </div>
-
+                        
                     </div>
+
+                    <!-- PAGINATION NAVIGATION -->
+                    <?php if ($totalPages > 1): ?>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mt-4">
+                            
+                            <!-- Previous Button -->
+                            <li class="page-item prev <?= ($page <= 1) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="<?= ($page > 1) ? getPageUrl($page - 1, $queryParams) : 'javascript:void(0);'; ?>">
+                                    <i class="tf-icon bx bx-chevrons-left"></i>
+                                </a>
+                            </li>
+
+                            <!-- Page Numbers -->
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <li class="page-item <?= ($i === $page) ? 'active' : ''; ?>">
+                                    <a class="page-link" href="<?= getPageUrl($i, $queryParams); ?>">
+                                        <?= $i; ?>
+                                    </a>
+                                </li>
+                            <?php endfor; ?>
+
+                            <!-- Next Button -->
+                            <li class="page-item next <?= ($page >= $totalPages) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="<?= ($page < $totalPages) ? getPageUrl($page + 1, $queryParams) : 'javascript:void(0);'; ?>">
+                                    <i class="tf-icon bx bx-chevrons-right"></i>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                    <?php endif; ?>
 
                 </div>
 
