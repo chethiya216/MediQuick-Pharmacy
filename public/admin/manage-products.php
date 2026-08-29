@@ -9,37 +9,58 @@ requireLogin();
 
 require_once __DIR__ . '/../../includes/db.php';
 
-// if (!isset($conn)) {
-//     die("Database connection failed: \$conn is not defined.");
-// }
+$pageTitle = "Product Management - MediQuick";
 
-// Fetch products with their category and supplier details
+/*
+|--------------------------------------------------------------------------
+| Pagination Setup
+|--------------------------------------------------------------------------
+*/
+$limit = 20; 
+$page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
+if ($page < 1) { $page = 1; }
+$offset = ($page - 1) * $limit;
+
+// Preserve existing search or filter parameters in pagination links
+$queryParams = $_GET;
+
+// 1. Get total number of products
+$countSql = "SELECT COUNT(*) AS total FROM products";
+$countResult = $conn->query($countSql);
+$totalProducts = $countResult->fetch_assoc()['total'] ?? 0;
+
+$totalPages = ceil($totalProducts / $limit);
+if ($totalPages < 1) { $totalPages = 1; }
+if ($page > $totalPages) { $page = $totalPages; }
+
+// 2. Fetch paginated products with category details
 $sql = "
     SELECT 
-    p.product_id,
-    p.product_name,
-    p.product_image,
-    p.sku,
-    p.created_at,
-    c.category_name,
-    p.unit_price,
-    p.requires_prescription,
-    p.status
-FROM products p
-LEFT JOIN categories c ON p.category_id = c.category_id
-ORDER BY p.product_id DESC;
+        p.product_id,
+        p.product_name,
+        p.product_image,
+        p.sku,
+        p.created_at,
+        c.category_name,
+        p.unit_price,
+        p.requires_prescription,
+        p.status
+    FROM products p
+    LEFT JOIN categories c ON p.category_id = c.category_id
+    ORDER BY p.product_id DESC
+    LIMIT ? OFFSET ?
 ";
 
-$result = mysqli_query($conn, $sql);
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ii", $limit, $offset);
+$stmt->execute();
+$productsResult = $stmt->get_result();
 
-if (!$result) {
-    die(
-        "Product query failed:<br>" .
-        htmlspecialchars(mysqli_error($conn))
-    );
+// Function to generate page URLs while retaining existing search/filter query parameters
+function getPageUrl($pageNumber, $queryParams) {
+    $queryParams['page'] = $pageNumber;
+    return '?' . http_build_query($queryParams);
 }
-
-$pageTitle = "Product Management - MediQuick";
 
 ?>
 
@@ -114,9 +135,9 @@ $pageTitle = "Product Management - MediQuick";
                                 <!-- TABLE BODY -->
                                 <tbody class="table-border-bottom-0">
 
-                                <?php if (mysqli_num_rows($result) > 0): ?>
+                                <?php if ($productsResult && $productsResult->num_rows > 0): ?>
 
-                                    <?php while ($row = mysqli_fetch_assoc($result)): ?>
+                                    <?php while ($row = $productsResult->fetch_assoc()): ?>
 
                                         <tr>
 
@@ -127,7 +148,8 @@ $pageTitle = "Product Management - MediQuick";
                                                 </strong>
                                             </td>
 
-                                           <td>
+                                            <!-- PRODUCT IMAGE -->
+                                            <td>
                                                 <?php if (!empty($row['product_image'])): ?>
                                                     <img src="../<?= htmlspecialchars($row['product_image']); ?>" 
                                                         alt="Product Image" 
@@ -155,11 +177,6 @@ $pageTitle = "Product Management - MediQuick";
                                                 <?= htmlspecialchars($row['category_name'] ?? 'Uncategorized'); ?>
                                             </td>
 
-                                            <!-- SUPPLIER -->
-                                            <!-- <td>
-                                                <?= htmlspecialchars($row['supplier_name'] ?? 'N/A'); ?>
-                                            </td> -->
-
                                             <!-- PRICE -->
                                             <td>
                                                 Rs. <?= number_format((float) $row['unit_price'], 2); ?>
@@ -186,6 +203,7 @@ $pageTitle = "Product Management - MediQuick";
                                                 </span>
                                             </td>
 
+                                            <!-- CREATED AT -->
                                             <td>
                                                 <?= htmlspecialchars($row['created_at'] ?? 'N/A'); ?>
                                             </td>
@@ -215,7 +233,7 @@ $pageTitle = "Product Management - MediQuick";
 
                                     <!-- NO PRODUCTS FOUND -->
                                     <tr>
-                                        <td colspan="8" class="text-center">
+                                        <td colspan="9" class="text-center">
                                             No products found.
                                         </td>
                                     </tr>
@@ -229,35 +247,39 @@ $pageTitle = "Product Management - MediQuick";
                         </div>
                         
                     </div>
-                                    <nav aria-label="Page navigation" class="mt-4">
-                                <ul class="pagination justify-content-center">
-                                    <li class="page-item prev">
-                                    <a class="page-link" href="javascript:void(0);"
-                                        ><i class="tf-icon bx bx-chevrons-left"></i
-                                    ></a>
-                                    </li>
-                                    <li class="page-item">
-                                    <a class="page-link" href="javascript:void(0);">1</a>
-                                    </li>
-                                    <li class="page-item">
-                                    <a class="page-link" href="javascript:void(0);">2</a>
-                                    </li>
-                                    <li class="page-item active">
-                                    <a class="page-link" href="javascript:void(0);">3</a>
-                                    </li>
-                                    <li class="page-item">
-                                    <a class="page-link" href="javascript:void(0);">4</a>
-                                    </li>
-                                    <li class="page-item">
-                                    <a class="page-link" href="javascript:void(0);">5</a>
-                                    </li>
-                                    <li class="page-item next">
-                                    <a class="page-link" href="javascript:void(0);"
-                                        ><i class="tf-icon bx bx-chevrons-right"></i
-                                    ></a>
-                                    </li>
-                                </ul>
-                            </nav>
+
+                    <!-- PAGINATION NAVIGATION -->
+                    <?php if ($totalPages > 1): ?>
+                    <nav aria-label="Page navigation">
+                        <ul class="pagination justify-content-center mt-4">
+                            
+                            <!-- Previous Button -->
+                            <li class="page-item prev <?= ($page <= 1) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="<?= ($page > 1) ? getPageUrl($page - 1, $queryParams) : 'javascript:void(0);'; ?>">
+                                    <i class="tf-icon bx bx-chevrons-left"></i>
+                                </a>
+                            </li>
+
+                            <!-- Page Numbers -->
+                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
+                                <li class="page-item <?= ($i === $page) ? 'active' : ''; ?>">
+                                    <a class="page-link" href="<?= getPageUrl($i, $queryParams); ?>">
+                                        <?= $i; ?>
+                                    </a>
+                                </li>
+                            <?php endfor; ?>
+
+                            <!-- Next Button -->
+                            <li class="page-item next <?= ($page >= $totalPages) ? 'disabled' : ''; ?>">
+                                <a class="page-link" href="<?= ($page < $totalPages) ? getPageUrl($page + 1, $queryParams) : 'javascript:void(0);'; ?>">
+                                    <i class="tf-icon bx bx-chevrons-right"></i>
+                                </a>
+                            </li>
+
+                        </ul>
+                    </nav>
+                    <?php endif; ?>
+
                 </div>
 
                 <!-- FOOTER -->
