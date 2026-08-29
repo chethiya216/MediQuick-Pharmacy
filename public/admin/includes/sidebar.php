@@ -24,7 +24,7 @@
       </a>
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="prescription-manage.php" class="menu-link">
+          <a href="../admin/manage-prescriptions.php" class="menu-link">
             <div data-i18n="Manage">Manage Prescription</div>
           </a>
         </li>
