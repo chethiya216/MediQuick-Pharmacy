@@ -16,31 +16,18 @@ require_once __DIR__ . '/../../includes/db.php';
 // Fetch products with their category and supplier details
 $sql = "
     SELECT 
-        p.product_id,
-        p.product_name,
-        c.category_name,
-        latest_supplier.supplier_name,
-        p.unit_price,
-        p.requires_prescription,
-        p.status
-    FROM products p
-    LEFT JOIN categories c ON p.category_id = c.category_id
-    LEFT JOIN (
-        SELECT
-            poi.product_id,
-            s.name AS supplier_name,
-            po.order_date,
-            ROW_NUMBER() OVER (
-                PARTITION BY poi.product_id
-                ORDER BY po.order_date DESC
-            ) AS rn
-        FROM purchase_order_items poi
-        JOIN purchase_orders po ON poi.po_id = po.po_id
-        JOIN suppliers s ON po.supplier_id = s.supplier_id
-    ) latest_supplier
-        ON latest_supplier.product_id = p.product_id
-        AND latest_supplier.rn = 1
-    ORDER BY p.product_id DESC
+    p.product_id,
+    p.product_name,
+    p.product_image,
+    p.sku,
+    p.created_at,
+    c.category_name,
+    p.unit_price,
+    p.requires_prescription,
+    p.status
+FROM products p
+LEFT JOIN categories c ON p.category_id = c.category_id
+ORDER BY p.product_id DESC;
 ";
 
 $result = mysqli_query($conn, $sql);
@@ -53,6 +40,7 @@ if (!$result) {
 }
 
 $pageTitle = "Product Management - MediQuick";
+
 ?>
 
 <!DOCTYPE html>
@@ -112,12 +100,13 @@ $pageTitle = "Product Management - MediQuick";
                                 <thead>
                                     <tr>
                                         <th>Product ID</th>
+                                        <th>Product Image</th>
                                         <th>Product Name</th>
                                         <th>SKU</th>
                                         <th>Category</th>
-                                        <th>Supplier</th>
                                         <th>Price</th>
                                         <th>Status</th>
+                                        <th>Created At</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -138,6 +127,17 @@ $pageTitle = "Product Management - MediQuick";
                                                 </strong>
                                             </td>
 
+                                           <td>
+                                                <?php if (!empty($row['product_image'])): ?>
+                                                    <img src="../<?= htmlspecialchars($row['product_image']); ?>" 
+                                                        alt="Product Image" 
+                                                        class="img-thumbnail" 
+                                                        style="width: 150px; height: 100px; object-fit: cover;">
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary">No Image</span>
+                                                <?php endif; ?>
+                                            </td>
+
                                             <!-- PRODUCT NAME -->
                                             <td>
                                                 <strong>
@@ -156,9 +156,9 @@ $pageTitle = "Product Management - MediQuick";
                                             </td>
 
                                             <!-- SUPPLIER -->
-                                            <td>
+                                            <!-- <td>
                                                 <?= htmlspecialchars($row['supplier_name'] ?? 'N/A'); ?>
-                                            </td>
+                                            </td> -->
 
                                             <!-- PRICE -->
                                             <td>
@@ -186,6 +186,10 @@ $pageTitle = "Product Management - MediQuick";
                                                 </span>
                                             </td>
 
+                                            <td>
+                                                <?= htmlspecialchars($row['created_at'] ?? 'N/A'); ?>
+                                            </td>
+
                                             <!-- ACTIONS -->
                                             <td>
                                                 <div class="dropdown">
@@ -193,7 +197,7 @@ $pageTitle = "Product Management - MediQuick";
                                                         <i class="bx bx-dots-vertical-rounded"></i>
                                                     </button>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="product-edit.php?id=<?= $row['product_id']; ?>">
+                                                        <a class="dropdown-item" href="add-products.php?id=<?= $row['product_id']; ?>">
                                                             <i class="bx bx-edit-alt me-1"></i> Edit
                                                         </a>
                                                         <a class="dropdown-item text-danger" href="product-delete.php?id=<?= $row['product_id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');">
@@ -221,10 +225,39 @@ $pageTitle = "Product Management - MediQuick";
                                 </tbody>
 
                             </table>
+                            
                         </div>
-
+                        
                     </div>
-
+                                    <nav aria-label="Page navigation" class="mt-4">
+                                <ul class="pagination justify-content-center">
+                                    <li class="page-item prev">
+                                    <a class="page-link" href="javascript:void(0);"
+                                        ><i class="tf-icon bx bx-chevrons-left"></i
+                                    ></a>
+                                    </li>
+                                    <li class="page-item">
+                                    <a class="page-link" href="javascript:void(0);">1</a>
+                                    </li>
+                                    <li class="page-item">
+                                    <a class="page-link" href="javascript:void(0);">2</a>
+                                    </li>
+                                    <li class="page-item active">
+                                    <a class="page-link" href="javascript:void(0);">3</a>
+                                    </li>
+                                    <li class="page-item">
+                                    <a class="page-link" href="javascript:void(0);">4</a>
+                                    </li>
+                                    <li class="page-item">
+                                    <a class="page-link" href="javascript:void(0);">5</a>
+                                    </li>
+                                    <li class="page-item next">
+                                    <a class="page-link" href="javascript:void(0);"
+                                        ><i class="tf-icon bx bx-chevrons-right"></i
+                                    ></a>
+                                    </li>
+                                </ul>
+                            </nav>
                 </div>
 
                 <!-- FOOTER -->
