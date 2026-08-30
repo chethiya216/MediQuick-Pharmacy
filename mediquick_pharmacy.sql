@@ -634,6 +634,7 @@ INSERT INTO `products` (
 --
 
 DROP TABLE IF EXISTS `product_batches`;
+
 CREATE TABLE `product_batches` (
   `batch_id` INT AUTO_INCREMENT PRIMARY KEY,
   `product_id` INT NOT NULL,
@@ -641,17 +642,31 @@ CREATE TABLE `product_batches` (
   `batch_number` VARCHAR(100) NOT NULL,
   `initial_quantity` INT NOT NULL DEFAULT 0,
   `quantity_on_hand` INT NOT NULL DEFAULT 0,
-  `purchase_price` DECIMAL(10,2) DEFAULT '0.00',
+  `purchase_price` DECIMAL(10,2) DEFAULT 0.00,
   `selling_price` DECIMAL(10,2) DEFAULT NULL,
   `manufacture_date` DATE DEFAULT NULL,
   `expiry_date` DATE NOT NULL,
   `received_date` DATE NOT NULL,
-  `status` ENUM('active', 'expired', 'recalled', 'depleted') DEFAULT 'active',
+  `invoice_file` VARCHAR(255) DEFAULT NULL,
+  `status` ENUM(
+    'active',
+    'expired',
+    'recalled',
+    'depleted'
+  ) DEFAULT 'active',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (`product_id`) REFERENCES `products`(`product_id`) ON DELETE CASCADE,
-  FOREIGN KEY (`supplier_id`) REFERENCES `suppliers`(`supplier_id`) ON DELETE SET NULL
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (`product_id`)
+    REFERENCES `products`(`product_id`)
+    ON DELETE CASCADE,
+
+  FOREIGN KEY (`supplier_id`)
+    REFERENCES `suppliers`(`supplier_id`)
+    ON DELETE SET NULL
 );
+
 
 --
 -- Dumping data for table `product_batches`
