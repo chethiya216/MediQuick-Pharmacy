@@ -163,22 +163,20 @@
       </ul>
     </li>
 
-    <li class="menu-item">
-      <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-credit-card"></i>
-        <div data-i18n="Payments">Payments</div>
-      </a>
+<li class="menu-item">
+    <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons bx bx-capsule"></i>
+        <div data-i18n="Orders">Orders</div>
+    </a>
 
-      <ul class="menu-sub">
+    <ul class="menu-sub">
         <li class="menu-item">
-          <a href="show-payments.php" class="menu-link">
-            <div data-i18n="Payment Management">
-              Payment Management
-            </div>
-          </a>
+            <a href="manage-order.php" class="menu-link">
+                <div data-i18n="Manage">Manage Orders</div>
+            </a>
         </li>
-      </ul>
-    </li>
+    </ul>
+</li>
 
     <li class="menu-item menu-logout">
       <a href="create-staff.php" class="menu-link">
