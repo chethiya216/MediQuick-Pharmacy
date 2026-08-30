@@ -129,8 +129,8 @@
 
     <ul class="menu-sub">
         <li class="menu-item">
-            <a href="/GitHub/MediQuick-Pharmacy/public/admin/manage-order.php" class="menu-link">
-                <div data-i18n="Manage">Manage-Orders</div>
+            <a href="manage-order.php" class="menu-link">
+                <div data-i18n="Manage">Manage Orders</div>
             </a>
         </li>
     </ul>
