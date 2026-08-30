@@ -98,7 +98,7 @@ function getPageUrl($pageNumber, $queryParams) {
                     <!-- PAGE TITLE -->
                     <div class="d-flex justify-content-between align-items-center py-3 mb-4">
                         <h4 class="fw-bold m-0">
-                            <span class="text-muted fw-light">Prescriptions /</span> Prescription Management
+                            <span class="text-muted fw-light">Prescriptions /</span>Manage Prescriptions
                         </h4>
                     </div>
 
