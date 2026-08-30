@@ -27,13 +27,13 @@
 
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="../admin/manage-prescriptions.php" class="menu-link">
+          <a href="manage-prescriptions.php" class="menu-link">
             <div data-i18n="Manage">Manage Prescription</div>
           </a>
         </li>
 
         <li class="menu-item">
-          <a href="../admin/verify-prescriptions.php" class="menu-link">
+          <a href="verify-prescriptions.php" class="menu-link">
             <div data-i18n="Verify">Verify Prescription</div>
           </a>
         </li>
@@ -69,13 +69,13 @@
 
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="../admin/manage-categories.php" class="menu-link">
+          <a href="manage-categories.php" class="menu-link">
             <div data-i18n="Manage">Manage Categories</div>
           </a>
         </li>
 
         <li class="menu-item">
-          <a href="../admin/add-categories.php" class="menu-link">
+          <a href="add-categories.php" class="menu-link">
             <div data-i18n="Add">Add Categories</div>
           </a>
         </li>
@@ -90,13 +90,13 @@
 
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="../admin/manage-suppliers.php" class="menu-link">
+          <a href="manage-suppliers.php" class="menu-link">
             <div data-i18n="Manage">Manage Suppliers</div>
           </a>
         </li>
 
         <li class="menu-item">
-          <a href="../admin/add-suppliers.php" class="menu-link">
+          <a href="add-suppliers.php" class="menu-link">
             <div data-i18n="Add">Add Suppliers</div>
           </a>
         </li>
@@ -118,65 +118,80 @@
       </ul>
     </li>
 
-   <<li class="menu-item">
-    <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-package"></i>
-        <div data-i18n="Product Batches">
-            Product Batches
-        </div>
-    </a>
-
-    <ul class="menu-sub">
-
-        <li class="menu-item">
-            <a href="manage-batch.php" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-list-ul"></i>
-                <div data-i18n="Manage Product Batches">
-                    Manage Product Batches
-                </div>
-            </a>
-        </li>
-
-        <li class="menu-item">
-            <a href="add-product-batch.php" class="menu-link">
-                <i class="menu-icon tf-icons bx bx-plus"></i>
-                <div data-i18n="Add Product Batch">
-                    Add Product Batch
-                </div>
-            </a>
-        </li>
-
-    </ul>
-</li>
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-cart"></i>
-        <div data-i18n="Orders">Orders</div>
+        <i class="menu-icon tf-icons bx bx-package"></i>
+        <div data-i18n="Product Batches">
+          Product Batches
+        </div>
       </a>
 
       <ul class="menu-sub">
+
         <li class="menu-item">
-          <a href="product-manage.php" class="menu-link">
-            <div data-i18n="Manage">Manage Orders</div>
+          <a href="manage-batch.php" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-list-ul"></i>
+            <div data-i18n="Manage Product Batches">
+              Manage Product Batches
+            </div>
           </a>
         </li>
+
+        <li class="menu-item">
+          <a href="add-product-batch.php" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-plus"></i>
+            <div data-i18n="Add Product Batch">
+              Add Product Batch
+            </div>
+          </a>
+        </li>
+
       </ul>
     </li>
 
-<li class="menu-item">
-    <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-capsule"></i>
-        <div data-i18n="Orders">Orders</div>
-    </a>
+    <li class="menu-item">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons bx bx-cart"></i>
+        <div data-i18n="Orders">
+          Orders
+        </div>
+      </a>
 
-    <ul class="menu-sub">
+      <ul class="menu-sub">
+
         <li class="menu-item">
-            <a href="manage-order.php" class="menu-link">
-                <div data-i18n="Manage">Manage Orders</div>
-            </a>
+          <a href="manage-order.php" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-list-ul"></i>
+            <div data-i18n="Manage Orders">
+              Manage Orders
+            </div>
+          </a>
         </li>
-    </ul>
-</li>
+
+      </ul>
+    </li>
+
+    <li class="menu-item">
+      <a href="javascript:void(0);" class="menu-link menu-toggle">
+        <i class="menu-icon tf-icons bx bx-credit-card"></i>
+        <div data-i18n="Payments">
+          Payments
+        </div>
+      </a>
+
+      <ul class="menu-sub">
+
+        <li class="menu-item">
+          <a href="show-payments.php" class="menu-link">
+            <i class="menu-icon tf-icons bx bx-money"></i>
+            <div data-i18n="Payment Management">
+              Payment Management
+            </div>
+          </a>
+        </li>
+
+      </ul>
+    </li>
 
     <li class="menu-item menu-logout">
       <a href="create-staff.php" class="menu-link">
