@@ -113,6 +113,7 @@ CREATE TABLE IF NOT EXISTS `categories` (
   `category_id` int NOT NULL AUTO_INCREMENT,
   `category_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` text COLLATE utf8mb4_unicode_ci,
+  `status` ENUM('active', 'inactive') NOT NULL DEFAULT 'active',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`category_id`)
@@ -347,6 +348,7 @@ CREATE TABLE IF NOT EXISTS `prescriptions` (
   `verified_date` timestamp NULL DEFAULT NULL,
   `rejection_reason` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` enum('pending','verified','rejected') COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`prescription_id`),
   KEY `fk_presc_staff` (`staff_id`),
@@ -423,45 +425,208 @@ INSERT INTO `prescription_items` (`prescription_item_id`, `prescription_id`, `pr
 
 DROP TABLE IF EXISTS `products`;
 CREATE TABLE IF NOT EXISTS `products` (
-  `product_id` int NOT NULL AUTO_INCREMENT,
-  `product_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci,
-  `sku` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `category_id` int DEFAULT NULL,
-  `dosage_form` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `strength` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `unit_price` decimal(10,2) NOT NULL,
-  `requires_prescription` tinyint(1) DEFAULT '0',
-  `reorder_level` int DEFAULT '10',
-  `status` enum('active','discontinued','out_of_stock') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`product_id`),
-  UNIQUE KEY `sku` (`sku`),
-  KEY `idx_products_category` (`category_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+  `product_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `product_name` VARCHAR(255) NOT NULL,
+  `generic_name` VARCHAR(255) DEFAULT NULL,
+  `description` TEXT DEFAULT NULL,
+  `sku` VARCHAR(100) NOT NULL UNIQUE,
+  `barcode` VARCHAR(100) DEFAULT NULL,
+  `category_id` INT DEFAULT NULL,
+  `dosage_form` VARCHAR(50) NOT NULL,
+  `strength` VARCHAR(50) DEFAULT NULL,
+  `unit_price` DECIMAL(10,2) NOT NULL DEFAULT '0.00',
+  `discount_percent` DECIMAL(5,2) DEFAULT '0.00',
+  `requires_prescription` TINYINT(1) DEFAULT 0,
+  `reorder_level` INT DEFAULT 0,
+  `product_image` VARCHAR(255) DEFAULT NULL,
+  `status` ENUM('active', 'draft', 'archived') DEFAULT 'active',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
 
+  -- Sole Foreign Key
+  CONSTRAINT `fk_products_category` 
+    FOREIGN KEY (`category_id`) REFERENCES `categories` (`category_id`) 
+    ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 --
 -- Dumping data for table `products`
 --
-
-INSERT INTO `products` (`product_id`, `product_name`, `description`, `sku`, `category_id`, `dosage_form`, `strength`, `unit_price`, `requires_prescription`, `reorder_level`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Amoxicillin', 'Broad-spectrum penicillin antibiotic', 'MED-AMX-500', 2, 'capsule', '500mg', 15.50, 1, 20, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(2, 'Ibuprofen', 'Nonsteroidal anti-inflammatory drug', 'MED-IBU-400', 1, 'tablet', '400mg', 8.99, 0, 50, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(3, 'Lisinopril', 'ACE inhibitor for high blood pressure', 'MED-LIS-010', 3, 'tablet', '10mg', 12.00, 1, 15, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(4, 'Multivitamin Complex', 'Daily essential dietary supplement', 'MED-VIT-100', 4, 'tablet', '1000mg', 19.95, 0, 30, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(5, 'Cetirizine HCI', '24-hour allergy relief', 'MED-CET-010', 5, 'tablet', '10mg', 14.25, 0, 25, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(6, 'Omeprazole', 'Proton pump inhibitor for acid reflux', 'MED-OME-020', 6, 'capsule', '20mg', 18.00, 0, 20, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(7, 'Hydrocortisone Cream', 'Topical anti-itch anti-inflammatory', 'MED-HYD-001', 7, 'cream', '1%', 6.50, 0, 15, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(8, 'Metformin HCI', 'Oral diabetes medication', 'MED-MET-500', 8, 'tablet', '500mg', 11.75, 1, 30, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(9, 'Sertraline HCI', 'SSRI antidepressant', 'MED-SER-050', 9, 'tablet', '50mg', 22.00, 1, 10, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(10, 'Antibiotic Ointment', 'First aid infection protection', 'MED-NEO-001', 10, 'ointment', '15g', 5.25, 0, 40, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(11, 'Artificial Tears', 'Lubricant eye drops', 'MED-EYE-015', 11, 'drops', '15ml', 9.50, 0, 20, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(12, 'Prenatal Multivitamin', 'Comprehensive support during pregnancy', 'MED-PRE-060', 12, 'softgel', '60 ct', 24.99, 0, 15, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(13, 'Medicated Mouthwash', 'Antiseptic oral rinse', 'MED-ORA-500', 13, 'liquid', '500ml', 7.99, 0, 25, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(14, 'Cough Syrup DM', 'Expectorant and cough suppressant', 'MED-COU-120', 14, 'syrup', '120ml', 10.49, 0, 30, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(15, 'Levothyroxine', 'Synthetic thyroid hormone replacement', 'MED-LEV-050', 15, 'tablet', '50mcg', 16.80, 1, 20, 'active', '2026-08-27 16:23:47', '2026-08-27 16:23:47');
-
+INSERT INTO `products` (
+    `product_name`, 
+    `generic_name`, 
+    `description`, 
+    `sku`, 
+    `barcode`, 
+    `category_id`, 
+    `dosage_form`, 
+    `strength`, 
+    `unit_price`, 
+    `discount_percent`, 
+    `requires_prescription`, 
+    `reorder_level`, 
+    `product_image`, 
+    `status`
+) VALUES
+(
+    'Panadol Extra', 
+    'Paracetamol / Caffeine', 
+    'Fast and effective relief for severe headache, toothache, and joint pain.', 
+    'PAN-EXT-500', 
+    '8901234567011', 
+    1, 
+    'tablet', 
+    '500mg / 65mg', 
+    15.00, 
+    0.00, 
+    0, 
+    100, 
+    'uploads/products/panadol-extra.jpg', 
+    'active'
+),
+(
+    'Amoxil', 
+    'Amoxicillin', 
+    'Broad-spectrum antibiotic used to treat bacterial infections of the chest, ears, and throat.', 
+    'AMX-CAP-250', 
+    '8901234567028', 
+    2, 
+    'capsule', 
+    '250mg', 
+    45.50, 
+    5.00, 
+    1, 
+    50, 
+    'uploads/products/amoxil-250.jpg', 
+    'active'
+),
+(
+    'Neurobion Forte', 
+    'Vitamin B1, B6, B12', 
+    'Vitamin B-complex supplement to support nerve health and energy metabolism.', 
+    'NEU-FOR-100', 
+    '8901234567035', 
+    3, 
+    'tablet', 
+    '100mg', 
+    22.00, 
+    0.00, 
+    0, 
+    30, 
+    'uploads/products/neurobion.jpg', 
+    'active'
+),
+(
+    'Cetaphil Gentle Cleanser', 
+    'Cetyl / Stearyl Alcohol', 
+    'Dermatologist recommended daily soothing cleanser for sensitive and dry skin.', 
+    'CET-CLN-250ML', 
+    '8901234567042', 
+    4, 
+    'cream', 
+    '250ml', 
+    1250.00, 
+    10.00, 
+    0, 
+    15, 
+    'uploads/products/cetaphil-cleanser.jpg', 
+    'active'
+),
+(
+    'Augmentin 625 Duo', 
+    'Amoxicillin / Clavulanate Potassium', 
+    'High-potency antibacterial combination for severe respiratory and skin infections.', 
+    'AUG-TAB-625', 
+    '8901234567059', 
+    2, 
+    'tablet', 
+    '625mg', 
+    120.00, 
+    0.00, 
+    1, 
+    40, 
+    'uploads/products/augmentin-625.jpg', 
+    'active'
+),
+(
+    'Benadryl Cough Syrup', 
+    'Diphenhydramine HCl', 
+    'Provides effective relief from dry cough, chest congestion, and allergy symptoms.', 
+    'BEN-SYR-100ML', 
+    '8901234567066', 
+    1, 
+    'syrup', 
+    '100ml', 
+    185.00, 
+    2.50, 
+    0, 
+    25, 
+    'uploads/products/benadryl-syrup.jpg', 
+    'active'
+),
+(
+    'Seven Seas Cod Liver Oil', 
+    'Omega-3 / Vitamin A & D', 
+    'Daily dietary supplement rich in Omega-3 fatty acids for heart and brain development.', 
+    'SEV-CAP-500', 
+    '8901234567073', 
+    3, 
+    'capsule', 
+    '500mg', 
+    850.00, 
+    0.00, 
+    0, 
+    20, 
+    'uploads/products/seven-seas.jpg', 
+    'active'
+),
+(
+    'Voltaren Emulgel', 
+    'Diclofenac Diethylamine', 
+    'Topical anti-inflammatory gel for targeted relief from muscle pain and joint inflammation.', 
+    'VOL-GEL-50G', 
+    '8901234567080', 
+    1, 
+    'cream', 
+    '50g', 
+    340.00, 
+    5.00, 
+    0, 
+    15, 
+    'uploads/products/voltaren-gel.jpg', 
+    'active'
+),
+(
+    'Insulin Humalog', 
+    'Insulin Lispro', 
+    'Fast-acting human insulin analog used to control high blood sugar in patients with diabetes.', 
+    'INS-INJ-100U', 
+    '8901234567097', 
+    1, 
+    'injection', 
+    '100 IU/ml', 
+    1450.00, 
+    0.00, 
+    1, 
+    10, 
+    'uploads/products/humalog-injection.jpg', 
+    'draft'
+),
+(
+    'Disprin Soluble', 
+    'Aspirin', 
+    'Fast-dissolving aspirin tablets for immediate relief of migraine and fever.', 
+    'DIS-SOL-300', 
+    '8901234567103', 
+    1, 
+    'tablet', 
+    '300mg', 
+    8.00, 
+    0.00, 
+    0, 
+    150, 
+    'uploads/products/disprin.jpg', 
+    'active'
+);
 -- --------------------------------------------------------
 
 --
@@ -469,40 +634,87 @@ INSERT INTO `products` (`product_id`, `product_name`, `description`, `sku`, `cat
 --
 
 DROP TABLE IF EXISTS `product_batches`;
-CREATE TABLE IF NOT EXISTS `product_batches` (
-  `batch_id` int NOT NULL AUTO_INCREMENT,
-  `product_id` int NOT NULL,
-  `batch_number` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `quantity_on_hand` int NOT NULL DEFAULT '0',
-  `expiry_date` date NOT NULL,
-  `received_date` date NOT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  PRIMARY KEY (`batch_id`),
-  KEY `idx_batches_product` (`product_id`),
-  KEY `idx_batches_expiry` (`expiry_date`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE `product_batches` (
+  `batch_id` INT AUTO_INCREMENT PRIMARY KEY,
+  `product_id` INT NOT NULL,
+  `supplier_id` INT DEFAULT NULL,
+  `batch_number` VARCHAR(100) NOT NULL,
+  `initial_quantity` INT NOT NULL DEFAULT 0,
+  `quantity_on_hand` INT NOT NULL DEFAULT 0,
+  `purchase_price` DECIMAL(10,2) DEFAULT 0.00,
+  `selling_price` DECIMAL(10,2) DEFAULT NULL,
+  `manufacture_date` DATE DEFAULT NULL,
+  `expiry_date` DATE NOT NULL,
+  `received_date` DATE NOT NULL,
+  `invoice_file` VARCHAR(255) DEFAULT NULL,
+  `status` ENUM(
+    'active',
+    'expired',
+    'recalled',
+    'depleted'
+  ) DEFAULT 'active',
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    ON UPDATE CURRENT_TIMESTAMP,
+
+  FOREIGN KEY (`product_id`)
+    REFERENCES `products`(`product_id`)
+    ON DELETE CASCADE,
+
+  FOREIGN KEY (`supplier_id`)
+    REFERENCES `suppliers`(`supplier_id`)
+    ON DELETE SET NULL
+);
+
 
 --
 -- Dumping data for table `product_batches`
 --
 
-INSERT INTO `product_batches` (`batch_id`, `product_id`, `batch_number`, `quantity_on_hand`, `expiry_date`, `received_date`, `created_at`, `updated_at`) VALUES
-(1, 1, 'BAT-AMX-2024A', 150, '2026-06-30', '2024-01-10', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(2, 1, 'BAT-AMX-2024B', 200, '2026-12-31', '2024-05-12', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(3, 2, 'BAT-IBU-2024A', 500, '2027-01-15', '2024-02-01', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(4, 3, 'BAT-LIS-2024A', 100, '2026-04-20', '2024-03-15', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(5, 4, 'BAT-VIT-2024A', 300, '2027-08-10', '2024-01-20', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(6, 5, 'BAT-CET-2024A', 250, '2026-09-01', '2024-04-05', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(7, 6, 'BAT-OME-2024A', 180, '2026-11-30', '2024-02-18', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(8, 7, 'BAT-HYD-2024A', 80, '2025-12-31', '2024-03-01', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(9, 8, 'BAT-MET-2024A', 400, '2027-03-31', '2024-05-01', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(10, 9, 'BAT-SER-2024A', 90, '2026-05-15', '2024-04-10', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(11, 10, 'BAT-NEO-2024A', 350, '2027-02-28', '2024-01-25', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(12, 11, 'BAT-EYE-2024A', 120, '2025-10-15', '2024-02-28', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(13, 12, 'BAT-PRE-2024A', 160, '2026-08-20', '2024-03-22', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(14, 13, 'BAT-ORA-2024A', 220, '2027-04-30', '2024-04-18', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
-(15, 14, 'BAT-COU-2024A', 270, '2026-07-31', '2024-05-05', '2026-08-27 16:23:47', '2026-08-27 16:23:47');
+INSERT INTO `product_batches` (
+    `product_id`,
+    `supplier_id`,
+    `batch_number`,
+    `initial_quantity`,
+    `quantity_on_hand`,
+    `purchase_price`,
+    `selling_price`,
+    `manufacture_date`,
+    `expiry_date`,
+    `received_date`,
+    `status`
+) VALUES
+-- Batches for Panadol Extra (Product ID: 1)
+(1, 1, 'BN-PAN-2025-01', 500, 320, 9.50, 15.00, '2025-01-10', '2027-01-10', '2025-01-20', 'active'),
+(1, 2, 'BN-PAN-2025-02', 500, 500, 9.80, 15.00, '2025-03-01', '2027-03-01', '2025-03-15', 'active'),
+
+-- Batch for Amoxil (Product ID: 2)
+(2, 2, 'BN-AMX-2024-09', 200, 85, 30.00, 45.50, '2024-09-01', '2026-09-01', '2024-09-10', 'active'),
+
+-- Batch for Neurobion Forte (Product ID: 3)
+(3, 3, 'BN-NEU-2025-04', 150, 110, 14.00, 22.00, '2025-04-12', '2027-04-12', '2025-04-25', 'active'),
+
+-- Batch for Cetaphil Gentle Cleanser (Product ID: 4)
+(4, 1, 'BN-CET-2025-02', 50, 28, 900.00, 1250.00, '2025-02-01', '2028-02-01', '2025-02-20', 'active'),
+
+-- Batch for Augmentin 625 Duo (Product ID: 5)
+(5, 2, 'BN-AUG-2024-11', 100, 42, 85.00, 120.00, '2024-11-05', '2026-11-05', '2024-11-18', 'active'),
+
+-- Batch for Benadryl Cough Syrup (Product ID: 6)
+(6, 3, 'BN-BEN-2025-05', 80, 60, 130.00, 185.00, '2025-05-01', '2027-05-01', '2025-05-10', 'active'),
+
+-- Batch for Seven Seas Cod Liver Oil (Product ID: 7)
+(7, 1, 'BN-SEV-2024-06', 60, 0, 600.00, 850.00, '2024-06-01', '2026-06-01', '2024-06-15', 'depleted'),
+
+-- Batch for Voltaren Emulgel (Product ID: 8)
+(8, 3, 'BN-VOL-2025-01', 40, 18, 230.00, 340.00, '2025-01-15', '2027-01-15', '2025-02-01', 'active'),
+
+-- Batch for Insulin Humalog (Product ID: 9)
+(9, 2, 'BN-INS-2025-06', 30, 30, 1050.00, 1450.00, '2025-06-01', '2026-12-01', '2025-06-10', 'active'),
+
+-- Expired Batch Example for Disprin Soluble (Product ID: 10)
+(10, 1, 'BN-DIS-2023-01', 300, 45, 5.00, 8.00, '2023-01-01', '2025-01-01', '2023-01-15', 'expired');
 
 -- --------------------------------------------------------
 

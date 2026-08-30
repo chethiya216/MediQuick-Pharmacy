@@ -9,7 +9,7 @@ requireLogin();
 
 require_once __DIR__ . '/../../includes/db.php';
 
-$pageTitle = "Product Management - MediQuick";
+$pageTitle = "Prescription Management - MediQuick";
 
 /*
 |--------------------------------------------------------------------------
@@ -24,39 +24,39 @@ $offset = ($page - 1) * $limit;
 // Preserve existing search or filter parameters in pagination links
 $queryParams = $_GET;
 
-// 1. Get total number of products
-$countSql = "SELECT COUNT(*) AS total FROM products";
+// 1. Get total number of prescriptions
+$countSql = "SELECT COUNT(*) AS total FROM prescriptions";
 $countResult = $conn->query($countSql);
-$totalProducts = $countResult->fetch_assoc()['total'] ?? 0;
+$totalPrescriptions = $countResult->fetch_assoc()['total'] ?? 0;
 
-$totalPages = ceil($totalProducts / $limit);
+$totalPages = ceil($totalPrescriptions / $limit);
 if ($totalPages < 1) { $totalPages = 1; }
 if ($page > $totalPages) { $page = $totalPages; }
 
-// 2. Fetch paginated products with category details
+// 2. Fetch paginated prescriptions with user/patient details
 $sql = "
     SELECT 
-        p.product_id,
-        p.product_name,
-        p.product_image,
-        p.sku,
-        p.created_at,
-        c.category_name,
-        p.unit_price,
-        p.requires_prescription,
-        p.status
-    FROM products p
-    LEFT JOIN categories c ON p.category_id = c.category_id
-    ORDER BY p.product_id DESC
+        pr.prescription_id,
+        pr.staff_id,
+        pr.file_path,
+        pr.rejection_reason,
+        pr.status,
+        pr.created_at,
+        s.first_name,
+        s.last_name,
+        s.email
+    FROM prescriptions pr
+    LEFT JOIN staff s ON pr.staff_id = s.staff_id
+    ORDER BY pr.prescription_id DESC
     LIMIT ? OFFSET ?
 ";
 
 $stmt = $conn->prepare($sql);
 $stmt->bind_param("ii", $limit, $offset);
 $stmt->execute();
-$productsResult = $stmt->get_result();
+$prescriptionsResult = $stmt->get_result();
 
-// Function to generate page URLs while retaining existing search/filter query parameters
+// Function to generate page URLs while retaining existing query parameters
 function getPageUrl($pageNumber, $queryParams) {
     $queryParams['page'] = $pageNumber;
     return '?' . http_build_query($queryParams);
@@ -98,19 +98,16 @@ function getPageUrl($pageNumber, $queryParams) {
                     <!-- PAGE TITLE -->
                     <div class="d-flex justify-content-between align-items-center py-3 mb-4">
                         <h4 class="fw-bold m-0">
-                            <span class="text-muted fw-light">Products /</span> Product Management
+                            <span class="text-muted fw-light">Prescriptions /</span>Manage Prescriptions
                         </h4>
-                        <a href="add-products.php" class="btn btn-primary">
-                            <i class="bx bx-plus me-1"></i> Add New Product
-                        </a>
                     </div>
 
-                    <!-- PRODUCT CARD -->
+                    <!-- PRESCRIPTION CARD -->
                     <div class="card">
 
                         <!-- CARD HEADER -->
                         <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">All Products</h5>
+                            <h5 class="mb-0">All Prescriptions</h5>
                         </div>
 
                         <!-- TABLE -->
@@ -120,14 +117,12 @@ function getPageUrl($pageNumber, $queryParams) {
                                 <!-- TABLE HEADER -->
                                 <thead>
                                     <tr>
-                                        <th>Product ID</th>
-                                        <th>Product Image</th>
-                                        <th>Product Name</th>
-                                        <th>SKU</th>
-                                        <th>Category</th>
-                                        <th>Price</th>
+                                        <th>Rx ID</th>
+                                        <th>Prescription Image</th>
+                                        <th>Patient Name</th>
+                                        <th>Contact</th>
                                         <th>Status</th>
-                                        <th>Created At</th>
+                                        <th>Submitted At</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
@@ -135,71 +130,64 @@ function getPageUrl($pageNumber, $queryParams) {
                                 <!-- TABLE BODY -->
                                 <tbody class="table-border-bottom-0">
 
-                                <?php if ($productsResult && $productsResult->num_rows > 0): ?>
+                                <?php if ($prescriptionsResult && $prescriptionsResult->num_rows > 0): ?>
 
-                                    <?php while ($row = $productsResult->fetch_assoc()): ?>
+                                    <?php while ($row = $prescriptionsResult->fetch_assoc()): ?>
 
                                         <tr>
 
-                                            <!-- PRODUCT ID -->
+                                            <!-- PRESCRIPTION ID -->
                                             <td>
                                                 <strong>
-                                                    #<?= htmlspecialchars($row['product_id']); ?>
+                                                    #<?= htmlspecialchars($row['prescription_id']); ?>
                                                 </strong>
                                             </td>
 
-                                            <!-- PRODUCT IMAGE -->
+                                            <!-- PRESCRIPTION IMAGE -->
                                             <td>
-                                                <?php if (!empty($row['product_image'])): ?>
-                                                    <img src="../<?= htmlspecialchars($row['product_image']); ?>" 
-                                                        alt="Product Image" 
-                                                        class="img-thumbnail" 
-                                                        style="width: 150px; height: 100px; object-fit: cover;">
+                                                <?php if (!empty($row['file_path'])): ?>
+                                                    <a href="../<?= htmlspecialchars($row['file_path']); ?>" target="_blank">
+                                                        <img src="../<?= htmlspecialchars($row['file_path']); ?>" 
+                                                            alt="Prescription Image" 
+                                                            class="img-thumbnail" 
+                                                            style="width: 100px; height: 75px; object-fit: cover;">
+                                                    </a>
                                                 <?php else: ?>
                                                     <span class="badge bg-secondary">No Image</span>
                                                 <?php endif; ?>
                                             </td>
 
-                                            <!-- PRODUCT NAME -->
+                                            <!-- PATIENT NAME -->
                                             <td>
                                                 <strong>
-                                                    <?= htmlspecialchars($row['product_name']); ?>
+                                                    <?= htmlspecialchars(($row['first_name'] ?? 'Guest') . ' ' . ($row['last_name'] ?? '')); ?>
                                                 </strong>
                                             </td>
 
-                                            <!-- SKU -->
+                                            <!-- CONTACT -->
                                             <td>
-                                                <code><?= htmlspecialchars($row['sku'] ?? 'N/A'); ?></code>
-                                            </td>
-
-                                            <!-- CATEGORY -->
-                                            <td>
-                                                <?= htmlspecialchars($row['category_name'] ?? 'Uncategorized'); ?>
-                                            </td>
-
-                                            <!-- PRICE -->
-                                            <td>
-                                                Rs. <?= number_format((float) $row['unit_price'], 2); ?>
+                                                <small class="d-block"><?= htmlspecialchars($row['email'] ?? 'N/A'); ?></small>
+                                                <small class="text-muted"><?= htmlspecialchars($row['phone'] ?? ''); ?></small>
                                             </td>
 
                                             <!-- STATUS -->
                                             <td>
                                                 <?php
-                                                $status = strtolower(trim($row['status'] ?? ''));
+                                                $status = strtolower(trim($row['status'] ?? 'pending'));
 
-                                                if ($status === 'active' || $status === 'available') {
+                                                if ($status === 'approved' || $status === 'fulfilled') {
                                                     $badge = 'bg-label-success';
-                                                } elseif ($status === 'discontinued' || $status === 'out_of_stock') {
+                                                } elseif ($status === 'rejected' || $status === 'cancelled') {
                                                     $badge = 'bg-label-danger';
-                                                } elseif ($status === 'draft' || $status === 'pending') {
+                                                } elseif ($status === 'pending') {
                                                     $badge = 'bg-label-warning';
                                                 } else {
-                                                    $badge = 'bg-label-secondary';
+                                                    $badge = 'bg-label-info';
                                                 }
                                                 ?>
 
                                                 <span class="badge <?= $badge; ?>">
-                                                    <?= htmlspecialchars(ucfirst($row['status'] ?? 'N/A')); ?>
+                                                    <?= htmlspecialchars(ucfirst($row['status'] ?? 'Pending')); ?>
                                                 </span>
                                             </td>
 
@@ -215,10 +203,10 @@ function getPageUrl($pageNumber, $queryParams) {
                                                         <i class="bx bx-dots-vertical-rounded"></i>
                                                     </button>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="add-products.php?id=<?= $row['product_id']; ?>">
-                                                            <i class="bx bx-edit-alt me-1"></i> Edit
+                                                        <a class="dropdown-item" href="verify-prescriptions.php?id=<?= $row['prescription_id']; ?>">
+                                                            <i class="bx bx-show me-1"></i> View / Process
                                                         </a>
-                                                        <a class="dropdown-item text-danger" href="product-delete.php?id=<?= $row['product_id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');">
+                                                        <a class="dropdown-item text-danger" href="prescription-delete.php?id=<?= $row['prescription_id']; ?>" onclick="return confirm('Are you sure you want to delete this prescription?');">
                                                             <i class="bx bx-trash me-1"></i> Delete
                                                         </a>
                                                     </div>
@@ -231,10 +219,10 @@ function getPageUrl($pageNumber, $queryParams) {
 
                                 <?php else: ?>
 
-                                    <!-- NO PRODUCTS FOUND -->
+                                    <!-- NO PRESCRIPTIONS FOUND -->
                                     <tr>
-                                        <td colspan="9" class="text-center">
-                                            No products found.
+                                        <td colspan="8" class="text-center">
+                                            No prescriptions found.
                                         </td>
                                     </tr>
 
