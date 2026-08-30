@@ -87,7 +87,7 @@ function getPageUrl($pageNumber, $queryParams) {
                         <h4 class="fw-bold m-0">
                             <span class="text-muted fw-light">Categories /</span> Category Management
                         </h4>
-                        <a href="add-products.php" class="btn btn-primary">
+                        <a href="add-categories.php" class="btn btn-primary">
                             <i class="bx bx-plus me-1"></i> Add New Category
                         </a>
                     </div>
@@ -109,7 +109,8 @@ function getPageUrl($pageNumber, $queryParams) {
                                     <tr>
                                         <th>Category ID</th>
                                         <th>Category Name</th>
-                                        <!-- <th>Created By</th> -->
+                                        <th>Status</th>
+                                        <th>Descrption</th>
                                         <th>Created At</th>
                                         <th>Actions</th>
                                     </tr>
@@ -138,6 +139,28 @@ function getPageUrl($pageNumber, $queryParams) {
                                                 </strong>
                                             </td>
 
+                                            <!-- STATUS -->
+                                            <td>
+                                                <?php
+                                                $status = strtolower(trim($row['status'] ?? ''));
+
+                                                if ($status === 'active') {
+                                                    $badge = 'bg-label-success';
+                                                } else {
+                                                    $badge = 'bg-label-danger';
+                                                }
+                                                ?>
+
+                                                <span class="badge <?= $badge; ?>">
+                                                     <?= htmlspecialchars(ucfirst($row['status'] ?? 'N/A')); ?>
+                                                </span>
+                                            </td>
+
+                                            <!-- DESCRIPTION -->
+                                            <td>
+                                                <?= htmlspecialchars($row['description'] ?? 'N/A'); ?>
+                                            </td>
+
                                             <!-- CREATED AT -->
                                             <td>
                                                 <?= htmlspecialchars($row['created_at'] ?? 'N/A'); ?>
@@ -150,8 +173,11 @@ function getPageUrl($pageNumber, $queryParams) {
                                                         <i class="bx bx-dots-vertical-rounded"></i>
                                                     </button>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="add-categories.php?id=<?= $row['category_id']; ?>">
+                                                        <!-- <a class="dropdown-item" href="add-categories.php?id=<?= $row['category_id']; ?>">
                                                             <i class="bx bx-edit-alt me-1"></i> Edit
+                                                        </a> -->
+                                                        <a href="add-categories.php?category_id=<?= $row['category_id']; ?>" class="dropdown-item">
+                                                           <i class="bx bx-edit-alt me-1"></i> Edit
                                                         </a>
                                                         <a class="dropdown-item text-danger" href="product-delete.php?id=<?= $row['category_id']; ?>" onclick="return confirm('Are you sure you want to delete this Category?');">
                                                             <i class="bx bx-trash me-1"></i> Delete
