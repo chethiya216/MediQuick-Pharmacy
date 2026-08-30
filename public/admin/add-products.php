@@ -24,7 +24,7 @@ if (isset($_GET['id']) && !empty($_GET['id'])) {
 }
 
 
-$sql_categories = "SELECT * FROM categories";
+$sql_categories = "SELECT * FROM categories WHERE status = 'active'";
 $categories = $conn->query($sql_categories);
 
 $sql_products = "SELECT * FROM products";
