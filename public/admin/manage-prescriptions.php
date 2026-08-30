@@ -121,7 +121,6 @@ function getPageUrl($pageNumber, $queryParams) {
                                         <th>Prescription Image</th>
                                         <th>Patient Name</th>
                                         <th>Contact</th>
-                                        <th>Notes</th>
                                         <th>Status</th>
                                         <th>Submitted At</th>
                                         <th>Actions</th>
@@ -146,9 +145,9 @@ function getPageUrl($pageNumber, $queryParams) {
 
                                             <!-- PRESCRIPTION IMAGE -->
                                             <td>
-                                                <?php if (!empty($row['prescription_image'])): ?>
-                                                    <a href="../<?= htmlspecialchars($row['prescription_image']); ?>" target="_blank">
-                                                        <img src="../<?= htmlspecialchars($row['prescription_image']); ?>" 
+                                                <?php if (!empty($row['file_path'])): ?>
+                                                    <a href="../<?= htmlspecialchars($row['file_path']); ?>" target="_blank">
+                                                        <img src="../<?= htmlspecialchars($row['file_path']); ?>" 
                                                             alt="Prescription Image" 
                                                             class="img-thumbnail" 
                                                             style="width: 100px; height: 75px; object-fit: cover;">
@@ -169,13 +168,6 @@ function getPageUrl($pageNumber, $queryParams) {
                                             <td>
                                                 <small class="d-block"><?= htmlspecialchars($row['email'] ?? 'N/A'); ?></small>
                                                 <small class="text-muted"><?= htmlspecialchars($row['phone'] ?? ''); ?></small>
-                                            </td>
-
-                                            <!-- NOTES -->
-                                            <td>
-                                                <span class="d-inline-block text-truncate" style="max-width: 180px;" title="<?= htmlspecialchars($row['notes'] ?? ''); ?>">
-                                                    <?= htmlspecialchars($row['notes'] ?? 'None'); ?>
-                                                </span>
                                             </td>
 
                                             <!-- STATUS -->
@@ -211,7 +203,7 @@ function getPageUrl($pageNumber, $queryParams) {
                                                         <i class="bx bx-dots-vertical-rounded"></i>
                                                     </button>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="process-prescription.php?id=<?= $row['prescription_id']; ?>">
+                                                        <a class="dropdown-item" href="verify-prescriptions.php?id=<?= $row['prescription_id']; ?>">
                                                             <i class="bx bx-show me-1"></i> View / Process
                                                         </a>
                                                         <a class="dropdown-item text-danger" href="prescription-delete.php?id=<?= $row['prescription_id']; ?>" onclick="return confirm('Are you sure you want to delete this prescription?');">
