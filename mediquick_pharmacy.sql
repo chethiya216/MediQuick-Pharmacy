@@ -347,6 +347,7 @@ CREATE TABLE IF NOT EXISTS `prescriptions` (
   `verified_date` timestamp NULL DEFAULT NULL,
   `rejection_reason` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` enum('pending','verified','rejected') COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`prescription_id`),
   KEY `fk_presc_staff` (`staff_id`),
