@@ -81,7 +81,7 @@
       </a>
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="product-manage.php" class="menu-link">
+          <a href="../admin/manage-suppliers.php" class="menu-link">
             <div data-i18n="Manage">Manage Suppliers</div>
           </a>
         </li>
