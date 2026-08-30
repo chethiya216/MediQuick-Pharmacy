@@ -82,4 +82,108 @@ function uploadProductImage(
         'filepath' => $relativePath,
         'error' => null
     ];
+}  
+
+function uploadInvoiceImage(
+    array $file,
+    string $subDir = 'invoices/',
+    int $maxSizeBytes = 2097152,
+    array $allowedMime = [
+        'image/jpeg' => 'jpg',
+        'image/png' => 'png',
+        'image/webp' => 'webp'
+    ]
+): array {
+
+    if (!defined('UPLOAD_BASE_PATH')) {
+        return [
+            'success' => false,
+            'filepath' => null,
+            'error' => 'UPLOAD_BASE_PATH is not defined.'
+        ];
+    }
+
+    if (
+        !isset($file['error']) ||
+        $file['error'] === UPLOAD_ERR_NO_FILE
+    ) {
+        return [
+            'success' => true,
+            'filepath' => null,
+            'error' => null
+        ];
+    }
+
+    if ($file['error'] !== UPLOAD_ERR_OK) {
+        return [
+            'success' => false,
+            'filepath' => null,
+            'error' => 'File upload error.'
+        ];
+    }
+
+    if ($file['size'] > $maxSizeBytes) {
+        return [
+            'success' => false,
+            'filepath' => null,
+            'error' => 'Invoice image must be 2MB or less.'
+        ];
+    }
+
+    $finfo = new finfo(FILEINFO_MIME_TYPE);
+    $mimeType = $finfo->file($file['tmp_name']);
+
+    if (!array_key_exists($mimeType, $allowedMime)) {
+        return [
+            'success' => false,
+            'filepath' => null,
+            'error' => 'Only JPG, PNG and WEBP images are allowed.'
+        ];
+    }
+
+    $subDir = trim($subDir, '/') . '/';
+
+    $absoluteTargetDir =
+        UPLOAD_BASE_PATH . $subDir;
+
+    if (!is_dir($absoluteTargetDir)) {
+
+        if (!mkdir($absoluteTargetDir, 0755, true)) {
+            return [
+                'success' => false,
+                'filepath' => null,
+                'error' => 'Could not create invoice upload folder.'
+            ];
+        }
+    }
+
+    $extension = $allowedMime[$mimeType];
+
+    $filename =
+        'invoice_' .
+        bin2hex(random_bytes(8)) .
+        '_' .
+        time() .
+        '.' .
+        $extension;
+
+    $destinationPath =
+        $absoluteTargetDir . $filename;
+
+    if (!move_uploaded_file(
+        $file['tmp_name'],
+        $destinationPath
+    )) {
+        return [
+            'success' => false,
+            'filepath' => null,
+            'error' => 'Failed to save invoice image.'
+        ];
+    }
+
+    return [
+        'success' => true,
+        'filepath' => $subDir . $filename,
+        'error' => null
+    ];
 }   
