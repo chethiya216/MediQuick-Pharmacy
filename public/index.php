@@ -265,7 +265,7 @@
                     <div class="carousel-banner">
                         <div class="carousel-banner-content text-center p-4">
                             <a href="#" class="d-block mb-2">SmartPhone</a>
-                            <a href="#" class="d-block text-white fs-3">Apple iPad Mini <br> G2356</a>
+                            <a href="#" class="d-block text-white fs-3">Amoxicillin<br></a>
                             <del class="me-2 text-white fs-5">$1,250.00</del>
                             <span class="text-primary fs-5">$1,050.00</span>
                         </div>
@@ -431,10 +431,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Pain Relief & Analgesics</a>
+                                            <a href="#" class="d-block h4">Amoxicillin<br>2</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR:15.50</span>
                                         </div>
                                     </div>
                                     <div
@@ -443,13 +443,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -476,10 +469,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Antibiotics & Anti-infectives</a>
+                                            <a href="#" class="d-block h4">Ibuprofen<br>1</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 8.99</span>
                                         </div>
                                     </div>
                                     <div
@@ -488,13 +481,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -520,10 +506,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Cardiovascular Health</a>
+                                            <a href="#" class="d-block h4">Lisinopril<br>3</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 12.00</span>
                                         </div>
                                     </div>
                                     <div
@@ -532,13 +518,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -565,10 +544,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Vitamins & Supplements</a>
+                                            <a href="#" class="d-block h4">Multivitamin Complex<br>4</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 19.95</span>
                                         </div>
                                     </div>
                                     <div
@@ -577,13 +556,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -610,10 +582,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Respiratory & Allergy</a>
+                                            <a href="#" class="d-block h4">Cetirizine HCI<br>5</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 14.25</span>
                                         </div>
                                     </div>
                                     <div
@@ -622,13 +594,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -654,10 +619,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Gastrointestinal Health</a>
+                                            <a href="#" class="d-block h4">Omeprazole<br>6</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 18.00</span>
                                         </div>
                                     </div>
                                     <div
@@ -666,13 +631,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -699,10 +657,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Dermatological Care</a>
+                                            <a href="#" class="d-block h4">Hydrocortisone Cream<br>7</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 6.50</span>
                                         </div>
                                     </div>
                                     <div
@@ -711,13 +669,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -743,10 +694,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Diabetes Management</a>
+                                            <a href="#" class="d-block h4">Metformin HCI<br>8</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 11.75</span>
                                         </div>
                                     </div>
                                     <div
@@ -755,13 +706,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -791,10 +735,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Mental Health & Neurology</a>
+                                            <a href="#" class="d-block h4">Sertraline HCI<br>9</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 22.00</span>
                                         </div>
                                     </div>
                                     <div
@@ -803,13 +747,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -835,10 +772,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">First Aid & Wound Care</a>
+                                            <a href="#" class="d-block h4">Antibiotic Ointment<br>10</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 5.25</span>
                                         </div>
                                     </div>
                                     <div
@@ -847,13 +784,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -879,10 +809,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Eye & Ear Care</a>
+                                            <a href="#" class="d-block h4">Artificial Tears<br>11</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 9.50</span>
                                         </div>
                                     </div>
                                     <div
@@ -891,13 +821,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -924,10 +847,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Eye & Ear Care</a>
+                                            <a href="#" class="d-block h4">Prenatal Multivitamin<br>12</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 24.99</span>
                                         </div>
                                     </div>
                                     <div
@@ -936,13 +859,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -971,10 +887,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Baby & Maternal Health</a>
+                                            <a href="#" class="d-block h4">Medicated Mouthwash<br>13</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 7.99</span>
                                         </div>
                                     </div>
                                     <div
@@ -982,13 +898,7 @@
                                         <a href="#"
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
-                                        <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
+                                        <div class="d-flex justify-content-between align-items-center">="fas fa-star"></i>
                                             </div>
                                             <div class="d-flex">
                                                 <a href="#"
@@ -1015,10 +925,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Oral Care</a>
+                                            <a href="#" class="d-block h4">Cough Syrup DM<br>14</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 10.49</span>
                                         </div>
                                     </div>
                                     <div
@@ -1027,13 +937,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -1059,10 +962,10 @@
                                             </div>
                                         </div>
                                         <div class="text-center rounded-bottom p-4">
-                                            <a href="#" class="d-block mb-2">SmartPhone</a>
-                                            <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                            <del class="me-2 fs-5">$1,250.00</del>
-                                            <span class="text-primary fs-5">$1,050.00</span>
+                                            <a href="#" class="d-block mb-2">Endocrine & Thyroid</a>
+                                            <a href="#" class="d-block h4">Levothyroxine<br>15</a>
+                                            <!-- <del class="me-2 fs-5">$1,250.00</del> -->
+                                            <span class="text-primary fs-5">LKR: 16.80</span>
                                         </div>
                                     </div>
                                     <div
@@ -1071,13 +974,6 @@
                                             class="btn btn-primary border-secondary rounded-pill py-2 px-4 mb-4"><i
                                                 class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
                                         <div class="d-flex justify-content-between align-items-center">
-                                            <div class="d-flex">
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star text-primary"></i>
-                                                <i class="fas fa-star"></i>
-                                            </div>
                                             <div class="d-flex">
                                                 <a href="#"
                                                     class="text-primary d-flex align-items-center justify-content-center me-3"><span
@@ -1877,231 +1773,7 @@
     </div>
     <!-- Product List End -->
 
-    <!-- Bestseller Products Start -->
-    <div class="container-fluid products pb-5">
-        <div class="container products-mini py-5">
-            <div class="mx-auto text-center mb-5" style="max-width: 700px;">
-                <h4 class="text-primary mb-4 border-bottom border-primary border-2 d-inline-block p-2 title-border-radius wow fadeInUp"
-                    data-wow-delay="0.1s">Bestseller Products</h4>
-                <p class="mb-0 wow fadeInUp" data-wow-delay="0.2s">Lorem ipsum dolor sit amet consectetur adipisicing
-                    elit. Modi, asperiores ducimus sint quos tempore officia similique quia? Libero, pariatur
-                    consectetur?</p>
-            </div>
-            <div class="row g-4">
-                <div class="col-md-6 col-lg-6 col-xl-4 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="products-mini-item border">
-                        <div class="row g-0">
-                            <div class="col-5">
-                                <div class="products-mini-img border-end h-100">
-                                    <img src="assets/img/product-3.png" class="img-fluid w-100 h-100" alt="Image">
-                                    <div class="products-mini-icon rounded-circle bg-primary">
-                                        <a href="#"><i class="fa fa-eye fa-1x text-white"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-7">
-                                <div class="products-mini-content p-3">
-                                    <a href="#" class="d-block mb-2">SmartPhone</a>
-                                    <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                    <del class="me-2 fs-5">$1,250.00</del>
-                                    <span class="text-primary fs-5">$1,050.00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="products-mini-add border p-3">
-                            <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-4"><i
-                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
-                            <div class="d-flex">
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                        class="rounded-circle btn-sm-square border"><i
-                                            class="fas fa-random"></i></i></a>
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                        class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-4 wow fadeInUp" data-wow-delay="0.3s">
-                    <div class="products-mini-item border">
-                        <div class="row g-0">
-                            <div class="col-5">
-                                <div class="products-mini-img border-end h-100">
-                                    <img src="assets/img/product-4.png" class="img-fluid w-100 h-100" alt="Image">
-                                    <div class="products-mini-icon rounded-circle bg-primary">
-                                        <a href="#"><i class="fa fa-eye fa-1x text-white"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-7">
-                                <div class="products-mini-content p-3">
-                                    <a href="#" class="d-block mb-2">SmartPhone</a>
-                                    <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                    <del class="me-2 fs-5">$1,250.00</del>
-                                    <span class="text-primary fs-5">$1,050.00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="products-mini-add border p-3">
-                            <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-4"><i
-                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
-                            <div class="d-flex">
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                        class="rounded-circle btn-sm-square border"><i
-                                            class="fas fa-random"></i></i></a>
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                        class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-4 wow fadeInUp" data-wow-delay="0.5s">
-                    <div class="products-mini-item border">
-                        <div class="row g-0">
-                            <div class="col-5">
-                                <div class="products-mini-img border-end h-100">
-                                    <img src="assets/img/product-5.png" class="img-fluid w-100 h-100" alt="Image">
-                                    <div class="products-mini-icon rounded-circle bg-primary">
-                                        <a href="#"><i class="fa fa-eye fa-1x text-white"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-7">
-                                <div class="products-mini-content p-3">
-                                    <a href="#" class="d-block mb-2">SmartPhone</a>
-                                    <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                    <del class="me-2 fs-5">$1,250.00</del>
-                                    <span class="text-primary fs-5">$1,050.00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="products-mini-add border p-3">
-                            <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-4"><i
-                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
-                            <div class="d-flex">
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                        class="rounded-circle btn-sm-square border"><i
-                                            class="fas fa-random"></i></i></a>
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                        class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-4 wow fadeInUp" data-wow-delay="0.1s">
-                    <div class="products-mini-item border">
-                        <div class="row g-0">
-                            <div class="col-5">
-                                <div class="products-mini-img border-end h-100">
-                                    <img src="assets/img/product-6.png" class="img-fluid w-100 h-100" alt="Image">
-                                    <div class="products-mini-icon rounded-circle bg-primary">
-                                        <a href="#"><i class="fa fa-eye fa-1x text-white"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-7">
-                                <div class="products-mini-content p-3">
-                                    <a href="#" class="d-block mb-2">SmartPhone</a>
-                                    <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                    <del class="me-2 fs-5">$1,250.00</del>
-                                    <span class="text-primary fs-5">$1,050.00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="products-mini-add border p-3">
-                            <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-4"><i
-                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
-                            <div class="d-flex">
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                        class="rounded-circle btn-sm-square border"><i
-                                            class="fas fa-random"></i></i></a>
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                        class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-4 wow fadeInUp" data-wow-delay="0.3s">
-                    <div class="products-mini-item border">
-                        <div class="row g-0">
-                            <div class="col-5">
-                                <div class="products-mini-img border-end h-100">
-                                    <img src="assets/img/product-7.png" class="img-fluid w-100 h-100" alt="Image">
-                                    <div class="products-mini-icon rounded-circle bg-primary">
-                                        <a href="#"><i class="fa fa-eye fa-1x text-white"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-7">
-                                <div class="products-mini-content p-3">
-                                    <a href="#" class="d-block mb-2">SmartPhone</a>
-                                    <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                    <del class="me-2 fs-5">$1,250.00</del>
-                                    <span class="text-primary fs-5">$1,050.00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="products-mini-add border p-3">
-                            <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-4"><i
-                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
-                            <div class="d-flex">
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                        class="rounded-circle btn-sm-square border"><i
-                                            class="fas fa-random"></i></i></a>
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                        class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6 col-lg-6 col-xl-4 wow fadeInUp" data-wow-delay="0.5s">
-                    <div class="products-mini-item border">
-                        <div class="row g-0">
-                            <div class="col-5">
-                                <div class="products-mini-img border-end h-100">
-                                    <img src="assets/assets/img/product-11.png" class="img-fluid w-100 h-100" alt="Image">
-                                    <div class="products-mini-icon rounded-circle bg-primary">
-                                        <a href="#"><i class="fa fa-eye fa-1x text-white"></i></a>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="col-7">
-                                <div class="products-mini-content p-3">
-                                    <a href="#" class="d-block mb-2">SmartPhone</a>
-                                    <a href="#" class="d-block h4">Apple iPad Mini <br> G2356</a>
-                                    <del class="me-2 fs-5">$1,250.00</del>
-                                    <span class="text-primary fs-5">$1,050.00</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="products-mini-add border p-3">
-                            <a href="#" class="btn btn-primary border-secondary rounded-pill py-2 px-4"><i
-                                    class="fas fa-shopping-cart me-2"></i> Add To Cart</a>
-                            <div class="d-flex">
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-3"><span
-                                        class="rounded-circle btn-sm-square border"><i
-                                            class="fas fa-random"></i></i></a>
-                                <a href="#"
-                                    class="text-primary d-flex align-items-center justify-content-center me-0"><span
-                                        class="rounded-circle btn-sm-square border"><i class="fas fa-heart"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- Bestseller Products End -->
+
     <?php include('../includes/footer.php') ?> 
 </body>
 
