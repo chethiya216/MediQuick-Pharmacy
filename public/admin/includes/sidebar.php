@@ -100,7 +100,7 @@
       </a>
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="product-manage.php" class="menu-link">
+          <a href="../admin/manage-customers.php" class="menu-link">
             <div data-i18n="Manage">Manage Customers</div>
           </a>
         </li>
