@@ -8,6 +8,52 @@ require_once __DIR__ . '/../../../includes/auth.php';
 requireAdmin();
 require_once __DIR__ . '/../../../includes/db.php';
 
+// handle deletion
+
+$action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+
+if ($action === 'delete') {
+    $categoryId = !empty($_GET['category_id']) ? (int)$_GET['category_id'] : (!empty($_POST['category_id']) ? (int)$_POST['category_id'] : 0);
+
+    if ($categoryId <= 0) {
+        $_SESSION['form_errors'] = ["Invalid category ID."];
+        header("Location: ../manage-categories.php");
+        exit;
+    }
+
+    try {
+
+        // Delete category database record
+        $deleteStmt = $conn->prepare("DELETE FROM categories WHERE category_id = ?");
+        $deleteStmt->bind_param("i", $categoryId);
+
+        if ($deleteStmt->execute()) {
+            $deleteStmt->close();
+            $_SESSION['flash_success'] = "Category deleted successfully.";
+        } else {
+            $_SESSION['form_errors'] = ["Failed to delete category."];
+        }
+
+    } catch (mysqli_sql_exception $e) {
+        // Handle Foreign Key constraints
+        if ($e->getCode() === 1451) {
+            $_SESSION['form_errors'] = ["Cannot delete category because it is linked to existing products."];
+        } else {
+            $_SESSION['form_errors'] = ["Database error: " . $e->getMessage()];
+        }
+    }
+
+    header("Location: ../manage-categories.php");
+    exit;
+} 
+
+// Only accept POST submissions from the form
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: ../add-categories.php");
+    exit;
+}
+
 // Only accept POST submissions from the form
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: ../admin/add-categories.php");
