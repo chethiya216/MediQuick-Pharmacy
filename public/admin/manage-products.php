@@ -56,7 +56,7 @@ $stmt->bind_param("ii", $limit, $offset);
 $stmt->execute();
 $productsResult = $stmt->get_result();
 
-// Function to generate page URLs while retaining existing search/filter query parameters
+// Function to generate page URLs while keeping existing search/filter query parameters
 function getPageUrl($pageNumber, $queryParams) {
     $queryParams['page'] = $pageNumber;
     return '?' . http_build_query($queryParams);
@@ -218,7 +218,16 @@ function getPageUrl($pageNumber, $queryParams) {
                                                         <a class="dropdown-item" href="add-products.php?id=<?= $row['product_id']; ?>">
                                                             <i class="bx bx-edit-alt me-1"></i> Edit
                                                         </a>
-                                                        <a class="dropdown-item text-danger" href="product-delete.php?id=<?= $row['product_id']; ?>" onclick="return confirm('Are you sure you want to delete this product?');">
+                                                        <a 
+                                                            class="dropdown-item text-danger" 
+                                                            href="javascript:void(0);"
+                                                            onclick="openDeleteConfirm(
+                                                                event, 
+                                                                <?= $row['product_id']; ?>, 
+                                                                '<?= htmlspecialchars($row['product_name'], ENT_QUOTES); ?>', 
+                                                                'handlers/product-handler.php?action=delete&product_id=<?= $row['product_id']; ?>'
+                                                            )"
+                                                        >
                                                             <i class="bx bx-trash me-1"></i> Delete
                                                         </a>
                                                     </div>
@@ -284,6 +293,7 @@ function getPageUrl($pageNumber, $queryParams) {
 
                 <!-- FOOTER -->
                 <?php require_once __DIR__ . '/includes/footer.php'; ?>
+                <?php require_once __DIR__ . '/includes/delete-modal.php'; ?>
 
                 <div class="content-backdrop fade"></div>
 
