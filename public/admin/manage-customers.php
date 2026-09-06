@@ -30,10 +30,10 @@ $params = [];
 $types  = '';
 
 if (!empty($search)) {
-    $where      = "WHERE name LIKE ? OR email LIKE ? OR phone LIKE ?";
+    $where      = "WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR phone LIKE ?";
     $searchTerm = "%{$search}%";
-    $params     = [$searchTerm, $searchTerm, $searchTerm];
-    $types      = 'sss';
+    $params     = [$searchTerm, $searchTerm, $searchTerm,$searchTerm];
+    $types      = 'ssss';
 }
 
 // 1. Get total number of customers (filtered if search exists)
@@ -55,7 +55,7 @@ if ($page > $totalPages) { $page = $totalPages; }
 $offset = ($page - 1) * $limit;
 
 // Fetch Customers Query with Limit and Offset
-$sql = "SELECT * FROM customers {$where} ORDER BY customer_id DESC LIMIT ? OFFSET ?";
+$sql = "SELECT *  FROM customers {$where} ORDER BY customer_id DESC LIMIT ? OFFSET ?";
 $stmt = $conn->prepare($sql);
 
 if (!empty($params)) {
@@ -176,7 +176,7 @@ $customers = $stmt->get_result();
                                         <?php while ($row = $customers->fetch_assoc()): ?>
                                             <tr>
                                                 <td><strong>#<?= $row['customer_id']; ?></strong></td>
-                                                <td><?= htmlspecialchars($row['name'] ?? ''); ?></td>
+                                                <td><?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name'] ?? ''); ?></td>
                                                 <td><?= htmlspecialchars($row['email'] ?? 'N/A'); ?></td>
                                                 <td><?= htmlspecialchars($row['phone'] ?? 'N/A'); ?></td>
                                                 <td><?= htmlspecialchars($row['address'] ?? 'N/A'); ?></td>
