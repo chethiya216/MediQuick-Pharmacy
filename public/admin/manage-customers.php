@@ -193,7 +193,7 @@ $customers = $stmt->get_result();
                                                             <i class="bx bx-dots-vertical-rounded"></i>
                                                         </button>
                                                         <div class="dropdown-menu">
-                                                            <a class="dropdown-item" href="add-customers.php?customer_id=<?= $row['customer_id']; ?>">
+                                                            <a class="dropdown-item" href="edit-customers.php?customer_id=<?= $row['customer_id']; ?>">
                                                                 <i class="bx bx-edit-alt me-1 text-primary"></i> Edit
                                                             </a>
                                                             <a 
