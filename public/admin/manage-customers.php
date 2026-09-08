@@ -69,6 +69,7 @@ if (!empty($params)) {
 
 $stmt->execute();
 $customers = $stmt->get_result();
+
 ?>
 
 <!DOCTYPE html>
@@ -106,9 +107,9 @@ $customers = $stmt->get_result();
                         <h4 class="fw-bold m-0">
                             <span class="text-muted fw-light">Customers /</span> Manage Customers
                         </h4>
-                        <a href="add-customers.php" class="btn btn-primary">
+                        <!-- <a href="add-customers.php" class="btn btn-primary">
                             <i class="bx bx-plus me-1"></i> Add Customer
-                        </a>
+                        </a> -->
                     </div>
 
                     <!-- FLASH SUCCESS ALERT -->
@@ -196,10 +197,15 @@ $customers = $stmt->get_result();
                                                             <a class="dropdown-item" href="edit-customers.php?customer_id=<?= $row['customer_id']; ?>">
                                                                 <i class="bx bx-edit-alt me-1 text-primary"></i> Edit
                                                             </a>
-                                                            <a 
+                                                           <a 
                                                                 class="dropdown-item text-danger" 
-                                                                href="../admin/handlers/customer-handler.php?action=delete&customer_id=<?= $row['customer_id']; ?>"
-                                                                onclick="return confirm('Are you sure you want to delete this customer?');"
+                                                                href="javascript:void(0);"
+                                                                onclick="openDeleteConfirm(
+                                                                    event, 
+                                                                    <?= $row['customer_id']; ?>, 
+                                                                    '<?= htmlspecialchars($row['first_name'] . ' ' . $row['last_name'], ENT_QUOTES); ?>', 
+                                                                    'handlers/customer-handler.php?action=delete&customer_id=<?= $row['customer_id']; ?>'
+                                                                )"
                                                             >
                                                                 <i class="bx bx-trash me-1"></i> Delete
                                                             </a>
@@ -253,6 +259,7 @@ $customers = $stmt->get_result();
 
                 <!-- FOOTER -->
                 <?php require_once __DIR__ . '/includes/footer.php'; ?>
+                <?php require_once __DIR__ . '/includes/delete-modal.php'; ?>
                 <div class="content-backdrop fade"></div>
             </div>
         </div>
