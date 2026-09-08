@@ -11,11 +11,8 @@ require_once __DIR__ . '/../../includes/db.php';
 
 $pageTitle = "Category Management - MediQuick";
 
-/*
-|--------------------------------------------------------------------------
-| Pagination Setup
-|--------------------------------------------------------------------------
-*/
+// pagination 
+
 $limit = 20; 
 $page = isset($_GET['page']) && is_numeric($_GET['page']) ? (int)$_GET['page'] : 1;
 if ($page < 1) { $page = 1; }
@@ -179,7 +176,13 @@ function getPageUrl($pageNumber, $queryParams) {
                                                         <a href="add-categories.php?category_id=<?= $row['category_id']; ?>" class="dropdown-item">
                                                            <i class="bx bx-edit-alt me-1"></i> Edit
                                                         </a>
-                                                        <a class="dropdown-item text-danger" href="product-delete.php?id=<?= $row['category_id']; ?>" onclick="return confirm('Are you sure you want to delete this Category?');">
+                                                        <a class="dropdown-item text-danger" href="javascript:void(0);" 
+                                                            onclick="openDeleteConfirm(
+                                                                event, 
+                                                                <?= $row['category_id']; ?>, 
+                                                                '<?= htmlspecialchars($row['category_name'], ENT_QUOTES); ?>', 
+                                                                'handlers/category-handler.php?action=delete&category_id=<?= $row['category_id']; ?>'
+                                                            )">
                                                             <i class="bx bx-trash me-1"></i> Delete
                                                         </a>
                                                     </div>
@@ -241,42 +244,11 @@ function getPageUrl($pageNumber, $queryParams) {
                     </nav>
                     <?php endif; ?>
 
-                    <!-- PAGINATION NAVIGATION -->
-                    <?php if ($totalPages > 1): ?>
-                    <nav aria-label="Page navigation">
-                        <ul class="pagination justify-content-center mt-4">
-                            
-                            <!-- Previous Button -->
-                            <li class="page-item prev <?= ($page <= 1) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="<?= ($page > 1) ? getPageUrl($page - 1, $queryParams) : 'javascript:void(0);'; ?>">
-                                    <i class="tf-icon bx bx-chevrons-left"></i>
-                                </a>
-                            </li>
-
-                            <!-- Page Numbers -->
-                            <?php for ($i = 1; $i <= $totalPages; $i++): ?>
-                                <li class="page-item <?= ($i === $page) ? 'active' : ''; ?>">
-                                    <a class="page-link" href="<?= getPageUrl($i, $queryParams); ?>">
-                                        <?= $i; ?>
-                                    </a>
-                                </li>
-                            <?php endfor; ?>
-
-                            <!-- Next Button -->
-                            <li class="page-item next <?= ($page >= $totalPages) ? 'disabled' : ''; ?>">
-                                <a class="page-link" href="<?= ($page < $totalPages) ? getPageUrl($page + 1, $queryParams) : 'javascript:void(0);'; ?>">
-                                    <i class="tf-icon bx bx-chevrons-right"></i>
-                                </a>
-                            </li>
-
-                        </ul>
-                    </nav>
-                    <?php endif; ?>
-
                 </div>
 
                 <!-- FOOTER -->
                 <?php require_once __DIR__ . '/includes/footer.php'; ?>
+                <?php require_once __DIR__ . '/includes/delete-modal.php'; ?>
 
                 <div class="content-backdrop fade"></div>
 

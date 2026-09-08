@@ -73,8 +73,7 @@ $product_batches = $conn->query($sql_prod_batch);
 
                     <!-- MASTER FORM CONTAINER / BACKGROUND FRAME -->
                     <div class="card p-4 bg-white shadow-sm border rounded">
-                        <!-- <form method="POST" action="handlers/add-product-handler.php" enctype="multipart/form-data"> -->
-                        <form method="POST" action="../admin/handlers/add-product-handler.php" enctype="multipart/form-data">
+                        <form method="POST" action="../admin/handlers/product-handler.php" enctype="multipart/form-data">
                             <?php if ($product_id): ?>
                                 <input type="hidden" name="product_id" value="<?= $product_id; ?>">
                             <?php endif; ?>

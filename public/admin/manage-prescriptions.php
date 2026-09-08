@@ -203,10 +203,11 @@ function getPageUrl($pageNumber, $queryParams) {
                                                         <i class="bx bx-dots-vertical-rounded"></i>
                                                     </button>
                                                     <div class="dropdown-menu">
-                                                        <a class="dropdown-item" href="verify-prescriptions.php?id=<?= $row['prescription_id']; ?>">
+                                                        <a class="dropdown-item" href="verify-prescriptions.php?id=<?= (int) $row['prescription_id']; ?>">
                                                             <i class="bx bx-show me-1"></i> View / Process
                                                         </a>
-                                                        <a class="dropdown-item text-danger" href="prescription-delete.php?id=<?= $row['prescription_id']; ?>" onclick="return confirm('Are you sure you want to delete this prescription?');">
+                                                        <a class="dropdown-item text-danger" href="javascript:void(0)"
+                                                            onclick="openDeleteConfirm(event, <?= (int) $row['prescription_id'] ?>, 'prescription #<?= (int) $row['prescription_id'] ?>', 'handlers/prescription-handler.php')">
                                                             <i class="bx bx-trash me-1"></i> Delete
                                                         </a>
                                                     </div>
@@ -272,6 +273,7 @@ function getPageUrl($pageNumber, $queryParams) {
 
                 <!-- FOOTER -->
                 <?php require_once __DIR__ . '/includes/footer.php'; ?>
+                <?php require_once __DIR__ . '/includes/delete-modal.php'; ?>
 
                 <div class="content-backdrop fade"></div>
 

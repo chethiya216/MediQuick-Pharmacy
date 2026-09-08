@@ -38,72 +38,7 @@ if (!empty($customer['date_of_birth']) && $customer['date_of_birth'] !== '0000-0
     $customer['date_of_birth'] = '';
 }
 
-// 3. Handle Form Submission
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $first_name    = trim($_POST['first_name'] ?? '');
-    $last_name     = trim($_POST['last_name'] ?? '');
-    $email         = trim($_POST['email'] ?? '');
-    $phone         = trim($_POST['phone'] ?? '');
-    $address       = trim($_POST['address'] ?? '');
-    $date_of_birth = !empty($_POST['date_of_birth']) ? $_POST['date_of_birth'] : null;
-    $status        = trim($_POST['status'] ?? 'active');
-    $password      = $_POST['password'] ?? '';
 
-    $errors = [];
-
-    // Validations
-    if (empty($first_name)) { $errors[] = "First name is required."; }
-    if (empty($last_name))  { $errors[] = "Last name is required."; }
-    if (empty($email) || !filter_var($email, FILTER_VALIDATE_EMAIL)) { 
-        $errors[] = "A valid email address is required."; 
-    }
-
-    // Check for duplicate email (excluding current customer)
-    if (empty($errors)) {
-        $checkStmt = $conn->prepare("SELECT `customer_id` FROM `customers` WHERE `email` = ? AND `customer_id` != ?");
-        $checkStmt->bind_param("si", $email, $customer_id);
-        $checkStmt->execute();
-        if ($checkStmt->get_result()->num_rows > 0) {
-            $errors[] = "The email address is already in use by another account.";
-        }
-    }
-
-    if (empty($errors)) {
-        // Update query with optional password change
-        if (!empty($password)) {
-            $password_hash = password_hash($password, PASSWORD_BCRYPT);
-            $updateSql = "UPDATE `customers` 
-                          SET `first_name` = ?, `last_name` = ?, `email` = ?, `password_hash` = ?, `phone` = ?, `address` = ?, `date_of_birth` = ?, `status` = ?, `updated_at` = NOW() 
-                          WHERE `customer_id` = ?";
-            $updateStmt = $conn->prepare($updateSql);
-            $updateStmt->bind_param("ssssssssi", $first_name, $last_name, $email, $password_hash, $phone, $address, $date_of_birth, $status, $customer_id);
-        } else {
-            $updateSql = "UPDATE `customers` 
-                          SET `first_name` = ?, `last_name` = ?, `email` = ?, `phone` = ?, `address` = ?, `date_of_birth` = ?, `status` = ?, `updated_at` = NOW() 
-                          WHERE `customer_id` = ?";
-            $updateStmt = $conn->prepare($updateSql);
-            $updateStmt->bind_param("sssssssi", $first_name, $last_name, $email, $phone, $address, $date_of_birth, $status, $customer_id);
-        }
-
-        if ($updateStmt->execute()) {
-            $_SESSION['flash_success'] = "Customer updated successfully.";
-            header("Location: manage-customers.php");
-            exit();
-        } else {
-            $errors[] = "Failed to update customer. Please try again.";
-        }
-    }
-
-    // Preserve form input on error
-    $_SESSION['form_errors'] = $errors;
-    $customer['first_name']    = $first_name;
-    $customer['last_name']     = $last_name;
-    $customer['email']         = $email;
-    $customer['phone']         = $phone;
-    $customer['address']       = $address;
-    $customer['date_of_birth'] = $date_of_birth;
-    $customer['status']        = $status;
-}
 ?>
 
 <!DOCTYPE html>
@@ -166,8 +101,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <small class="text-muted float-end">Update account details</small>
                         </div>
                         <div class="card-body">
-                            <form method="POST" action="">
+                            <form method="POST" action="../admin/handlers/customer-handler.php">
                                 <div class="row g-3">
+
+                                    <input type="hidden" name="customer_id" value="<?= htmlspecialchars($customer['customer_id'] ?? ''); ?>">
 
                                     <!-- First Name -->
                                     <div class="col-md-6">

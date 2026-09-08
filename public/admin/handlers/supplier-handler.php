@@ -9,6 +9,8 @@ requireAdmin();
 require_once __DIR__ . '/../../../includes/db.php';
 
 // --- 1. HANDLE DELETE ACTION ---
+// $action = $_GET['action'] ?? $_POST['action'] ?? '';
+
 if (isset($_GET['action']) && $_GET['action'] === 'delete' && isset($_GET['supplier_id'])) {
     $supplierId = (int)$_GET['supplier_id'];
 

@@ -7,6 +7,72 @@ require_once __DIR__ . '/../../../includes/auth.php';
 requireAdmin();
 require_once __DIR__ . '/../../../includes/db.php';
 
+/*
+
+--------   HANDLE DELETE ACTION
+
+*/
+$action = $_GET['action'] ?? $_POST['action'] ?? '';
+
+
+if ($action === 'delete') {
+    $productId = !empty($_GET['product_id']) ? (int)$_GET['product_id'] : (!empty($_POST['product_id']) ? (int)$_POST['product_id'] : 0);
+
+    if ($productId <= 0) {
+        $_SESSION['form_errors'] = ["Invalid product ID."];
+        header("Location: ../manage-products.php");
+        exit;
+    }
+
+    try {
+        // Fetch image path to remove physical file if it exists
+        $imgStmt = $conn->prepare("SELECT product_image FROM products WHERE product_id = ?");
+        $imgStmt->bind_param("i", $productId);
+        $imgStmt->execute();
+        $result = $imgStmt->get_result();
+
+        if ($result->num_rows === 0) {
+            $_SESSION['form_errors'] = ["Product not found."];
+            header("Location: ../manage-products.php");
+            exit;
+        }
+
+        $product = $result->fetch_assoc();
+        $imgStmt->close();
+
+        // Delete product database record
+        $deleteStmt = $conn->prepare("DELETE FROM products WHERE product_id = ?");
+        $deleteStmt->bind_param("i", $productId);
+
+        if ($deleteStmt->execute()) {
+            $deleteStmt->close();
+
+            // Unlink product image file from uploads folder
+            if (!empty($product['product_image'])) {
+                $imageFile = UPLOAD_BASE_PATH . 'products/' . basename($product['product_image']);
+                if (file_exists($imageFile) && is_file($imageFile)) {
+                    unlink($imageFile);
+                }
+            }
+
+            $_SESSION['flash_success'] = "Product deleted successfully.";
+        } else {
+            $_SESSION['form_errors'] = ["Failed to delete product."];
+        }
+
+    } catch (mysqli_sql_exception $e) {
+        // Handle Foreign Key constraints (e.g. product linked to sales or inventory logs)
+        if ($e->getCode() === 1451) {
+            $_SESSION['form_errors'] = ["Cannot delete product because it is linked to existing orders or transactions."];
+        } else {
+            $_SESSION['form_errors'] = ["Database error: " . $e->getMessage()];
+        }
+    }
+
+    header("Location: ../manage-products.php");
+    exit;
+} 
+
 // Only accept POST submissions from the form
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: ../add-products.php");
@@ -14,9 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 /*
-|--------------------------------------------------------------------------
-| Collect + sanitize form input
-|--------------------------------------------------------------------------
+------------- Collect + sanitize form input
 */
 
 $productId      = !empty($_POST['product_id']) ? (int)$_POST['product_id'] : null;
@@ -43,9 +107,7 @@ $batchQuantity  = (int)($_POST['batch_quantity'] ?? 0);
 $expiryDate     = trim($_POST['expiry_date'] ?? '');
 
 /*
-|--------------------------------------------------------------------------
-| Validation
-|--------------------------------------------------------------------------
+-------------- Validation
 */
 
 $errors = [];
@@ -89,9 +151,7 @@ if ($batchProvided) {
 }
 
 /*
-|--------------------------------------------------------------------------
-| Check SKU uniqueness (ignore current product if editing)
-|--------------------------------------------------------------------------
+----------------- Check SKU uniqueness (ignore current product if editing)
 */
 
 if ($isEdit) {
@@ -115,9 +175,7 @@ if ($checkStmt->num_rows > 0) {
 }
 
 /*
-|--------------------------------------------------------------------------
-| Handle product image upload
-|--------------------------------------------------------------------------
+-------------- Handle product image upload
 */
 
 $productImagePath = null;
@@ -154,9 +212,9 @@ if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] !== UPL
 }
 
 /*
-|--------------------------------------------------------------------------
-| If validation failed, bounce back to form
-|--------------------------------------------------------------------------
+
+---------------- If validation failed, bounce back to form
+
 */
 
 if (!empty($errors)) {
@@ -169,9 +227,9 @@ if (!empty($errors)) {
 }
 
 /*
-|--------------------------------------------------------------------------
-| Save/Update Product (Database Transaction)
-|--------------------------------------------------------------------------
+
+--------------- Save/Update Product (Database Transaction)
+
 */
 
 $conn->begin_transaction();
@@ -302,3 +360,4 @@ try {
     header("Location: " . $redirectUrl);
     exit;
 }
+

@@ -177,8 +177,13 @@ $suppliers = $stmt->get_result();
                                                             </a>
                                                             <a 
                                                                 class="dropdown-item text-danger" 
-                                                                href="../admin/handlers/supplier-handler.php?action=delete&supplier_id=<?= $row['supplier_id']; ?>"
-                                                                onclick="return confirm('Are you sure you want to delete this supplier?');"
+                                                                href="javasript:void(0);"
+                                                                onclick="openDeleteConfirm(
+                                                                    event, 
+                                                                    <?= $row['supplier_id']; ?>, 
+                                                                    '<?= htmlspecialchars($row['name'], ENT_QUOTES); ?>', 
+                                                                    'handlers/supplier-handler.php?action=delete&supplier_id=<?= $row['supplier_id']; ?>'
+                                                                )"
                                                             >
                                                                 <i class="bx bx-trash me-1"></i> Delete
                                                             </a>
@@ -231,6 +236,8 @@ $suppliers = $stmt->get_result();
 
                 <!-- FOOTER -->
                 <?php require_once __DIR__ . '/includes/footer.php'; ?>
+                <?php require_once __DIR__ . '/includes/delete-modal.php'; ?>
+
                 <div class="content-backdrop fade"></div>
             </div>
         </div>
