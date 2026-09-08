@@ -108,26 +108,26 @@
                         <div class="dropdown-divider"></div>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="#">
+                        <a class="dropdown-item" href="profile.php">
                             <i class="bx bx-user me-2"></i>
                             <span class="align-middle">My Profile</span>
                         </a>
                     </li>
-                    <li>
+                    <!-- <li>
                         <a class="dropdown-item" href="#">
                             <i class="bx bx-receipt me-2"></i>
                             <span class="align-middle">My Orders</span>
                         </a>
-                    </li>
-                    <li>
+                    </li> -->
+                    <!-- <li>
                         <a class="dropdown-item" href="#">
                             <i class="bx bx-cog me-2"></i>
                             <span class="align-middle">Settings</span>
                         </a>
-                    </li>
-                    <li>
+                    </li> -->
+                    <!-- <li>
                         <div class="dropdown-divider"></div>
-                    </li>
+                    </li> -->
                     <li>
                         <a class="dropdown-item" href="auth-login-basic.html">
                             <i class="bx bx-power-off me-2"></i>
