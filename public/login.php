@@ -63,7 +63,7 @@ if (!isset($_SESSION['user_id']) && !empty($_COOKIE['remember_me'])) {
             $_SESSION['email'] = $user['email'];
             $_SESSION['role'] = ($role === 'staff') ? $user['role'] : 'customer';
 
-            $redirectUrl = ($role === 'staff') ? "../public/admin/index.php" : "../public/index.html";
+            $redirectUrl = ($role === 'staff') ? "../public/admin/index.php" : "../public/index.php";
             header("Location: " . $redirectUrl);
             exit;
         } else {
@@ -118,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 // Save Remember Me Cookie
                 handleRememberMe($conn, 'customer', $user['customer_id']);
 
-                header("Location: ../public/index.html");
+                header("Location: ../public/index.php");
                 exit;
 
             } else {
