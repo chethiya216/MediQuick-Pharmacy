@@ -189,17 +189,25 @@ unset(
                 </div>
 
                 <div class="mb-3">
-                  <label for="role" class="form-label">Staff Role</label>
-                  <select class="form-select" id="role" name="role" required>
-                    <option value="">Select role</option>
-                    <option value="admin" <?= (($old['role'] ?? '') === 'admin') ? 'selected' : '' ?>>Admin</option>
-                    <option value="pharmacist" <?= (($old['role'] ?? '') === 'pharmacist') ? 'selected' : '' ?>>Pharmacist</option>
-                    <?php if (getUserRole() === 'superadmin'): ?>
-                      <option value="superadmin" <?= (($old['role'] ?? '') === 'superadmin') ? 'selected' : '' ?>>Superadmin</option>
-                    <?php endif; ?>
-                  </select>
-                </div>
+    <label for="role" class="form-label">Staff Role</label>
+    <select class="form-select" id="role" name="role" required>
+        <option value="">Select role</option>
 
+        <option
+            value="admin"
+            <?= (($old['role'] ?? '') === 'admin') ? 'selected' : '' ?>
+        >
+            Admin
+        </option>
+
+        <option
+            value="pharmacist"
+            <?= (($old['role'] ?? '') === 'pharmacist') ? 'selected' : '' ?>
+        >
+            Pharmacist
+        </option>
+    </select>
+</div>
                 <button class="btn btn-primary d-grid w-100" type="submit">Create Staff Account</button>
               </form>
 
