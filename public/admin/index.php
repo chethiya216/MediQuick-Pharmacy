@@ -1,9 +1,41 @@
 <?php
-
+session_start();
 require_once '../../includes/auth.php';
+require_once '../../includes/db.php';
 
 requireAdmin();
 
+$name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
+
+// 1. Fetch Transactions List for Table
+$transactionsSQL = "SELECT payments.*, orders.order_id 
+                    FROM payments 
+                    JOIN orders ON payments.order_id = orders.order_id 
+                    ORDER BY payments.payment_id DESC";
+$stmt = $conn->prepare($transactionsSQL);
+$stmt->execute();
+$transactions = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+
+// 2. Fetch Metrics for Summary Cards
+// Total Sales / Revenue
+$salesSQL = "SELECT SUM(amount) AS total_sales FROM payments WHERE payment_status = 'completed'";
+$salesRes = $conn->query($salesSQL);
+$totalSales = $salesRes ? ($salesRes->fetch_assoc()['total_sales'] ?? 0) : 0;
+
+// Total Payments Amount
+$paymentsSQL = "SELECT SUM(amount) AS total_payments FROM payments";
+$paymentsRes = $conn->query($paymentsSQL);
+$totalPayments = $paymentsRes ? ($paymentsRes->fetch_assoc()['total_payments'] ?? 0) : 0;
+
+// Total Transactions Count
+$countSQL = "SELECT COUNT(*) AS total_count FROM payments";
+$countRes = $conn->query($countSQL);
+$totalTransactions = $countRes ? ($countRes->fetch_assoc()['total_count'] ?? 0) : 0;
+
+// Estimated Profit (Example calculation: Total Sales * 0.20 or aggregate query)
+$profitSQL = "SELECT AVG(amount) AS avg_profit FROM payments";
+$profitRes = $conn->query($profitSQL);
+$avgProfit = $profitRes ? ($profitRes->fetch_assoc()['avg_profit'] ?? 0) : 0;
 ?>
 
 <!doctype html>
@@ -12,17 +44,17 @@ requireAdmin();
 <?php include 'includes/head.php'; ?>
 
 <body>
-    <!-- Standard Sneat Wrapper -->
+    <!-- Standard Wrapper -->
     <div class="layout-wrapper layout-content-navbar">
         <div class="layout-container">
 
             <!-- Sidebar Included Here -->
             <?php include 'includes/sidebar.php'; ?>
 
-            <!-- Page Container (Sits to the right of Sidebar) -->
+            <!-- Page Container -->
             <div class="layout-page">
 
-                <!-- Header Included Inside layout-page (Spans top right area flush) -->
+                <!-- Header Included Inside layout-page -->
                 <?php include 'includes/header.php'; ?>
 
                 <!-- Content Wrapper -->
@@ -40,195 +72,109 @@ requireAdmin();
                                                 <div class="col-sm-7">
                                                     <div class="card-body">
                                                         <h5 class="card-title text-primary">
-                                                            Congratulations John! 🎉
+                                                            Welcome <b><?php echo htmlspecialchars(strtoupper(($_SESSION['role'] ))); ?></b>🎉
                                                         </h5>
-                                                        <p class="mb-4">
-                                                            You have done <span class="fw-bold">72%</span> more
-                                                            sales today. Check your new badge in your profile.
+                                                        <p class="mb-1">
+                                                            Here's what's happening with your store today...
                                                         </p>
-
-                                                        <a href="javascript:;" class="btn btn-sm btn-outline-primary">View Badges</a>
-                                                    </div>
-                                                </div>
-                                                <div class="col-sm-5 text-center text-sm-left">
-                                                    <div class="card-body pb-0 px-0 px-md-4">
-                                                        <img
-                                                            src="../assets/img/illustrations/man-with-laptop-light.png"
-                                                            height="140"
-                                                            alt="View Badge User"
-                                                            data-app-dark-img="illustrations/man-with-laptop-dark.png"
-                                                            data-app-light-img="illustrations/man-with-laptop-light.png"
-                                                        />
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- 2. Transactions Card (Same size/width directly below Banner) -->
+                                    <!-- 2. Transactions Card -->
                                     <div class="col-12 mb-4">
                                         <div class="card">
                                             <div class="card-header d-flex align-items-center justify-content-between">
                                                 <h5 class="card-title m-0 me-2">Transactions</h5>
-                                                <div class="dropdown">
-                                                    <button class="btn p-0" type="button" id="transactionID" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                        <i class="bx bx-dots-vertical-rounded"></i>
-                                                    </button>
-                                                    <div class="dropdown-menu dropdown-menu-end" aria-labelledby="transactionID">
-                                                        <a class="dropdown-item" href="javascript:void(0);">Last 28 Days</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);">Last Month</a>
-                                                        <a class="dropdown-item" href="javascript:void(0);">Last Year</a>
-                                                    </div>
-                                                </div>
                                             </div>
                                             <div class="card-body">
-                                                <ul class="p-0 m-0">
-                                                    <li class="d-flex mb-4 pb-1">
-                                                        <div class="avatar flex-shrink-0 me-3">
-                                                            <img src="../assets/img/icons/unicons/paypal.png" alt="User" class="rounded" />
-                                                        </div>
-                                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                                            <div class="me-2">
-                                                                <small class="text-muted d-block mb-1">Paypal</small>
-                                                                <h6 class="mb-0">Send money</h6>
-                                                            </div>
-                                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                                <h6 class="mb-0">+82.6</h6>
-                                                                <span class="text-muted">USD</span>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li class="d-flex mb-4 pb-1">
-                                                        <div class="avatar flex-shrink-0 me-3">
-                                                            <img src="../assets/img/icons/unicons/wallet.png" alt="User" class="rounded" />
-                                                        </div>
-                                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                                            <div class="me-2">
-                                                                <small class="text-muted d-block mb-1">Wallet</small>
-                                                                <h6 class="mb-0">Mac'D</h6>
-                                                            </div>
-                                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                                <h6 class="mb-0">+270.69</h6>
-                                                                <span class="text-muted">USD</span>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li class="d-flex mb-4 pb-1">
-                                                        <div class="avatar flex-shrink-0 me-3">
-                                                            <img src="../assets/img/icons/unicons/chart.png" alt="User" class="rounded" />
-                                                        </div>
-                                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                                            <div class="me-2">
-                                                                <small class="text-muted d-block mb-1">Transfer</small>
-                                                                <h6 class="mb-0">Refund</h6>
-                                                            </div>
-                                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                                <h6 class="mb-0">+637.91</h6>
-                                                                <span class="text-muted">USD</span>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li class="d-flex mb-4 pb-1">
-                                                        <div class="avatar flex-shrink-0 me-3">
-                                                            <img src="../assets/img/icons/unicons/cc-success.png" alt="User" class="rounded" />
-                                                        </div>
-                                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                                            <div class="me-2">
-                                                                <small class="text-muted d-block mb-1">Credit Card</small>
-                                                                <h6 class="mb-0">Ordered Food</h6>
-                                                            </div>
-                                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                                <h6 class="mb-0">-838.71</h6>
-                                                                <span class="text-muted">USD</span>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li class="d-flex mb-4 pb-1">
-                                                        <div class="avatar flex-shrink-0 me-3">
-                                                            <img src="../assets/img/icons/unicons/wallet.png" alt="User" class="rounded" />
-                                                        </div>
-                                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                                            <div class="me-2">
-                                                                <small class="text-muted d-block mb-1">Wallet</small>
-                                                                <h6 class="mb-0">Starbucks</h6>
-                                                            </div>
-                                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                                <h6 class="mb-0">+203.33</h6>
-                                                                <span class="text-muted">USD</span>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                    <li class="d-flex">
-                                                        <div class="avatar flex-shrink-0 me-3">
-                                                            <img src="../assets/img/icons/unicons/cc-warning.png" alt="User" class="rounded" />
-                                                        </div>
-                                                        <div class="d-flex w-100 flex-wrap align-items-center justify-content-between gap-2">
-                                                            <div class="me-2">
-                                                                <small class="text-muted d-block mb-1">Mastercard</small>
-                                                                <h6 class="mb-0">Ordered Food</h6>
-                                                            </div>
-                                                            <div class="user-progress d-flex align-items-center gap-1">
-                                                                <h6 class="mb-0">-92.45</h6>
-                                                                <span class="text-muted">USD</span>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                </ul>
+                                                <div class="table-responsive" style="max-height: 450px; overflow-y: auto;">
+                                                    <table class="table align-middle m-0">
+                                                        <thead class="sticky-top bg-white" style="z-index: 1;">
+                                                            <tr>
+                                                                <th>Order ID</th>
+                                                                <th>Payment Method</th>
+                                                                <th>Transaction Reference</th>
+                                                                <th class="text-end">Amount</th>
+                                                                <th class="text-center">Payment Status</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            <?php if (!empty($transactions)) : ?>
+                                                                <?php foreach ($transactions as $transaction) : ?>
+                                                                <tr>
+                                                                    <!-- Column 1: Order ID -->
+                                                                    <td>
+                                                                        <small class="text-muted d-block">#<?php echo htmlspecialchars($transaction['order_id']); ?></small>
+                                                                    </td>
+
+                                                                    <!-- Column 2: Payment Method -->
+                                                                    <td>
+                                                                        <h6 class="mb-0 text-truncate" style="max-width: 180px;">
+                                                                            <?php echo htmlspecialchars(str_replace('_', ' ', strtoupper($transaction['payment_method'] ?? 'N/A'))); ?>
+                                                                        </h6>
+                                                                    </td>
+
+                                                                    <!-- Column 3: Transaction Reference -->
+                                                                    <td>
+                                                                        <small class="text-muted d-block text-truncate" style="max-width: 200px;">
+                                                                            <?php echo htmlspecialchars($transaction['transaction_reference'] ?? 'N/A'); ?>
+                                                                        </small>
+                                                                    </td>
+
+                                                                    <!-- Column 4: Amount -->
+                                                                    <td class="text-end">
+                                                                        <div class="user-progress d-flex align-items-center justify-content-end gap-1">
+                                                                            <span class="text-muted">LKR</span>
+                                                                            <h6 class="mb-0"><?php echo number_format($transaction['amount'], 2); ?></h6>
+                                                                        </div>
+                                                                    </td>
+
+                                                                    <!-- Column 5: Payment Status -->
+                                                                    <td class="text-center">
+                                                                        <span class="badge bg-label-<?php echo ($transaction['payment_status'] ?? '') === 'completed' ? 'success' : 'warning'; ?>">
+                                                                            <?php echo ucfirst(htmlspecialchars($transaction['payment_status'] ?? 'Completed')); ?>
+                                                                        </span>
+                                                                    </td>
+                                                                </tr>
+                                                                <?php endforeach; ?>
+                                                            <?php else : ?>
+                                                                <tr>
+                                                                    <td colspan="5" class="text-center py-3">No transactions found.</td>
+                                                                </tr>
+                                                            <?php endif; ?>
+                                                        </tbody>
+                                                    </table>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             
-                            <!-- Right Column: 4 Small Cards Together in a 2x2 Grid + Profile Report -->
+                            <!-- Right Column: 4 Small Cards + Profile Report -->
                             <div class="col-lg-4 col-md-4 order-1 mb-4">
                                 <div class="row">
-                                    <!-- Card 1: Profit -->
+                                    <!-- Card 1: Avg Order -->
                                     <div class="col-6 mb-4">
                                         <div class="card">
                                             <div class="card-body">
-                                                <div class="card-title d-flex align-items-start justify-content-between">
-                                                    <div class="avatar flex-shrink-0">
-                                                        <img src="../assets/img/icons/unicons/chart-success.png" alt="chart success" class="rounded" />
-                                                    </div>
-                                                    <div class="dropdown">
-                                                        <button class="btn p-0" type="button" id="cardOpt3" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                                        </button>
-                                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt3">
-                                                            <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <span class="fw-semibold d-block mb-1">Profit</span>
-                                                <h3 class="card-title mb-2">$12,628</h3>
-                                                <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +72.80%</small>
+                                                <span class="fw-semibold d-block mb-1">Avg Order</span>
+                                                <h3 class="card-title mb-2">LKR <?php echo number_format($avgProfit, 2); ?></h3>
+                                                <!-- <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +72.80%</small> -->
                                             </div>
                                         </div>
                                     </div>
 
-                                    <!-- Card 2: Sales -->
+                                    <!-- Card 2: Total Sales -->
                                     <div class="col-6 mb-4">
                                         <div class="card">
                                             <div class="card-body">
-                                                <div class="card-title d-flex align-items-start justify-content-between">
-                                                    <div class="avatar flex-shrink-0">
-                                                        <img src="../assets/img/icons/unicons/wallet-info.png" alt="Credit Card" class="rounded" />
-                                                    </div>
-                                                    <div class="dropdown">
-                                                        <button class="btn p-0" type="button" id="cardOpt6" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                                        </button>
-                                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt6">
-                                                            <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                                <span>Sales</span>
-                                                <h3 class="card-title text-nowrap mb-1">$4,679</h3>
-                                                <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.42%</small>
+                                                <span class="fw-semibold d-block mb-1">Sales</span>
+                                                <h3 class="card-title text-nowrap mb-1">LKR <?php echo number_format($totalSales, 2); ?></h3>
+                                                <!-- <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.42%</small> -->
                                             </div>
                                         </div>
                                     </div>
@@ -237,23 +183,9 @@ requireAdmin();
                                     <div class="col-6 mb-4">
                                         <div class="card">
                                             <div class="card-body">
-                                                <div class="card-title d-flex align-items-start justify-content-between">
-                                                    <div class="avatar flex-shrink-0">
-                                                        <img src="../assets/img/icons/unicons/paypal.png" alt="Credit Card" class="rounded" />
-                                                    </div>
-                                                    <div class="dropdown">
-                                                        <button class="btn p-0" type="button" id="cardOpt4" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                                        </button>
-                                                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="cardOpt4">
-                                                            <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                                 <span class="d-block mb-1">Payments</span>
-                                                <h3 class="card-title text-nowrap mb-2">$2,456</h3>
-                                                <small class="text-danger fw-semibold"><i class="bx bx-down-arrow-alt"></i> -14.82%</small>
+                                                <h3 class="card-title text-nowrap mb-2">LKR <?php echo number_format($totalPayments, 2); ?></h3>
+                                                <!-- <small class="text-danger fw-semibold"><i class="bx bx-down-arrow-alt"></i> -14.82%</small> -->
                                             </div>
                                         </div>
                                     </div>
@@ -262,47 +194,33 @@ requireAdmin();
                                     <div class="col-6 mb-4">
                                         <div class="card">
                                             <div class="card-body">
-                                                <div class="card-title d-flex align-items-start justify-content-between">
-                                                    <div class="avatar flex-shrink-0">
-                                                        <img src="../assets/img/icons/unicons/cc-primary.png" alt="Credit Card" class="rounded" />
-                                                    </div>
-                                                    <div class="dropdown">
-                                                        <button class="btn p-0" type="button" id="cardOpt1" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                                            <i class="bx bx-dots-vertical-rounded"></i>
-                                                        </button>
-                                                        <div class="dropdown-menu" aria-labelledby="cardOpt1">
-                                                            <a class="dropdown-item" href="javascript:void(0);">View More</a>
-                                                            <a class="dropdown-item" href="javascript:void(0);">Delete</a>
-                                                        </div>
-                                                    </div>
-                                                </div>
                                                 <span class="fw-semibold d-block mb-1">Transactions</span>
-                                                <h3 class="card-title mb-2">$14,857</h3>
-                                                <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.14%</small>
+                                                <h3 class="card-title mb-2"><?php echo number_format($totalTransactions); ?></h3>
+                                                <!-- <small class="text-success fw-semibold"><i class="bx bx-up-arrow-alt"></i> +28.14%</small> -->
                                             </div>
                                         </div>
                                     </div>
 
                                     <!-- Profile Report Card -->
-                                    <div class="col-12 mb-4">
+                                    <!-- <div class="col-12 mb-4">
                                         <div class="card">
                                             <div class="card-body">
                                                 <div class="d-flex justify-content-between flex-sm-row flex-column gap-3">
                                                     <div class="d-flex flex-sm-column flex-row align-items-start justify-content-between">
                                                         <div class="card-title">
                                                             <h5 class="text-nowrap mb-2">Profile Report</h5>
-                                                            <span class="badge bg-label-warning rounded-pill">Year 2021</span>
+                                                            <span class="badge bg-label-warning rounded-pill">Year <?php echo date('Y'); ?></span>
                                                         </div>
                                                         <div class="mt-sm-auto">
                                                             <small class="text-success text-nowrap fw-semibold"><i class="bx bx-chevron-up"></i> 68.2%</small>
-                                                            <h3 class="mb-0">$84,686k</h3>
+                                                            <h3 class="mb-0">LKR <?php echo number_format($totalSales, 2); ?></h3>
                                                         </div>
                                                     </div>
                                                     <div id="profileReportChart"></div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
+                                    </div> -->
                                 </div>
                             </div>
                         </div>
