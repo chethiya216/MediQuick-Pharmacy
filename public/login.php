@@ -3,15 +3,83 @@
 session_start();
 require_once '../includes/header.php'; 
 require_once '../includes/db.php';
+
 $message = '';
 $messageType = '';
 
+// ---------  Helper Function to Set Remember Me Cookie
+
+function handleRememberMe($conn, $role, $userId) {
+    if (!empty($_POST['rememberme'])) {
+        $token = bin2hex(random_bytes(32)); // 64-char random string
+        $hashedToken = hash('sha256', $token);
+
+        $table = ($role === 'staff') ? 'staff' : 'customers';
+        $idColumn = ($role === 'staff') ? 'staff_id' : 'customer_id';
+
+        // Store hashed token in DB
+        $stmt = $conn->prepare("UPDATE {$table} SET remember_token = ? WHERE {$idColumn} = ?");
+        $stmt->bind_param("ss", $hashedToken, $userId);
+        $stmt->execute();
+        $stmt->close();
+
+        // Store role + plain token in cookie
+        $cookieValue = $role . ':' . $token;
+        setcookie('remember_me', $cookieValue, [
+            'expires'  => time() + (86400 * 30), // 30 Days
+            'path'     => '/',
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+    }
+}
+
+
+// --------  Auto-Login Check via Cookie (If no active session)
+
+if (!isset($_SESSION['user_id']) && !empty($_COOKIE['remember_me'])) {
+    $parts = explode(':', $_COOKIE['remember_me'], 2);
+
+    if (count($parts) === 2) {
+        $role = $parts[0];
+        $rawToken = $parts[1];
+        $hashedToken = hash('sha256', $rawToken);
+
+        $table = ($role === 'staff') ? 'staff' : 'customers';
+        $idColumn = ($role === 'staff') ? 'staff_id' : 'customer_id';
+
+        $stmt = $conn->prepare("SELECT * FROM {$table} WHERE remember_token = ? AND status = 'active' LIMIT 1");
+        $stmt->bind_param("s", $hashedToken);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($user) {
+            session_regenerate_id(true);
+            $_SESSION['user_id'] = $user[$idColumn];
+            $_SESSION['first_name'] = $user['first_name'];
+            $_SESSION['last_name'] = $user['last_name'];
+            $_SESSION['email'] = $user['email'];
+            $_SESSION['role'] = ($role === 'staff') ? $user['role'] : 'customer';
+
+            $redirectUrl = ($role === 'staff') ? "../public/admin/index.php" : "../public/index.html";
+            header("Location: " . $redirectUrl);
+            exit;
+        } else {
+            // Invalid token — clear broken cookie
+            setcookie('remember_me', '', time() - 3600, '/');
+        }
+    }
+}
+
+
+
+//  -----------  POST Login Handler
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $email = strtolower(
-        trim($_POST['email'] ?? '')
-    );
-
+    $email = strtolower(trim($_POST['email'] ?? ''));
     $password = $_POST['password'] ?? '';
 
     if ($email === '' || $password === '' ) {
@@ -20,14 +88,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     } else {
 
+        // 1. Check Customers Table
         $sql = "
-            SELECT
-                customer_id,
-                first_name,
-                last_name,
-                email,
-                password_hash,
-                status
+            SELECT customer_id, first_name, last_name, email, password_hash, status
             FROM customers
             WHERE email = ?
             LIMIT 1
@@ -44,9 +107,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($user['status'] !== 'active') {
                 $message = "Your account is not active.";
                 $messageType = "danger";
-            } elseif (
-                password_verify($password, $user['password_hash'])
-            ) {
+            } elseif (password_verify($password, $user['password_hash'])) {
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['customer_id'];
                 $_SESSION['first_name'] = $user['first_name'];
@@ -54,26 +115,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['email'] = $user['email'];
                 $_SESSION['role'] = 'customer';
 
+                // Save Remember Me Cookie
+                handleRememberMe($conn, 'customer', $user['customer_id']);
+
                 header("Location: ../public/index.html");
                 exit;
 
             } else {
-
                 $message = "Invalid email or password.";
                 $messageType = "danger";
             }
 
         } else {
 
+            // 2. Check Staff Table
             $sql = "
-                SELECT
-                    staff_id,
-                    first_name,
-                    last_name,
-                    email,
-                    password_hash,
-                    role,
-                    status
+                SELECT staff_id, first_name, last_name, email, password_hash, role, status
                 FROM staff
                 WHERE email = ?
                 LIMIT 1
@@ -86,16 +143,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $staff = $result->fetch_assoc();
             $stmt->close();
 
-
             if (!$staff) {
                 $message = "Invalid email or password.";
                 $messageType = "danger";
             } elseif ($staff['status'] !== 'active') {
                 $message = "Your account is not active.";
                 $messageType = "danger";
-            } elseif (
-                password_verify($password, $staff['password_hash'])
-            ) {
+            } elseif (password_verify($password, $staff['password_hash'])) {
 
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $staff['staff_id'];
@@ -103,6 +157,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $_SESSION['last_name'] = $staff['last_name'];
                 $_SESSION['email'] = $staff['email'];
                 $_SESSION['role'] = $staff['role'];
+
+                // Save Remember Me Cookie
+                handleRememberMe($conn, 'staff', $staff['staff_id']);
 
                 header("Location: ../public/admin/index.php");
                 exit;
@@ -149,13 +206,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                     <form action="login.php" method="POST">
                         
-                        <!-- Email Field (Fixed name attribute to match PHP 'email') -->
+                        <!-- Email Field -->
                         <div class="mb-3">
                             <div class="input-group border rounded bg-light">
                                 <span class="input-group-text bg-transparent border-0 ps-3 text-muted">
                                     <i class="fas fa-envelope"></i>
                                 </span>
-                                <input type="email" class="form-control bg-transparent border-0 py-3 pe-3" id="login-email" name="email" placeholder="Email address" required>
+                                <input type="email" class="form-control bg-transparent border-0 py-3 pe-3" id="login-email" name="email" placeholder="Email address" value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" required>
                             </div>
                         </div>
                         
