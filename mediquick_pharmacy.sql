@@ -476,7 +476,7 @@ INSERT INTO `products` (
     1, 
     'tablet', 
     '500mg / 65mg', 
-    17.00, 
+    15.00, 
     0.00, 
     0, 
     100, 
@@ -863,6 +863,40 @@ CREATE TABLE IF NOT EXISTS `suppliers` (
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`supplier_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- =====================================================
+-- Wishlist Table
+-- =====================================================
+
+CREATE TABLE IF NOT EXISTS wishlist (
+    wishlist_id INT NOT NULL AUTO_INCREMENT,
+    customer_id INT NOT NULL,
+    product_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+
+    PRIMARY KEY (wishlist_id),
+
+    UNIQUE KEY unique_customer_product (customer_id, product_id),
+
+    CONSTRAINT fk_wishlist_customer
+        FOREIGN KEY (customer_id)
+        REFERENCES customers(customer_id)
+        ON DELETE CASCADE,
+
+    CONSTRAINT fk_wishlist_product
+        FOREIGN KEY (product_id)
+        REFERENCES products(product_id)
+        ON DELETE CASCADE
+) ENGINE=InnoDB
+DEFAULT CHARSET=utf8mb4
+COLLATE=utf8mb4_unicode_ci;
+
+
+
+
+
+
+
 
 --
 -- Dumping data for table `suppliers`
