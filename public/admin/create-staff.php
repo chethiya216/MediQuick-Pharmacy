@@ -4,490 +4,253 @@ require_once '../../includes/auth.php';
 
 requireAdmin();
 
-require_once '../../includes/db.php';
-
-$message = '';
-$messageType = '';
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-
-    $firstName = trim(
-        $_POST['first_name'] ?? ''
-    );
-
-    $lastName = trim(
-        $_POST['last_name'] ?? ''
-    );
-
-    $email = strtolower(
-        trim($_POST['email'] ?? '')
-    );
-
-    $password = $_POST['password'] ?? '';
-
-    $confirmPassword =
-        $_POST['confirm_password'] ?? '';
-
-    $role = strtolower(
-        trim($_POST['role'] ?? '')
-    );
-
-
-    /*
-    |--------------------------------------------------------------------------
-    | Validation
-    |--------------------------------------------------------------------------
-    */
-
-    if (
-        $firstName === '' ||
-        $lastName === '' ||
-        $email === '' ||
-        $password === '' ||
-        $confirmPassword === '' ||
-        $role === ''
-    ) {
-
-        $message =
-            "Please fill in all required fields.";
-
-        $messageType = "error";
-
-    } elseif (
-        !filter_var(
-            $email,
-            FILTER_VALIDATE_EMAIL
-        )
-    ) {
-
-        $message =
-            "Please enter a valid email address.";
-
-        $messageType = "error";
-
-    } elseif (
-        $password !== $confirmPassword
-    ) {
-
-        $message =
-            "Passwords do not match.";
-
-        $messageType = "error";
-
-    } elseif (
-        strlen($password) < 8
-    ) {
-
-        $message =
-            "Password must be at least 8 characters.";
-
-        $messageType = "error";
-
-    } elseif (
-        !in_array(
-            $role,
-            [
-                'admin',
-                'pharmacist',
-                'superadmin'
-            ],
-            true
-        )
-    ) {
-
-        $message =
-            "Invalid staff role.";
-
-        $messageType = "error";
-
-    } elseif (
-        $role === 'superadmin' &&
-        getUserRole() !== 'superadmin'
-    ) {
-
-        $message =
-            "Only a superadmin can create another superadmin.";
-
-        $messageType = "error";
-
-    } else {
-
-        /*
-        |--------------------------------------------------------------------------
-        | Check Customer Email
-        |--------------------------------------------------------------------------
-        */
-
-        $sql = "
-            SELECT customer_id
-            FROM customers
-            WHERE email = ?
-            LIMIT 1
-        ";
-
-        $stmt = $conn->prepare($sql);
-
-        $stmt->bind_param("s", $email);
-
-        $stmt->execute();
-
-        $stmt->store_result();
-
-        $customerExists =
-            $stmt->num_rows > 0;
-
-        $stmt->close();
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Check Staff Email
-        |--------------------------------------------------------------------------
-        */
-
-        $sql = "
-            SELECT staff_id
-            FROM staff
-            WHERE email = ?
-            LIMIT 1
-        ";
-
-        $stmt = $conn->prepare($sql);
-
-        $stmt->bind_param("s", $email);
-
-        $stmt->execute();
-
-        $stmt->store_result();
-
-        $staffExists =
-            $stmt->num_rows > 0;
-
-        $stmt->close();
-
-
-        if (
-            $customerExists ||
-            $staffExists
-        ) {
-
-            $message =
-                "This email is already registered.";
-
-            $messageType = "error";
-
-        } else {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Create Staff
-            |--------------------------------------------------------------------------
-            */
-
-            $staffId =
-                'STF-' .
-                strtoupper(
-                    bin2hex(
-                        random_bytes(4)
-                    )
-                );
-
-            $passwordHash =
-                password_hash(
-                    $password,
-                    PASSWORD_DEFAULT
-                );
-
-
-            $sql = "
-                INSERT INTO staff
-                (
-                    staff_id,
-                    first_name,
-                    last_name,
-                    email,
-                    password_hash,
-                    role,
-                    status
-                )
-                VALUES (?, ?, ?, ?, ?, ?, 'active')
-            ";
-
-            $stmt =
-                $conn->prepare($sql);
-
-
-            if (!$stmt) {
-
-                $message =
-                    "Database error: " .
-                    $conn->error;
-
-                $messageType = "error";
-
-            } else {
-
-                $stmt->bind_param(
-                    "ssssss",
-                    $staffId,
-                    $firstName,
-                    $lastName,
-                    $email,
-                    $passwordHash,
-                    $role
-                );
-
-
-                if ($stmt->execute()) {
-
-                    $message =
-                        "Staff account created successfully.";
-
-                    $messageType =
-                        "success";
-
-                } else {
-
-                    $message =
-                        "Failed to create staff account: " .
-                        $stmt->error;
-
-                    $messageType =
-                        "error";
-                }
-
-
-                $stmt->close();
-            }
-        }
-    }
-}
+// Pull any flash message + old input left by the handler, then clear it
+// so it doesn't persist across a page refresh.
+$message = $_SESSION['staff_form_message'] ?? '';
+$messageType = $_SESSION['staff_form_message_type'] ?? '';
+$old = $_SESSION['staff_form_old'] ?? [];
+
+unset(
+    $_SESSION['staff_form_message'],
+    $_SESSION['staff_form_message_type'],
+    $_SESSION['staff_form_old']
+);
 
 ?>
-
 <!DOCTYPE html>
 
-<html lang="en">
-
-<head>
-
-    <meta charset="UTF-8">
-
+<!-- =========================================================
+* Styled using the Sneat - Bootstrap 5 HTML Admin Template
+* "Register Basic" auth card layout
+==============================================================
+-->
+<html
+  lang="en"
+  class="light-style customizer-hide"
+  dir="ltr"
+  data-theme="theme-default"
+  data-assets-path="../admin-assets/assets/"
+  data-template="vertical-menu-template-free"
+>
+  <head>
+    <style>
+.authentication-inner {
+    max-width: 700px !important;
+    width: 100% !important;
+}
+</style>
+    <meta charset="utf-8" />
     <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
+    />
 
     <title>Create Staff Account</title>
 
+    <meta name="description" content="" />
 
-    <style>
+    <!-- Favicon -->
+    <link rel="icon" type="image/x-icon" href="../admin-assets/assets/img/favicon/favicon.ico" />
 
-        body {
-            font-family: Arial, sans-serif;
-            background: #f2f4f7;
-            padding: 40px 20px;
-        }
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
+      rel="stylesheet"
+    />
 
-        .container {
-            max-width: 500px;
-            margin: auto;
-            background: white;
-            padding: 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,.1);
-        }
+    <!-- Icons -->
+    <link rel="stylesheet" href="../admin-assets/assets/vendor/fonts/boxicons.css" />
 
-        h2 {
-            text-align: center;
-        }
+    <!-- Core CSS -->
+    <link rel="stylesheet" href="../admin-assets/assets/vendor/css/core.css" class="template-customizer-core-css" />
+    <link rel="stylesheet" href="../admin-assets/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
+    <link rel="stylesheet" href="../admin-assets/assets/css/demo.css" />
 
-        label {
-            display: block;
-            margin-top: 15px;
-            font-weight: bold;
-        }
+    <!-- Vendors CSS -->
+    <link rel="stylesheet" href="../admin-assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
 
-        input,
-        select {
-            width: 100%;
-            padding: 11px;
-            margin-top: 6px;
-            box-sizing: border-box;
-        }
+    <!-- Page CSS -->
+    <link rel="stylesheet" href="../admin-assets/assets/vendor/css/pages/page-auth.css" />
 
-        button {
-            width: 100%;
-            padding: 12px;
-            margin-top: 20px;
-            border: none;
-            background: #007bff;
-            color: white;
-            cursor: pointer;
-        }
+    <!-- Helpers -->
+    <script src="../admin-assets/assets/vendor/js/helpers.js"></script>
+    <script src="../admin-assets/assets/js/config.js"></script>
+  </head>
 
-        .success {
-            background: #d4edda;
-            color: #155724;
-            padding: 12px;
-        }
+  <body>
+    <!-- Content -->
+    <div class="container-xxl">
+      <div class="authentication-wrapper authentication-basic container-p-y">
+        <div class="authentication-inner">
 
-        .error {
-            background: #f8d7da;
-            color: #721c24;
-            padding: 12px;
-        }
+          <!-- Create Staff Card -->
+          <div class="card">
+            <div class="card-body">
 
-        .back {
-            margin-top: 20px;
-            text-align: center;
-        }
+              <!-- Logo -->
+<div class="app-brand justify-content-center">
+    <a href="../admin/index.php" class="app-brand-link gap-2">
+        <span
+            class="app-brand-text fw-bolder"
+            style="font-size: 28px; color: #696cff;"
+        >
+            MediQuick Admin
+        </span>
+    </a>
+</div>
+<!-- /Logo -->
 
-    </style>
+              <h4 class="mb-2 text-center">Create Staff Account</h4>
+              <p class="mb-4 text-center">Add a new admin, pharmacist, or superadmin to the system.</p>
 
-</head>
+              <?php if ($message !== ''): ?>
+                <div class="alert <?= $messageType === 'success' ? 'alert-success' : 'alert-danger' ?>" role="alert">
+                  <?= htmlspecialchars($message) ?>
+                </div>
+              <?php endif; ?>
 
+              <form id="formCreateStaff" class="mb-3" method="POST" action="create-staff-handler.php">
 
-<body>
+                <div class="row">
+                  <div class="mb-3 col-6">
+                    <label for="first_name" class="form-label">First Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="first_name"
+                      name="first_name"
+                      placeholder="Enter first name"
+                      value="<?= htmlspecialchars($old['first_name'] ?? '') ?>"
+                      required
+                    />
+                  </div>
 
+                  <div class="mb-3 col-6">
+                    <label for="last_name" class="form-label">Last Name</label>
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="last_name"
+                      name="last_name"
+                      placeholder="Enter last name"
+                      value="<?= htmlspecialchars($old['last_name'] ?? '') ?>"
+                      required
+                    />
+                  </div>
+                </div>
 
-<div class="container">
+                <div class="mb-3">
+                  <label for="email" class="form-label">Email</label>
+                  <input
+                    type="email"
+                    class="form-control"
+                    id="email"
+                    name="email"
+                    placeholder="Enter email address"
+                    value="<?= htmlspecialchars($old['email'] ?? '') ?>"
+                    required
+                  />
+                </div>
 
+                <div class="mb-3 form-password-toggle">
+                  <label class="form-label" for="password">Password</label>
+                  <div class="input-group input-group-merge">
+                    <input
+                      type="password"
+                      id="password"
+                      class="form-control"
+                      name="password"
+                      placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                      aria-describedby="password"
+                      minlength="8"
+                      required
+                    />
+                    <span class="input-group-text cursor-pointer toggle-password"><i class="bx bx-hide"></i></span>
+                  </div>
+                </div>
 
-    <h2>
-        Create Staff Account
-    </h2>
+                <div class="mb-3 form-password-toggle">
+                  <label class="form-label" for="confirm_password">Confirm Password</label>
+                  <div class="input-group input-group-merge">
+                    <input
+                      type="password"
+                      id="confirm_password"
+                      class="form-control"
+                      name="confirm_password"
+                      placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                      aria-describedby="confirm_password"
+                      minlength="8"
+                      required
+                    />
+                    <span class="input-group-text cursor-pointer toggle-password"><i class="bx bx-hide"></i></span>
+                  </div>
+                </div>
 
+                <div class="mb-3">
+                  <label for="role" class="form-label">Staff Role</label>
+                  <select class="form-select" id="role" name="role" required>
+                    <option value="">Select role</option>
+                    <option value="admin" <?= (($old['role'] ?? '') === 'admin') ? 'selected' : '' ?>>Admin</option>
+                    <option value="pharmacist" <?= (($old['role'] ?? '') === 'pharmacist') ? 'selected' : '' ?>>Pharmacist</option>
+                    <?php if (getUserRole() === 'superadmin'): ?>
+                      <option value="superadmin" <?= (($old['role'] ?? '') === 'superadmin') ? 'selected' : '' ?>>Superadmin</option>
+                    <?php endif; ?>
+                  </select>
+                </div>
 
-    <?php if ($message !== ''): ?>
+                <button class="btn btn-primary d-grid w-100" type="submit">Create Staff Account</button>
+              </form>
 
-        <div class="<?= htmlspecialchars($messageType) ?>">
+              <p class="text-center">
+                <a href="../admin/index.php">
+                  <i class="bx bx-chevron-left scaleX-n1-rtl bx-sm"></i>
+                  Back to Dashboard
+                </a>
+              </p>
 
-            <?= htmlspecialchars($message) ?>
+              <p class="text-center">
+                <a href="../logout.php">Logout</a>
+              </p>
+
+            </div>
+          </div>
+          <!-- /Create Staff Card -->
 
         </div>
-
-    <?php endif; ?>
-
-
-    <form method="POST">
-
-
-        <label>
-            First Name
-        </label>
-
-        <input
-            type="text"
-            name="first_name"
-            required
-        >
-
-
-        <label>
-            Last Name
-        </label>
-
-        <input
-            type="text"
-            name="last_name"
-            required
-        >
-
-
-        <label>
-            Email
-        </label>
-
-        <input
-            type="email"
-            name="email"
-            required
-        >
-
-
-        <label>
-            Password
-        </label>
-
-        <input
-            type="password"
-            name="password"
-            minlength="8"
-            required
-        >
-
-
-        <label>
-            Confirm Password
-        </label>
-
-        <input
-            type="password"
-            name="confirm_password"
-            minlength="8"
-            required
-        >
-
-
-        <label>
-            Staff Role
-        </label>
-
-        <select
-            name="role"
-            required
-        >
-
-            <option value="">
-                Select role
-            </option>
-
-            <option value="admin">
-                Admin
-            </option>
-
-            <option value="pharmacist">
-                Pharmacist
-            </option>
-
-            <?php if (getUserRole() === 'superadmin'): ?>
-
-                <option value="superadmin">
-                    Superadmin
-                </option>
-
-            <?php endif; ?>
-
-        </select>
-
-
-        <button type="submit">
-            Create Staff Account
-        </button>
-
-
-    </form>
-
-
-    <div class="back">
-
-        <a href="../admin/index.php">
-            Back to Dashboard
-        </a>
-
-        &nbsp; | &nbsp;
-
-        <a href="../logout.php">
-            Logout
-        </a>
-
+      </div>
     </div>
+    <!-- / Content -->
 
+    <!-- Core JS -->
+    <script src="../admin-assets/assets/vendor/libs/jquery/jquery.js"></script>
+    <script src="../admin-assets/assets/vendor/libs/popper/popper.js"></script>
+    <script src="../admin-assets/assets/vendor/js/bootstrap.js"></script>
+    <script src="../admin-assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.js"></script>
+    <script src="../admin-assets/assets/vendor/js/menu.js"></script>
 
-</div>
+    <!-- Main JS -->
+    <script src="../admin-assets/assets/js/main.js"></script>
 
+    <!-- Page JS: show/hide password toggle -->
+    <script>
+      document.querySelectorAll('.toggle-password').forEach(function (toggle) {
+        toggle.addEventListener('click', function () {
+          const input = this.closest('.input-group').querySelector('input');
+          const icon = this.querySelector('i');
+          if (input.type === 'password') {
+            input.type = 'text';
+            icon.classList.remove('bx-hide');
+            icon.classList.add('bx-show');
+          } else {
+            input.type = 'password';
+            icon.classList.remove('bx-show');
+            icon.classList.add('bx-hide');
+          }
+        });
+      });
+    </script>
 
-</body>
-
+  </body>
 </html>
