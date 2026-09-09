@@ -1,6 +1,6 @@
 <?php
 require_once('../includes/db.php');
-require_once __DIR__ . '/../includes/header.php';
+require_once ('../includes/header.php');
 
 $sql = "SELECT
             p.product_id,
@@ -342,7 +342,6 @@ function productPriceData($product)
     .carousel-content h1{font-size:2.2rem!important;}
 }
 </style>
-
     <!-- Carousel Start -->
     <div class="container-fluid carousel bg-light px-0">
         <div class="row g-0 justify-content-end">
