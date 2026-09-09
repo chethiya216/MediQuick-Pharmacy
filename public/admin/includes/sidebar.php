@@ -203,7 +203,7 @@
     </li>
 
     <li class="menu-item menu-logout">
-      <a href="logout.php" class="menu-link">
+      <a href="/MediQuick-Pharmacy/public/logout.php" class="menu-link">
         <i class="menu-icon tf-icons bx bx-log-out"></i>
         <div data-i18n="Log out">
           Log out

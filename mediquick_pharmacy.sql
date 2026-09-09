@@ -476,7 +476,7 @@ INSERT INTO `products` (
     1, 
     'tablet', 
     '500mg / 65mg', 
-    15.00, 
+    17.00, 
     0.00, 
     0, 
     100, 

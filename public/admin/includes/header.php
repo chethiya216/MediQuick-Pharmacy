@@ -1,3 +1,8 @@
+<?php 
+
+    $userInitial = !empty($_SESSION['first_name']) ? strtoupper(substr($_SESSION['first_name'], 0, 1)) : 'U';
+
+?>
 
 <nav
     class="layout-navbar container-xxl navbar navbar-expand-xl navbar-detached align-items-center bg-navbar-theme"
@@ -74,69 +79,67 @@
 
         <ul class="navbar-nav flex-row align-items-center ms-auto">
             <!-- Cart -->
-            <li class="nav-item me-3">
+            <!-- <li class="nav-item me-3">
                 <a class="nav-link" href="cart.php">
                     <i class="bx bx-cart-alt bx-sm"></i>
                 </a>
-            </li>
+            </li> -->
             <!-- /Cart -->
 
             <!-- User -->
-            <li class="nav-item navbar-dropdown dropdown-user dropdown">
-                <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
-                    <div class="avatar avatar-online">
-                        <img src="../admin-assets/assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
-                    </div>
-                </a>
-                <ul class="dropdown-menu dropdown-menu-end">
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <div class="avatar avatar-online">
-                                        <img src="../assets/img/avatars/1.png" alt class="w-px-40 h-auto rounded-circle" />
+            <div class="d-flex align-items-center justify-content-end gap-2">
+                <p class="mb-0 fs-6 text-dark">
+    <span class="text-muted fw-normal">Welcome,</span> 
+    <span class="fw-bold text-primary"><?php echo htmlspecialchars(trim(($_SESSION['first_name'] ?? '') . ' ' . ($_SESSION['last_name'] ?? '')) ?: 'User'); ?></span>
+</p>
+                <li class="nav-item navbar-dropdown dropdown-user dropdown">
+                    <a class="nav-link dropdown-toggle hide-arrow" href="javascript:void(0);" data-bs-toggle="dropdown">
+                        <div class="avatar avatar-online">
+                            <!-- Initial Badge in Navbar -->
+                            <span class="avatar-initial rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">
+                                <?php echo $userInitial; ?>
+                            </span>
+                        </div>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li>
+                            <a class="dropdown-item" href="#">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0 me-3">
+                                        <div class="avatar avatar-online">
+                                            <!-- Initial Badge in Dropdown Menu -->
+                                            <span class="avatar-initial rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold" style="width: 40px; height: 40px;">
+                                                <?php echo $userInitial; ?>
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <span class="fw-semibold d-block"><?php echo htmlspecialchars($_SESSION['first_name'] ?? 'User'); ?></span>
+                                        <small class="text-muted"><?php echo htmlspecialchars($_SESSION['role'] ?? 'Role'); ?></small>
                                     </div>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <span class="fw-semibold d-block"><?php echo $_SESSION['first_name']; ?></span>
-                                    <small class="text-muted"><?php echo $_SESSION['role']; ?></small>
-                                </div>
-                            </div>
-                        </a>
-                    </li>
-                    <li>
-                        <div class="dropdown-divider"></div>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="bx bx-user me-2"></i>
-                            <span class="align-middle">My Profile</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="bx bx-receipt me-2"></i>
-                            <span class="align-middle">My Orders</span>
-                        </a>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="#">
-                            <i class="bx bx-cog me-2"></i>
-                            <span class="align-middle">Settings</span>
-                        </a>
-                    </li>
-                    <li>
-                        <div class="dropdown-divider"></div>
-                    </li>
-                    <li>
-                        <a class="dropdown-item" href="auth-login-basic.html">
-                            <i class="bx bx-power-off me-2"></i>
-                            <span class="align-middle">Log Out</span>
-                        </a>
-                    </li>
-                </ul>
-            </li>
+                            </a>
+                        </li>
+                        <li>
+                            <div class="dropdown-divider"></div>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="profile.php">
+                                <i class="bx bx-user me-2"></i>
+                                <span class="align-middle">My Profile</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" href="../logout.php">
+                                <i class="bx bx-power-off me-2"></i>
+                                <span class="align-middle">Log Out</span>
+                            </a>
+                        </li>
+                    </ul>
+                
+                </li>
             <!--/ User -->
+            </div>
         </ul>
     </div>
 </nav>
