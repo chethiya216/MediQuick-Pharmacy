@@ -166,8 +166,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <i class="fas fa-key"></i>
                                 </span>
                                 <input type="password" class="form-control bg-transparent border-0 py-3" id="login-password" name="password" placeholder="Password" required>
-                                <span class="input-group-text bg-transparent border-0 pe-3 text-muted" id="togglePassword" style="cursor: pointer;">
-                                    <i class="fas fa-eye" id="toggleIcon"></i>
+                                <span class="input-group-text bg-transparent border-0 pe-3 text-muted" 
+                                    data-toggle="password" 
+                                    data-target="login-password" 
+                                    style="cursor: pointer;">
+                                    <i class="fas fa-eye"></i>
                                 </span>
                             </div>
                         </div>

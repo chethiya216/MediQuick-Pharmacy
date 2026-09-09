@@ -163,18 +163,20 @@
   });
 })(jQuery);
 
-document
-  .getElementById("togglePassword")
-  .addEventListener("click", function () {
-    const passwordInput = document.getElementById("login-password");
-    const toggleIcon = document.getElementById("toggleIcon");
+// Universal Password Toggle (Works across all forms dynamically)
+document.addEventListener("click", function (e) {
+  const toggleBtn = e.target.closest('[data-toggle="password"]');
+  if (!toggleBtn) return;
 
-    // Toggle the type attribute
-    const type =
-      passwordInput.getAttribute("type") === "password" ? "text" : "password";
-    passwordInput.setAttribute("type", type);
+  const targetInputId = toggleBtn.getAttribute("data-target");
+  const passwordInput = document.getElementById(targetInputId);
+  const toggleIcon = toggleBtn.querySelector("i") || toggleBtn;
 
-    // Toggle the eye / eye-slash icon class
+  if (passwordInput) {
+    const isPassword = passwordInput.getAttribute("type") === "password";
+    passwordInput.setAttribute("type", isPassword ? "text" : "password");
+
     toggleIcon.classList.toggle("fa-eye");
     toggleIcon.classList.toggle("fa-eye-slash");
-  });
+  }
+});
