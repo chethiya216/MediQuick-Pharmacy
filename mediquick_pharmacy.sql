@@ -885,6 +885,33 @@ INSERT INTO `suppliers` (`supplier_id`, `name`, `contact_person`, `address`, `ph
 (14, 'Zenith Pharma Corp', 'Norman Osborn', '99 Oscorp Plaza, New York, NY', '800-555-0204', 'sales@zenithpharma.com', '2026-08-27 16:23:47', '2026-08-27 16:23:47'),
 (15, 'Reliant Medical Logistics', 'Pamela Isley', '55 Green St, Gotham, NY', '800-555-0205', 'support@reliantmed.com', '2026-08-27 16:23:47', '2026-08-27 16:23:47');
 
+
+DROP TABLE IF EXISTS `contact_messages`;
+CREATE TABLE `contact_messages` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `customer_id` INT DEFAULT NULL,
+  `name` VARCHAR(100) NOT NULL,
+  `email` VARCHAR(150) NOT NULL,
+  `phone` VARCHAR(20) NOT  NULL,
+  `subject` VARCHAR(255) DEFAULT NULL,
+  `message` TEXT NOT NULL,
+  `status` ENUM('unread', 'read', 'replied') DEFAULT 'unread',
+  `received_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  CONSTRAINT `fk_contact_customer` 
+    FOREIGN KEY (`customer_id`) 
+    REFERENCES `customers` (`customer_id`) 
+    ON DELETE SET NULL 
+    ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO `contact_messages` (`customer_id`, `name`, `email`, `subject`, `message`, `status`, `received_at`) VALUES
+(1, 'John Doe', 'john.doe@example.com', 'Order Status Inquiry', 'Hello, I placed order #1024 yesterday and wanted to check when it will be shipped. Thank you!', 'unread', '2026-09-08 09:15:00'),
+(2, 'Sarah Smith', 'sarah.smith@example.com', 'Damaged Item Received', 'Hi Team, my recent package arrived with a broken outer seal. Can I request a replacement or return?', 'read', '2026-09-05 14:30:22'),
+(3, 'Michael Brown', 'mbrown99@example.com', 'Account Password Reset', 'I am having trouble resetting my password via email. Could support please assist?', 'replied', '2026-08-28 11:45:10'),
+(3, 'Alice Johnson', 'alice.j@gmail.com', 'Question About Product Availability', 'Hi, will the wireless mechanical keyboard be back in stock anytime soon?', 'unread', '2026-09-09 18:20:05'),
+(2, 'David Wilson', 'dwilson_tech@yahoo.com', 'Partnership Request', 'Good day! I represent a local logistics company and would love to discuss potential business collaboration.', 'read', '2026-09-01 16:05:40'),
+(1, 'Emily Davis', 'emily.davis@hotmail.com', 'Bulk Order Discount', 'Hello, I am looking to purchase 50 units for a company event. Do you offer bulk discounts?', 'replied', '2026-08-20 10:00:00');
+
 -- --------------------------------------------------------
 
 --
