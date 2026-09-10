@@ -1,4 +1,5 @@
 <?php
+session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
@@ -24,6 +25,28 @@ ORDER BY cm.id DESC";
 $stmt = $conn->prepare($customerMessagesQuery);
 $stmt->execute();
 $messages = $stmt->get_result();
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
+    $messageId = intval($_POST['message_id'] ?? 0);
+    $status = trim($_POST['status'] ?? '');
+
+    // Allowed status values
+    $allowedStatuses = ['unread', 'read', 'replied', 'archived'];
+
+    if ($messageId > 0 && in_array($status, $allowedStatuses, true)) {
+        $stmt = $conn->prepare("UPDATE contact_messages SET status = ? WHERE id = ?");
+        $stmt->bind_param("si", $status, $messageId);
+
+        if ($stmt->execute()) {
+            $_SESSION['success_msg'] = "Message status updated successfully!";
+        } else {
+            $_SESSION['error_msg'] = "Failed to update status.";
+        }
+        $stmt->close();
+    } else {
+        $_SESSION['error_msg'] = "Invalid input data.";
+    }
+}
 
 ?>
 
@@ -168,19 +191,25 @@ $messages = $stmt->get_result();
                                                             </div>
                                                         </div>
 
-                                                        <!-- <form method="POST" action="reply_message.php">
+                                                        <form method="POST" action="customer-messages.php" class="mt-3">
                                                             <input type="hidden" name="message_id" value="<?php echo $msgId; ?>">
+                                                            
                                                             <div class="mb-3">
-                                                                <label for="replyMessage<?php echo $msgId; ?>" class="form-label fw-semibold">Quick Reply</label>
-                                                                <textarea class="form-control" name="reply_text" id="replyMessage<?php echo $msgId; ?>" rows="3" placeholder="Write your response..."></textarea>
+                                                                <label for="statusSelect<?php echo $msgId; ?>" class="form-label fw-semibold">Update Status:</label>
+                                                                <select name="status" id="statusSelect<?php echo $msgId; ?>" class="form-select">
+                                                                    <option value="unread" <?php echo ($status === 'unread') ? 'selected' : ''; ?>>Unread</option>
+                                                                    <option value="read" <?php echo ($status === 'read') ? 'selected' : ''; ?>>Read</option>
+                                                                    <option value="replied" <?php echo ($status === 'replied') ? 'selected' : ''; ?>>Replied</option>
+                                                                </select>
                                                             </div>
+
                                                             <div class="modal-footer px-0 pb-0">
                                                                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                                                                <button type="submit" class="btn btn-primary">
-                                                                    <i class="bx bx-paper-plane me-1"></i> Send Reply
+                                                                <button type="submit" name="update_status" class="btn btn-primary">
+                                                                    <i class="bx bx-check-circle me-1"></i> Save Changes
                                                                 </button>
                                                             </div>
-                                                        </form> -->
+                                                        </form>
                                                     </div>
                                                 </div>
                                             </div>
