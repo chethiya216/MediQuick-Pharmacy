@@ -107,3 +107,51 @@ function requirePharmacist(): void
         die("Access denied.");
     }
 }
+
+function getUserById($userId) {
+    global $conn;
+
+    if (!$userId || !$conn) {
+        return null;
+    }
+
+    // 1. Check staff table first
+    $sql = "SELECT staff_id, first_name, last_name, email, role, status, hire_date 
+            FROM staff 
+            WHERE staff_id = ? 
+            LIMIT 1";
+            
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param("s", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($user) {
+            return $user;
+        }
+    }
+
+    // 2. If not in staff, check customers table
+    $sql = "SELECT customer_id, first_name, last_name, email 
+            FROM customers 
+            WHERE customer_id = ? 
+            LIMIT 1";
+
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param("s", $userId);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $user = $result->fetch_assoc();
+        $stmt->close();
+
+        if ($user) {
+            return $user;
+        }
+    }
+
+    return null;
+}

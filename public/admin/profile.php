@@ -9,6 +9,27 @@ require_once __DIR__ . '/../../includes/db.php';
 
 $pageTitle = "My Profile - MediQuick";
 
+// Get logged-in user details from session
+$userId = $_SESSION['user_id'] ?? $_SESSION['staff_id'] ?? null;
+$user   = getUserById($userId);
+
+if (!$user) {
+    $_SESSION['form_errors'] = ["User not found."];
+    header("Location: ../logout.php");
+    exit();
+}
+
+// Pull flash messages/old inputs, then clear them
+$errors  = $_SESSION['profile_errors'] ?? [];
+$success = $_SESSION['profile_success'] ?? '';
+$old     = $_SESSION['profile_old'] ?? [];
+
+unset(
+    $_SESSION['profile_errors'],
+    $_SESSION['profile_success'],
+    $_SESSION['profile_old']
+);
+
 ?>
 
 <!DOCTYPE html>
@@ -49,132 +70,111 @@ $pageTitle = "My Profile - MediQuick";
 
               <div class="row">
                 <div class="col-md-12">
-                  <!-- <ul class="nav nav-pills flex-column flex-md-row mb-3">
-                    <li class="nav-item">
-                      <a class="nav-link active" href="javascript:void(0);"><i class="bx bx-user me-1"></i> Account</a>
-                    </li>
-                  </ul> -->
+
+                  <!-- Alert Messages -->
+                  <?php if (!empty($errors)): ?>
+                    <div class="alert alert-danger" role="alert">
+                      <?php foreach ($errors as $error): ?>
+                        <div><?= htmlspecialchars($error) ?></div>
+                      <?php endforeach; ?>
+                    </div>
+                  <?php endif; ?>
+
+                  <?php if (!empty($success)): ?>
+                    <div class="alert alert-success" role="alert">
+                      <?= htmlspecialchars($success) ?>
+                    </div>
+                  <?php endif; ?>
+
                   <div class="card mb-4">
                     <h5 class="card-header">Profile Details</h5>
-                    <!-- Account -->
-                    <!-- <div class="card-body">
-                      <div class="d-flex align-items-start align-items-sm-center gap-4">
-                        <img
-                          src="../assets/img/avatars/1.png"
-                          alt="user-avatar"
-                          class="d-block rounded"
-                          height="100"
-                          width="100"
-                          id="uploadedAvatar"
-                        />
-                        <div class="button-wrapper">
-                          <label for="upload" class="btn btn-primary me-2 mb-4" tabindex="0">
-                            <span class="d-none d-sm-block">Upload new photo</span>
-                            <i class="bx bx-upload d-block d-sm-none"></i>
-                            <input
-                              type="file"
-                              id="upload"
-                              class="account-file-input"
-                              hidden
-                              accept="image/png, image/jpeg"
-                            />
-                          </label>
-                          <button type="button" class="btn btn-outline-secondary account-image-reset mb-4">
-                            <i class="bx bx-reset d-block d-sm-none"></i>
-                            <span class="d-none d-sm-block">Reset</span>
-                          </button>
-
-                          <p class="text-muted mb-0">Allowed JPG, GIF or PNG. Max size of 800K</p>
-                        </div>
-                      </div>
-                    </div> -->
                     <hr class="my-0" />
                     <div class="card-body">
-                      <form id="formAccountSettings" method="POST" onsubmit="return false">
+                      
+                      <!-- Submit form to profile handler -->
+                      <form id="formAccountSettings" method="POST" action="handlers/profile-handler.php">
                         <div class="row">
+
                           <div class="mb-3 col-md-6">
-                            <label for="firstName" class="form-label">First Name</label>
+                            <label for="first_name" class="form-label">First Name</label>
                             <input
                               class="form-control"
                               type="text"
-                              id="firstName"
-                              name="firstName"
-                              value="John"
-                              autofocus
+                              id="first_name"
+                              name="first_name"
+                              value="<?= htmlspecialchars($old['first_name'] ?? $user['first_name'] ?? ''); ?>"
+                              required
                             />
                           </div>
+
                           <div class="mb-3 col-md-6">
-                            <label for="lastName" class="form-label">Last Name</label>
-                            <input class="form-control" type="text" name="lastName" id="lastName"
-                             value="Doe" 
-                             />
+                            <label for="last_name" class="form-label">Last Name</label>
+                            <input
+                              class="form-control"
+                              type="text"
+                              name="last_name"
+                              id="last_name"
+                              value="<?= htmlspecialchars($old['last_name'] ?? $user['last_name'] ?? ''); ?>" 
+                              required
+                            />
                           </div>
+
                           <div class="mb-3 col-md-6">
                             <label for="email" class="form-label">E-mail</label>
                             <input
                               class="form-control"
-                              type="text"
+                              type="email"
                               id="email"
                               name="email"
-                              value="john.doe@example.com"
-                              placeholder="john.doe@example.com"
+                              value="<?= htmlspecialchars($old['email'] ?? $user['email'] ?? ''); ?>"
+                              required
                             />
                           </div>
 
+                          <hr>
+                          <!-- New Password Field -->
                           <div class="mb-3 col-md-6">
-                            <label class="form-label" for="phoneNumber">Phone Number</label>
-                            <div class="input-group input-group-merge">
-                              <!-- <span class="input-group-text">(+1)</span> -->
-                              <input
-                                type="text"
-                                id="phoneNumber"
-                                name="phoneNumber"
-                                class="form-control"
-                                placeholder="077 123 4567"
-                              />
-                            </div>
-                          </div>
-                          <div class="mb-3 col-md-6">
-                            <label for="address" class="form-label">Address</label>
-                            <input type="text" class="form-control" id="address" name="address" placeholder="Address" />
-                          </div>
-
-                        <!-- Date of Birth -->
-                          <div class="col-md-6">
-                            <label class="form-label" for="date_of_birth">Date of Birth</label>
-                                
-                            <input
-                                type="date"
-                                id="date_of_birth"
-                                name="date_of_birth"
-                                class="form-control"
-                                value="<?= htmlspecialchars($customer['date_of_birth'] ?? ''); ?>"
-                            />
-                          </div>
-
-                        <hr class="color-transparent" />
-
-                        <div class="mb-3 col-md-6">
                             <label for="password" class="form-label">Reset Password</label>
                             <div class="form-password-toggle">
-                                <div class="input-group input-group-merge">
-                                    <input
-                                        type="password"
-                                        class="form-control"
-                                        id="password"
-                                        name="password"
-                                        placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                        maxlength="255" 
-                                    />
-                                    <span class="input-group-text cursor-pointer" id="togglePassword">
-                                        <i class="bx bx-hide"></i>
-                                    </span>
-                                </div>
+                              <div class="input-group input-group-merge">
+                                <input
+                                  type="password"
+                                  class="form-control"
+                                  id="password"
+                                  name="password"
+                                  placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                  maxlength="255" 
+                                />
+                                <span class="input-group-text cursor-pointer toggle-password" data-target="password">
+                                  <i class="bx bx-hide"></i>
+                                </span>
+                              </div>
                             </div>
-                            <!-- Fine print paragraph -->
                             <small class="text-muted d-block mt-1">
-                                Leave blank to keep current password. *Must be at least 8 characters long if changing.
+                              Leave blank to keep current password. *Must be at least 8 characters long if changing.
                             </small>
+                          </div>
+
+                          <!-- Confirm Password Field -->
+                          <div class="mb-3 col-md-6">
+                            <label for="confirm_password" class="form-label">Confirm Password</label>
+                            <div class="form-password-toggle">
+                              <div class="input-group input-group-merge">
+                                <input
+                                  type="password"
+                                  class="form-control"
+                                  id="confirm_password"
+                                  name="confirm_password"
+                                  placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                  maxlength="255" 
+                                />
+                                <span class="input-group-text cursor-pointer toggle-password" data-target="confirm_password">
+                                  <i class="bx bx-hide"></i>
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
                         </div>
 
                         <div class="mt-2">
@@ -182,9 +182,11 @@ $pageTitle = "My Profile - MediQuick";
                           <button type="reset" class="btn btn-outline-secondary">Cancel</button>
                         </div>
                       </form>
+
                     </div>
                     <!-- /Account -->
                   </div>
+
                   <div class="card">
                     <h5 class="card-header">Delete Account</h5>
                     <div class="card-body">
@@ -194,22 +196,27 @@ $pageTitle = "My Profile - MediQuick";
                           <p class="mb-0">Once you delete your account, there is no going back. Please be certain.</p>
                         </div>
                       </div>
-                      <form id="formAccountDeactivation" onsubmit="return false">
-                        <div class="form-check mb-3">
-                          <input
-                            class="form-check-input"
-                            type="checkbox"
-                            name="accountActivation"
-                            id="accountActivation"
-                          />
-                          <label class="form-check-label" for="accountActivation">
-                            I confirm my account deactivation
-                          </label>
-                        </div>
-                        <button type="submit" class="btn btn-danger deactivate-account">Deactivate Account</button>
+                      <form id="formAccountDeactivation" method="POST" action="handlers/profile-handler.php">
+                          <!-- Action flag -->
+                          <input type="hidden" name="action" value="deactivate_account" />
+
+                          <div class="form-check mb-3">
+                              <input
+                                  class="form-check-input"
+                                  type="checkbox"
+                                  name="accountActivation"
+                                  id="accountActivation"
+                                  required
+                              />
+                              <label class="form-check-label" for="accountActivation">
+                                  I confirm my account deactivation
+                              </label>
+                          </div>
+                          <button type="submit" class="btn btn-danger deactivate-account">Deactivate Account</button>
                       </form>
                     </div>
                   </div>
+
                 </div>
               </div>
             </div>
@@ -230,5 +237,29 @@ $pageTitle = "My Profile - MediQuick";
     </div>
     <!-- / Layout wrapper -->
 
+    <!-- Page JS: Password Visibility Toggles -->
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const toggleButtons = document.querySelectorAll('.toggle-password');
+
+        toggleButtons.forEach(button => {
+          button.addEventListener('click', function () {
+            const targetId = this.getAttribute('data-target');
+            const passwordInput = document.getElementById(targetId);
+
+            if (passwordInput) {
+              const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+              passwordInput.setAttribute('type', type);
+              
+              const icon = this.querySelector('i');
+              if (icon) {
+                icon.classList.toggle('bx-hide');
+                icon.classList.toggle('bx-show');
+              }
+            }
+          });
+        });
+      });
+    </script>
   </body>
 </html>
