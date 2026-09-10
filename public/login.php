@@ -110,6 +110,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif (password_verify($password, $user['password_hash'])) {
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['customer_id'];
+                $_SESSION['customer_id'] = $user['customer_id']; // For Dynamic Customer ID
                 $_SESSION['first_name'] = $user['first_name'];
                 $_SESSION['last_name'] = $user['last_name'];
                 $_SESSION['email'] = $user['email'];
