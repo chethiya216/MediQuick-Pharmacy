@@ -1,5 +1,5 @@
 <?php 
-
+ob_start();   
 session_start();
 require_once '../includes/head.php'; 
 require_once '../includes/db.php';
@@ -57,6 +57,11 @@ if (!isset($_SESSION['user_id']) && !empty($_COOKIE['remember_me'])) {
 
         if ($user) {
             session_regenerate_id(true);
+
+            if ($role === 'customer') {
+                $_SESSION['customer_id'] = $user[$idColumn]; // Safe for customer table (customer_id)
+            }
+
             $_SESSION['user_id'] = $user[$idColumn];
             $_SESSION['first_name'] = $user['first_name'];
             $_SESSION['last_name'] = $user['last_name'];
@@ -110,6 +115,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             } elseif (password_verify($password, $user['password_hash'])) {
                 session_regenerate_id(true);
                 $_SESSION['user_id'] = $user['customer_id'];
+                $_SESSION['customer_id'] = $user['customer_id']; // For Dynamic Customer ID
                 $_SESSION['first_name'] = $user['first_name'];
                 $_SESSION['last_name'] = $user['last_name'];
                 $_SESSION['email'] = $user['email'];

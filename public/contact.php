@@ -3,8 +3,12 @@ require_once('../includes/db.php');
 require_once('../includes/auth.php');
 require_once('../includes/header.php');
 
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 // Fetch customer ID from session if available (returns null for guests)
-$customerId = $_SESSION['customer_id'] ?? null;
+$customerId = $_SESSION['customer_id'] ?? $_SESSION['user_id'] ?? '';
 ?>
 
 <!DOCTYPE html>
@@ -31,7 +35,7 @@ $customerId = $_SESSION['customer_id'] ?? null;
                             <div class="row g-4 wow fadeInUp" data-wow-delay="0.1s">
                                 
                                 <!-- Dynamic Customer ID -->
-                                <input type="hidden" id="customer_id" name="customer_id" value="<?php echo htmlspecialchars($customerId ?? ''); ?>">
+                               <input type="hidden" id="customer_id" name="customer_id" value="<?php echo htmlspecialchars($customerId); ?>">
 
                                 <div class="col-lg-12 col-xl-6">
                                     <div class="form-floating">
