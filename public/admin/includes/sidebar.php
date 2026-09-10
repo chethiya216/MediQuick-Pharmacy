@@ -193,6 +193,15 @@
       </ul>
     </li>
 
+     <li class="menu-item menu-logout">
+      <a href="customer-messages.php" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-comment-detail"></i>
+        <div data-i18n="Create Staff Member">
+          Customer Messages
+        </div>
+      </a>
+    </li>
+
     <li class="menu-item menu-logout">
       <a href="create-staff.php" class="menu-link">
         <i class="menu-icon tf-icons bx bx-user-plus"></i>
