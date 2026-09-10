@@ -470,7 +470,7 @@ $currentPage = basename($_SERVER['PHP_SELF'] ?? '');
                             <a href="cart.php" class="dropdown-item"> My Cart</a>
                             <a href="#" class="dropdown-item"> Notifications</a>
                             <a href="#" class="dropdown-item"> Account Settings</a>
-                            <a href="#" class="dropdown-item"> My Account</a>
+                            <a href="manageaccount.php" class="dropdown-item <?= $currentPage === 'manageaccount.php' ? 'active' : '' ?>"> My Account</a>
                             <a href="#" class="dropdown-item"> Log Out</a>
                         </div>
                     </div>
