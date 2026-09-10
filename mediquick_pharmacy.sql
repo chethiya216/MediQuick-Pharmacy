@@ -892,6 +892,7 @@ CREATE TABLE `contact_messages` (
   `customer_id` INT DEFAULT NULL,
   `name` VARCHAR(100) NOT NULL,
   `email` VARCHAR(150) NOT NULL,
+  `phone` VARCHAR(20) NOT  NULL,
   `subject` VARCHAR(255) DEFAULT NULL,
   `message` TEXT NOT NULL,
   `status` ENUM('unread', 'read', 'replied') DEFAULT 'unread',
