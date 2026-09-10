@@ -1,0 +1,230 @@
+/*** Spinner Start ***/
+#spinner {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .5s ease-out, visibility 0s linear .5s;
+    z-index: 99999;
+}
+
+#spinner.show {
+    transition: opacity .5s ease-out, visibility 0s linear 0s;
+    visibility: visible;
+    opacity: 1;
+}
+/*** Spinner End ***/
+
+.back-to-top {
+    position: fixed;
+    right: 30px;
+    bottom: 30px;
+    display: flex;
+    width: 45px;
+    height: 45px;
+    align-items: center;
+    justify-content: center;
+    transition: 0.5s;
+    z-index: 99;
+}
+
+/*** Button Start ***/
+.btn {
+    font-weight: 600;
+    transition: .5s;
+}
+
+.btn-square { width: 32px; height: 32px; }
+.btn-sm-square { width: 34px; height: 34px; }
+.btn-md-square { width: 44px; height: 44px; }
+.btn-lg-square { width: 56px; height: 56px; }
+
+.btn-square,
+.btn-sm-square,
+.btn-md-square,
+.btn-lg-square {
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: normal;
+    border-radius: 50%;
+}
+
+.btn.btn-primary {
+    background: var(--bs-primary) !important;
+    color: var(--bs-white) !important;
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    transition: 0.5s;
+}
+
+.btn.btn-primary:hover {
+    background: var(--mq-cyan) !important;
+    color: var(--bs-white);
+}
+
+.btn.btn-secondary {
+    background: var(--mq-blue-deep) !important;
+    color: var(--bs-white);
+    font-family: 'Roboto', sans-serif;
+    font-weight: 400;
+    border: 1px solid var(--mq-blue-deep);
+    transition: 0.5s;
+}
+
+.btn.btn-secondary:hover {
+    background: var(--mq-indigo) !important;
+    color: var(--bs-white) !important;
+}
+
+/*** Topbar Start ***/
+.topbar {
+    padding: 2px 10px 2px 20px;
+    background: var(--mq-blue-deep) !important;
+}
+
+.topbar a,
+.topbar a i {
+    transition: 0.5s;
+}
+
+.topbar a:hover,
+.topbar a i:hover {
+    color: var(--bs-primary) !important;
+}
+
+@media (max-width: 768px) {
+    .topbar { display: none; }
+}
+/*** Topbar End ***/
+
+/*** Footer Start ***/
+.footer {
+    background: var(--bs-dark);
+}
+.footer .footer-item a {
+    line-height: 30px;
+    color: var(--bs-body);
+    transition: 0.5s;
+}
+
+.footer .footer-item p {
+    line-height: 30px;
+}
+
+.footer .footer-item a:hover {
+    letter-spacing: 2px;
+    color: var(--bs-primary);
+}
+/*** Footer End ***/
+
+/*** copyright Start ***/
+.copyright {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background: var(--mq-indigo) !important;
+}
+/*** copyright end ***/
+
+/* =========================================================
+   CUSTOM COLOR PALETTE INTEGRATION 
+   Palette: #2720FF, #006AFF, #008DFF, #00A3FF, #00B4DA, #00C391
+   ========================================================= */
+:root {
+    --mq-indigo: #2720FF;
+    --mq-blue-deep: #006AFF;
+    --mq-blue-bright: #008DFF;
+    --mq-sky: #00A3FF;
+    --mq-cyan: #00B4DA;
+    
+    --bs-primary: #00C391; /* Main accent color from your palette */
+    --bs-primary-rgb: 0, 195, 145;
+
+    --mq-soft: #F3FAFF;
+    --mq-line: #DCEFF8;
+    --mq-text: #294052;
+}
+
+/* Hero area */
+.container-fluid.carousel {
+    background: linear-gradient(135deg, var(--mq-soft) 0%, #fff 62%) !important;
+}
+.header-carousel-item { min-height: 430px; }
+.carousel-content { padding: 45px !important; }
+.carousel-content h4 {
+    color: var(--mq-sky) !important;
+    letter-spacing: 2px !important;
+    font-size: 15px !important;
+}
+.carousel-content h1 {
+    color: var(--mq-text) !important;
+    font-weight: 800 !important;
+    line-height: 1.12;
+}
+.carousel-content p { color: #657887 !important; }
+.carousel-content .btn-primary {
+    padding: 13px 30px !important;
+    border-radius: 50px !important;
+}
+
+/* Right hero banner */
+.carousel-header-banner {
+    border-radius: 22px !important;
+    overflow: hidden;
+    box-shadow: 0 16px 40px rgba(0, 106, 255, .15);
+}
+.carousel-header-banner img { filter: saturate(.95); }
+.carousel-banner-offer {
+    background: rgba(255, 255, 255, .94) !important;
+    padding: 14px 18px !important;
+}
+.carousel-banner {
+    background: linear-gradient(180deg, rgba(39, 32, 255, .50), rgba(0, 106, 255, .88)) !important;
+}
+
+/* Services */
+.container-fluid.px-0 { background: #fff; }
+.container-fluid.px-0 .p-4 {
+    min-height: 115px;
+    transition: all .25s ease;
+}
+.container-fluid.px-0 .p-4:hover {
+    background: var(--mq-soft);
+    transform: translateY(-3px);
+}
+
+/* Product section */
+.product { background: #fff !important; }
+.product h1 { color: var(--mq-text); font-weight: 800; }
+.product .nav-pills a {
+    border: 1px solid var(--mq-line) !important;
+    background: #fff !important;
+    transition: all .22s ease;
+}
+.product .nav-pills a.active {
+    background: var(--mq-blue-bright) !important;
+    border-color: var(--mq-blue-bright) !important;
+}
+.product .nav-pills a.active span {
+    color: #fff !important;
+}
+
+/* Buttons / Global Overrides */
+.btn-primary,
+.btn-primary:visited {
+    background: var(--bs-primary) !important;
+    border-color: var(--bs-primary) !important;
+    color: #fff !important;
+}
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+    background: var(--mq-cyan) !important;
+    border-color: var(--mq-cyan) !important;
+    color: #fff !important;
+}
+.bg-primary { background-color: var(--bs-primary) !important; }
+
+/* Responsive adjustments */
+@media(max-width: 767.98px) {
+    .carousel-content { padding: 25px !important; }
+    .carousel-content h1 { font-size: 2.2rem !important; }
+}
