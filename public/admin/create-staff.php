@@ -32,201 +32,165 @@ unset(
   data-assets-path="../admin-assets/assets/"
   data-template="vertical-menu-template-free"
 >
-  <head>
-    <style>
-.authentication-inner {
-    max-width: 700px !important;
-    width: 100% !important;
-}
-</style>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0"
-    />
 
-    <title>Create Staff Account</title>
-
-    <meta name="description" content="" />
-
-    <!-- Favicon -->
-    <link rel="icon" type="image/x-icon" href="../admin-assets/assets/img/favicon/favicon.ico" />
-
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,300;1,400;1,500;1,600;1,700&display=swap"
-      rel="stylesheet"
-    />
-
-    <!-- Icons -->
-    <link rel="stylesheet" href="../admin-assets/assets/vendor/fonts/boxicons.css" />
-
-    <!-- Core CSS -->
-    <link rel="stylesheet" href="../admin-assets/assets/vendor/css/core.css" class="template-customizer-core-css" />
-    <link rel="stylesheet" href="../admin-assets/assets/vendor/css/theme-default.css" class="template-customizer-theme-css" />
-    <link rel="stylesheet" href="../admin-assets/assets/css/demo.css" />
-
-    <!-- Vendors CSS -->
-    <link rel="stylesheet" href="../admin-assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
-
-    <!-- Page CSS -->
-    <link rel="stylesheet" href="../admin-assets/assets/vendor/css/pages/page-auth.css" />
-
-    <!-- Helpers -->
-    <script src="../admin-assets/assets/vendor/js/helpers.js"></script>
-    <script src="../admin-assets/assets/js/config.js"></script>
-  </head>
+<?php require_once __DIR__ . '/includes/head.php'; ?>
 
   <body>
     <!-- Content -->
-    <div class="container-xxl">
-      <div class="authentication-wrapper authentication-basic container-p-y">
-        <div class="authentication-inner">
+    <div class="d-flex justify-content-center align-items-center min-vh-100 px-3">
+      <div class="authentication-inner" style="max-width: 550px; width: 100%;">
 
-          <!-- Create Staff Card -->
-          <div class="card">
-            <div class="card-body">
+        <!-- Create Staff Card -->
+        <div class="card">
+          <div class="card-body">
 
-              <!-- Logo -->
-<div class="app-brand justify-content-center">
-    <a href="../admin/index.php" class="app-brand-link gap-2">
-        <span
-            class="app-brand-text fw-bolder"
-            style="font-size: 28px; color: #696cff;"
-        >
-            MediQuick Admin
-        </span>
-    </a>
-</div>
-<!-- /Logo -->
+            <!-- Logo -->
+            <div class="app-brand justify-content-center">
+                <a href="../admin/index.php" class="app-brand-link gap-2">
+                    <span
+                        class="app-brand-text fw-bolder mb-2"
+                        style="font-size: 28px; color: #696cff;"
+                    >
+                        MediQuick Admin
+                    </span>
+                </a>
+            </div>
+            <!-- /Logo -->
 
-              <h4 class="mb-2 text-center">Create Staff Account</h4>
-              <p class="mb-4 text-center">Add a new admin, pharmacist, or superadmin to the system.</p>
+            <h4 class="mb-2 mt-2 text-center">Create Staff Account</h4>
+            <p class="mb-4 text-center">
+                Add a new admin, pharmacist <?php echo (getUserRole() === 'superadmin') ? 'or superadmin' : ''; ?> to the system.
+            </p>
 
-              <?php if ($message !== ''): ?>
-                <div class="alert <?= $messageType === 'success' ? 'alert-success' : 'alert-danger' ?>" role="alert">
-                  <?= htmlspecialchars($message) ?>
-                </div>
-              <?php endif; ?>
+            <?php if ($message !== ''): ?>
+              <div class="alert <?= $messageType === 'success' ? 'alert-success' : 'alert-danger' ?>" role="alert">
+                <?= htmlspecialchars($message) ?>
+              </div>
+            <?php endif; ?>
 
-              <form id="formCreateStaff" class="mb-3" method="POST" action="create-staff-handler.php">
+            <form id="formCreateStaff" class="mb-3" method="POST" action="handlers/staff-handler.php">
 
-                <div class="row">
-                  <div class="mb-3 col-6">
-                    <label for="first_name" class="form-label">First Name</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="first_name"
-                      name="first_name"
-                      placeholder="Enter first name"
-                      value="<?= htmlspecialchars($old['first_name'] ?? '') ?>"
-                      required
-                    />
-                  </div>
-
-                  <div class="mb-3 col-6">
-                    <label for="last_name" class="form-label">Last Name</label>
-                    <input
-                      type="text"
-                      class="form-control"
-                      id="last_name"
-                      name="last_name"
-                      placeholder="Enter last name"
-                      value="<?= htmlspecialchars($old['last_name'] ?? '') ?>"
-                      required
-                    />
-                  </div>
-                </div>
-
-                <div class="mb-3">
-                  <label for="email" class="form-label">Email</label>
+              <div class="row">
+                <div class="mb-3 col-12 col-sm-6">
+                  <label for="first_name" class="form-label">First Name</label>
                   <input
-                    type="email"
+                    type="text"
                     class="form-control"
-                    id="email"
-                    name="email"
-                    placeholder="Enter email address"
-                    value="<?= htmlspecialchars($old['email'] ?? '') ?>"
+                    id="first_name"
+                    name="first_name"
+                    placeholder="Enter first name"
+                    value="<?= htmlspecialchars($old['first_name'] ?? '') ?>"
                     required
                   />
                 </div>
 
-                <div class="mb-3 form-password-toggle">
-                  <label class="form-label" for="password">Password</label>
-                  <div class="input-group input-group-merge">
-                    <input
-                      type="password"
-                      id="password"
-                      class="form-control"
-                      name="password"
-                      placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                      aria-describedby="password"
-                      minlength="8"
-                      required
-                    />
-                    <span class="input-group-text cursor-pointer toggle-password"><i class="bx bx-hide"></i></span>
-                  </div>
+                <div class="mb-3 col-12 col-sm-6">
+                  <label for="last_name" class="form-label">Last Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="last_name"
+                    name="last_name"
+                    placeholder="Enter last name"
+                    value="<?= htmlspecialchars($old['last_name'] ?? '') ?>"
+                    required
+                  />
                 </div>
+              </div>
 
-                <div class="mb-3 form-password-toggle">
-                  <label class="form-label" for="confirm_password">Confirm Password</label>
-                  <div class="input-group input-group-merge">
-                    <input
-                      type="password"
-                      id="confirm_password"
-                      class="form-control"
-                      name="confirm_password"
-                      placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                      aria-describedby="confirm_password"
-                      minlength="8"
-                      required
-                    />
-                    <span class="input-group-text cursor-pointer toggle-password"><i class="bx bx-hide"></i></span>
-                  </div>
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input
+                  type="email"
+                  class="form-control"
+                  id="email"
+                  name="email"
+                  placeholder="Enter email address"
+                  value="<?= htmlspecialchars($old['email'] ?? '') ?>"
+                  required
+                />
+              </div>
+
+              <div class="mb-3 form-password-toggle">
+                <label class="form-label" for="password">Password</label>
+                <div class="input-group input-group-merge">
+                  <input
+                    type="password"
+                    id="password"
+                    class="form-control"
+                    name="password"
+                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                    aria-describedby="password"
+                    minlength="8"
+                    required
+                  />
+                  <span class="input-group-text cursor-pointer toggle-password"><i class="bx bx-hide"></i></span>
                 </div>
+              </div>
 
-                <div class="mb-3">
-    <label for="role" class="form-label">Staff Role</label>
-    <select class="form-select" id="role" name="role" required>
-        <option value="">Select role</option>
+              <div class="mb-3 form-password-toggle">
+                <label class="form-label" for="confirm_password">Confirm Password</label>
+                <div class="input-group input-group-merge">
+                  <input
+                    type="password"
+                    id="confirm_password"
+                    class="form-control"
+                    name="confirm_password"
+                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                    aria-describedby="confirm_password"
+                    minlength="8"
+                    required
+                  />
+                  <span class="input-group-text cursor-pointer toggle-password"><i class="bx bx-hide"></i></span>
+                </div>
+              </div>
 
-        <option
-            value="admin"
-            <?= (($old['role'] ?? '') === 'admin') ? 'selected' : '' ?>
-        >
-            Admin
-        </option>
+              <div class="mb-3">
+                <label for="role" class="form-label">Staff Role</label>
+                <select class="form-select" id="role" name="role" required>
+                    <option value="">Select role</option>
 
-        <option
-            value="pharmacist"
-            <?= (($old['role'] ?? '') === 'pharmacist') ? 'selected' : '' ?>
-        >
-            Pharmacist
-        </option>
-    </select>
-</div>
-                <button class="btn btn-primary d-grid w-100" type="submit">Create Staff Account</button>
-              </form>
+                    <option
+                        value="admin"
+                        <?= (($old['role'] ?? '') === 'admin') ? 'selected' : '' ?>
+                    >
+                        Admin
+                    </option>
 
-              <p class="text-center">
-                <a href="../admin/index.php">
-                  <i class="bx bx-chevron-left scaleX-n1-rtl bx-sm"></i>
-                  Back to Dashboard
-                </a>
-              </p>
+                    <option
+                        value="pharmacist"
+                        <?= (($old['role'] ?? '') === 'pharmacist') ? 'selected' : '' ?>
+                    >
+                        Pharmacist
+                    </option>
+                    <?php if (getUserRole() === 'superadmin'): ?>
+                      <option
+                          value="superadmin"
+                          <?= (($old['role'] ?? '') === 'superadmin') ? 'selected' : '' ?>
+                      >
+                          Super Admin
+                      </option>
+                    <?php endif; ?>
+                </select>
+              </div>
+              <button class="btn btn-primary d-grid w-100" type="submit">Create Staff Account</button>
+            </form>
 
-              <p class="text-center">
-                <a href="../logout.php">Logout</a>
-              </p>
+            <p class="text-center">
+              <a href="../admin/index.php">
+                <i class="bx bx-chevron-left scaleX-n1-rtl bx-sm"></i>
+                Back to Dashboard
+              </a>
+            </p>
 
-            </div>
+            <p class="text-center">
+              <a href="../logout.php">Logout</a>
+            </p>
+
           </div>
-          <!-- /Create Staff Card -->
-
         </div>
+        <!-- /Create Staff Card -->
+
       </div>
     </div>
     <!-- / Content -->
