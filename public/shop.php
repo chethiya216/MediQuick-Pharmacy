@@ -4,10 +4,6 @@
  * Shop Page
  */
 
-// ==================================================
-// ERROR REPORTING
-// ==================================================
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -38,19 +34,13 @@ require_once $baseDir . '/handlers/shop-handler.php';
 
 
 // ==================================================
-// FUNCTIONS
-// includes/functions.php
-// ==================================================
-
-require_once $rootDir . '/includes/functions.php';
-
-
-// ==================================================
 // PAGE SETTINGS
 // ==================================================
 
-$pageTitle  = 'MediQuick Pharmacy - Shop';
+$pageTitle = 'MediQuick Pharmacy - Shop';
+
 $activePage = 'shop.php';
+
 $pageHeading = 'Shop';
 
 $breadcrumb = [
@@ -100,47 +90,146 @@ $sort = $sort ?? 'newest';
 // HELPER FUNCTIONS
 // ==================================================
 
-if (!function_exists('shopProductImage')) {
+function shopProductImage($image)
+{
+    $image = trim((string) $image);
 
-    function shopProductImage($image)
-    {
-        $image = trim((string) $image);
-
-        if ($image === '') {
-            return 'assets/img/product-placeholder.jpg';
-        }
-
-        return $image;
+    if ($image === '') {
+        return 'img/product-placeholder.jpg';
     }
+
+    return $image;
 }
 
 
-if (!function_exists('shopFormatPrice')) {
-
-    function shopFormatPrice($price)
-    {
-        return number_format((float) $price, 2);
-    }
+function shopFormatPrice($price)
+{
+    return number_format((float) $price, 2);
 }
 
 
 // ==================================================
-// HEADER INCLUDE
+// FUNCTIONS
+// includes/functions.php
+// ==================================================
+
+require_once $rootDir . '/includes/functions.php';
+
+
+// ==================================================
+// HEADER
 // includes/header.php
 // ==================================================
 
-// IMPORTANT:
-// shop.php is inside /public
-// therefore ../includes/header.php is correct.
-
-include '../includes/header.php';
+require_once $rootDir . '/includes/header.php';
 
 ?>
 
 
 <!-- ==================================================
+     SHOP PAGE BUTTON COLOR PALETTE
+     Matches public/index.php Product "Add To Cart"
+     Main: #00C391
+     Hover: #00B4DA
+================================================== -->
+<style>
+    :root {
+        --mq-shop-primary: #00C391;
+        --mq-shop-primary-hover: #00B4DA;
+        --mq-shop-danger: #00A3FF;
+        --mq-shop-danger-hover: #008FE0;
+        --mq-shop-text: #294052;
+    }
+
+    /* Apply Filters */
+    .mq-shop-page .shop-filter-btn,
+    .mq-shop-page .shop-add-btn {
+        background: var(--mq-shop-primary) !important;
+        border: 1px solid var(--mq-shop-primary) !important;
+        color: #fff !important;
+        font-weight: 600;
+        transition: all .25s ease;
+    }
+
+    .mq-shop-page .shop-filter-btn:hover,
+    .mq-shop-page .shop-filter-btn:focus,
+    .mq-shop-page .shop-add-btn:hover,
+    .mq-shop-page .shop-add-btn:focus {
+        background: var(--mq-shop-primary-hover) !important;
+        border-color: var(--mq-shop-primary-hover) !important;
+        color: #fff !important;
+        box-shadow: none !important;
+    }
+
+    /* Clear Filters */
+    .mq-shop-page .shop-clear-btn {
+        background: #fff !important;
+        border: 1px solid var(--mq-shop-primary) !important;
+        color: var(--mq-shop-primary) !important;
+        font-weight: 600;
+        transition: all .25s ease;
+    }
+
+    .mq-shop-page .shop-clear-btn:hover,
+    .mq-shop-page .shop-clear-btn:focus {
+        background: var(--mq-shop-primary) !important;
+        border-color: var(--mq-shop-primary) !important;
+        color: #fff !important;
+        box-shadow: none !important;
+    }
+
+    /* View */
+    .mq-shop-page .shop-view-btn {
+        background: #fff !important;
+        border: 1px solid var(--mq-shop-primary) !important;
+        color: var(--mq-shop-primary) !important;
+        font-weight: 600;
+        transition: all .25s ease;
+    }
+
+    .mq-shop-page .shop-view-btn:hover,
+    .mq-shop-page .shop-view-btn:focus {
+        background: var(--mq-shop-primary) !important;
+        border-color: var(--mq-shop-primary) !important;
+        color: #fff !important;
+        box-shadow: none !important;
+    }
+
+    /* Out of Stock - kept red because it represents an unavailable state */
+    .mq-shop-page .shop-out-stock-btn {
+        background: var(--mq-shop-danger) !important;
+        border: 1px solid var(--mq-shop-danger) !important;
+        color: #fff !important;
+        font-weight: 600;
+        opacity: 1 !important;
+        cursor: not-allowed !important;
+    }
+
+    .mq-shop-page .shop-out-stock-btn:disabled {
+        background: var(--mq-shop-danger) !important;
+        border-color: var(--mq-shop-danger) !important;
+        color: #fff !important;
+        opacity: 1 !important;
+    }
+
+    /* Keep all shop action buttons visually consistent */
+    .mq-shop-page .shop-filter-btn,
+    .mq-shop-page .shop-clear-btn,
+    .mq-shop-page .shop-view-btn,
+    .mq-shop-page .shop-add-btn,
+    .mq-shop-page .shop-out-stock-btn {
+        border-radius: 10px !important;
+        min-height: 42px;
+    }
+</style>
+
+
+
+<!-- ==================================================
      SHOP PAGE
 ================================================== -->
+
+<div class="mq-shop-page">
 
 <div class="container-fluid py-5">
 
@@ -157,19 +246,29 @@ include '../includes/header.php';
 
                 <div class="bg-light rounded p-4">
 
-                    <!-- FILTER TITLE -->
+
+                    <!-- ==========================================
+                         FILTER TITLE
+                    =========================================== -->
 
                     <h4 class="mb-4">
                         Shop Filters
                     </h4>
 
 
-                    <!-- FILTER FORM -->
+                    <!-- ==========================================
+                         FILTER FORM
+                    =========================================== -->
 
-                    <form action="shop.php" method="GET">
+                    <form
+                        action="shop.php"
+                        method="GET"
+                    >
 
 
-                        <!-- SEARCH -->
+                        <!-- ======================================
+                             SEARCH
+                        ======================================= -->
 
                         <div class="mb-4">
 
@@ -186,17 +285,15 @@ include '../includes/header.php';
                                 name="search"
                                 class="form-control"
                                 placeholder="Search medicine..."
-                                value="<?= htmlspecialchars(
-                                    (string) $search,
-                                    ENT_QUOTES,
-                                    'UTF-8'
-                                ) ?>"
+                                value="<?= htmlspecialchars($search) ?>"
                             >
 
                         </div>
 
 
-                        <!-- CATEGORY -->
+                        <!-- ======================================
+                             CATEGORY
+                        ======================================= -->
 
                         <div class="mb-4">
 
@@ -226,20 +323,16 @@ include '../includes/header.php';
                                         $catId = (int) (
                                             $category['category_id'] ?? 0
                                         );
-
-                                        $catName = $category['category_name'] ?? '';
                                         ?>
 
                                         <option
                                             value="<?= $catId ?>"
-                                            <?= (int) $categoryId === $catId
+                                            <?= $categoryId === $catId
                                                 ? 'selected'
                                                 : '' ?>
                                         >
                                             <?= htmlspecialchars(
-                                                $catName,
-                                                ENT_QUOTES,
-                                                'UTF-8'
+                                                $category['category_name'] ?? ''
                                             ) ?>
                                         </option>
 
@@ -252,7 +345,9 @@ include '../includes/header.php';
                         </div>
 
 
-                        <!-- PRICE RANGE -->
+                        <!-- ======================================
+                             PRICE RANGE
+                        ======================================= -->
 
                         <div class="mb-4">
 
@@ -260,9 +355,11 @@ include '../includes/header.php';
                                 Price Range
                             </label>
 
+
                             <div class="row g-2">
 
-                                <!-- MIN -->
+
+                                <!-- MIN PRICE -->
 
                                 <div class="col-6">
 
@@ -275,9 +372,7 @@ include '../includes/header.php';
                                         step="0.01"
                                         value="<?= $minPrice !== null
                                             ? htmlspecialchars(
-                                                (string) $minPrice,
-                                                ENT_QUOTES,
-                                                'UTF-8'
+                                                (string) $minPrice
                                             )
                                             : '' ?>"
                                     >
@@ -285,7 +380,7 @@ include '../includes/header.php';
                                 </div>
 
 
-                                <!-- MAX -->
+                                <!-- MAX PRICE -->
 
                                 <div class="col-6">
 
@@ -298,9 +393,7 @@ include '../includes/header.php';
                                         step="0.01"
                                         value="<?= $maxPrice !== null
                                             ? htmlspecialchars(
-                                                (string) $maxPrice,
-                                                ENT_QUOTES,
-                                                'UTF-8'
+                                                (string) $maxPrice
                                             )
                                             : '' ?>"
                                     >
@@ -312,7 +405,9 @@ include '../includes/header.php';
                         </div>
 
 
-                        <!-- PRESCRIPTION -->
+                        <!-- ======================================
+                             PRESCRIPTION FILTER
+                        ======================================= -->
 
                         <div class="mb-4">
 
@@ -322,6 +417,7 @@ include '../includes/header.php';
                             >
                                 Prescription
                             </label>
+
 
                             <select
                                 id="prescription"
@@ -333,6 +429,7 @@ include '../includes/header.php';
                                     All Products
                                 </option>
 
+
                                 <option
                                     value="required"
                                     <?= $prescription === 'required'
@@ -341,6 +438,7 @@ include '../includes/header.php';
                                 >
                                     Prescription Required
                                 </option>
+
 
                                 <option
                                     value="not_required"
@@ -356,7 +454,9 @@ include '../includes/header.php';
                         </div>
 
 
-                        <!-- SORT -->
+                        <!-- ======================================
+                             SORT
+                        ======================================= -->
 
                         <div class="mb-4">
 
@@ -366,6 +466,7 @@ include '../includes/header.php';
                             >
                                 Sort By
                             </label>
+
 
                             <select
                                 id="sort"
@@ -382,6 +483,7 @@ include '../includes/header.php';
                                     Newest
                                 </option>
 
+
                                 <option
                                     value="name_asc"
                                     <?= $sort === 'name_asc'
@@ -390,6 +492,7 @@ include '../includes/header.php';
                                 >
                                     Name A-Z
                                 </option>
+
 
                                 <option
                                     value="name_desc"
@@ -400,6 +503,7 @@ include '../includes/header.php';
                                     Name Z-A
                                 </option>
 
+
                                 <option
                                     value="price_low"
                                     <?= $sort === 'price_low'
@@ -408,6 +512,7 @@ include '../includes/header.php';
                                 >
                                     Price Low to High
                                 </option>
+
 
                                 <option
                                     value="price_high"
@@ -423,23 +528,24 @@ include '../includes/header.php';
                         </div>
 
 
-                        <!-- BUTTONS -->
+                        <!-- ======================================
+                             FILTER BUTTONS
+                        ======================================= -->
 
                         <div class="d-grid gap-2">
 
                             <button
                                 type="submit"
-                                class="btn btn-primary"
+                                class="btn btn-primary shop-filter-btn"
                             >
-                                <i class="fas fa-filter me-1"></i>
                                 Apply Filters
                             </button>
 
+
                             <a
                                 href="shop.php"
-                                class="btn btn-outline-secondary"
+                                class="btn btn-outline-secondary shop-clear-btn"
                             >
-                                <i class="fas fa-times me-1"></i>
                                 Clear Filters
                             </a>
 
@@ -459,17 +565,21 @@ include '../includes/header.php';
             <div class="col-lg-9">
 
 
-                <!-- SHOP HEADER -->
+                <!-- ==========================================
+                     SHOP HEADER
+                =========================================== -->
 
                 <div
                     class="d-flex justify-content-between align-items-center mb-4"
                 >
+
 
                     <div>
 
                         <h4 class="mb-1">
                             Pharmacy Products
                         </h4>
+
 
                         <p class="text-muted mb-0">
 
@@ -518,7 +628,9 @@ include '../includes/header.php';
 
                     <div class="row g-4">
 
+
                         <?php foreach ($products as $product): ?>
+
 
                             <?php
 
@@ -527,35 +639,44 @@ include '../includes/header.php';
                                 $product['product_id'] ?? 0
                             );
 
+
                             // Product name
                             $productName = $product['product_name'] ?? '';
+
 
                             // Description
                             $description = $product['description'] ?? '';
 
+
                             // Category
                             $categoryName = $product['category_name'] ?? '';
+
 
                             // Dosage form
                             $dosageForm = $product['dosage_form'] ?? '';
 
+
                             // Strength
                             $strength = $product['strength'] ?? '';
+
 
                             // Unit price
                             $unitPrice = (float) (
                                 $product['unit_price'] ?? 0
                             );
 
+
                             // Stock
                             $stockQuantity = (int) (
                                 $product['stock_quantity'] ?? 0
                             );
 
+
                             // Prescription
                             $requiresPrescription = (int) (
                                 $product['requires_prescription'] ?? 0
                             );
+
 
                             // Image
                             $image = shopProductImage(
@@ -565,42 +686,45 @@ include '../includes/header.php';
                             ?>
 
 
-                            <!-- PRODUCT CARD -->
+                            <!-- ======================================
+                                 PRODUCT CARD
+                            ======================================= -->
 
                             <div class="col-md-6 col-xl-4">
 
-                                <div class="card h-100 border-0 shadow-sm">
+
+                                <div
+                                    class="card h-100 border-0 shadow-sm"
+                                >
 
 
-                                    <!-- PRODUCT IMAGE -->
+                                    <!-- ==================================
+                                         PRODUCT IMAGE
+                                    =================================== -->
 
                                     <div
                                         class="position-relative bg-light"
-                                        style="height:220px;"
+                                        style="height: 220px;"
                                     >
 
                                         <img
-                                            src="<?= htmlspecialchars(
-                                                $image,
-                                                ENT_QUOTES,
-                                                'UTF-8'
-                                            ) ?>"
-                                            alt="<?= htmlspecialchars(
-                                                $productName,
-                                                ENT_QUOTES,
-                                                'UTF-8'
-                                            ) ?>"
+                                            src="<?= htmlspecialchars($image) ?>"
+                                            alt="<?= htmlspecialchars($productName) ?>"
                                             class="w-100 h-100"
-                                            style="object-fit:contain;"
-                                            onerror="this.onerror=null;this.src='assets/img/product-placeholder.jpg';"
+                                            style="object-fit: contain;"
+                                            onerror="this.onerror=null;this.src='img/product-placeholder.jpg';"
                                         >
 
                                     </div>
 
 
-                                    <!-- PRODUCT BODY -->
+                                    <!-- ==================================
+                                         PRODUCT BODY
+                                    =================================== -->
 
-                                    <div class="card-body d-flex flex-column">
+                                    <div
+                                        class="card-body d-flex flex-column"
+                                    >
 
 
                                         <!-- CATEGORY -->
@@ -610,11 +734,11 @@ include '../includes/header.php';
                                             <small
                                                 class="text-primary mb-2"
                                             >
+
                                                 <?= htmlspecialchars(
-                                                    $categoryName,
-                                                    ENT_QUOTES,
-                                                    'UTF-8'
+                                                    $categoryName
                                                 ) ?>
+
                                             </small>
 
                                         <?php endif; ?>
@@ -625,9 +749,7 @@ include '../includes/header.php';
                                         <h5 class="card-title mb-2">
 
                                             <?= htmlspecialchars(
-                                                $productName,
-                                                ENT_QUOTES,
-                                                'UTF-8'
+                                                $productName
                                             ) ?>
 
                                         </h5>
@@ -642,9 +764,7 @@ include '../includes/header.php';
                                             >
 
                                                 <?= htmlspecialchars(
-                                                    $description,
-                                                    ENT_QUOTES,
-                                                    'UTF-8'
+                                                    $description
                                                 ) ?>
 
                                             </p>
@@ -652,7 +772,9 @@ include '../includes/header.php';
                                         <?php endif; ?>
 
 
-                                        <!-- STRENGTH / DOSAGE -->
+                                        <!-- ==================================
+                                             STRENGTH / DOSAGE
+                                        =================================== -->
 
                                         <?php if (
                                             $strength !== '' ||
@@ -663,14 +785,15 @@ include '../includes/header.php';
                                                 class="small text-muted mb-3"
                                             >
 
+
                                                 <?php if ($strength !== ''): ?>
 
                                                     <span>
+
                                                         <?= htmlspecialchars(
-                                                            $strength,
-                                                            ENT_QUOTES,
-                                                            'UTF-8'
+                                                            $strength
                                                         ) ?>
+
                                                     </span>
 
                                                 <?php endif; ?>
@@ -691,57 +814,52 @@ include '../includes/header.php';
                                                 <?php if ($dosageForm !== ''): ?>
 
                                                     <span>
+
                                                         <?= htmlspecialchars(
-                                                            $dosageForm,
-                                                            ENT_QUOTES,
-                                                            'UTF-8'
+                                                            $dosageForm
                                                         ) ?>
+
                                                     </span>
 
                                                 <?php endif; ?>
+
 
                                             </div>
 
                                         <?php endif; ?>
 
 
-                                        <!-- PRESCRIPTION STATUS -->
+                                        <!-- ==================================
+                                             PRESCRIPTION STATUS
+                                        =================================== -->
 
-                                        <div class="mb-3">
+                                        <?php if ($requiresPrescription === 1): ?>
 
-                                            <?php if (
-                                                $requiresPrescription === 1
-                                            ): ?>
+                                            <div class="mb-3">
 
                                                 <span
                                                     class="badge bg-warning text-dark"
                                                 >
-                                                    <i class="fas fa-file-prescription me-1"></i>
                                                     Prescription Required
                                                 </span>
 
-                                            <?php else: ?>
+                                            </div>
 
-                                                <span
-                                                    class="badge bg-success"
-                                                >
-                                                    <i class="fas fa-check me-1"></i>
-                                                    No Prescription
-                                                </span>
-
-                                            <?php endif; ?>
-
-                                        </div>
+                                        <?php endif; ?>
 
 
-                                        <!-- PRICE / STOCK / BUTTONS -->
+                                        <!-- ==================================
+                                             PRICE + STOCK + BUTTONS
+                                        =================================== -->
 
                                         <div class="mt-auto">
 
 
                                             <!-- PRICE -->
 
-                                            <h5 class="text-primary mb-3">
+                                            <h5
+                                                class="text-primary mb-3"
+                                            >
 
                                                 Rs.
                                                 <?= shopFormatPrice(
@@ -771,6 +889,7 @@ include '../includes/header.php';
 
                                                 </p>
 
+
                                             <?php else: ?>
 
                                                 <p
@@ -793,14 +912,15 @@ include '../includes/header.php';
                                             <div class="d-flex gap-2">
 
 
-                                                <!-- VIEW -->
+                                                <!-- VIEW PRODUCT -->
 
                                                 <a
-                                                    href="product-details.php?id=<?= $productId ?>"
-                                                    class="btn btn-outline-primary flex-fill"
+                                                    href="product.php?id=<?= $productId ?>"
+                                                    class="btn btn-outline-primary flex-fill shop-view-btn"
                                                 >
-                                                    <i class="fas fa-eye me-1"></i>
+
                                                     View
+
                                                 </a>
 
 
@@ -810,7 +930,7 @@ include '../includes/header.php';
 
                                                     <a
                                                         href="cart.php?action=add&product_id=<?= $productId ?>"
-                                                        class="btn btn-primary flex-fill"
+                                                        class="btn btn-primary flex-fill shop-add-btn"
                                                     >
 
                                                         <i
@@ -821,17 +941,21 @@ include '../includes/header.php';
 
                                                     </a>
 
+
                                                 <?php else: ?>
 
                                                     <button
                                                         type="button"
-                                                        class="btn btn-secondary flex-fill"
+                                                        class="btn btn-secondary flex-fill shop-out-stock-btn"
                                                         disabled
                                                     >
+
                                                         Out of Stock
+
                                                     </button>
 
                                                 <?php endif; ?>
+
 
                                             </div>
 
@@ -842,6 +966,7 @@ include '../includes/header.php';
                                 </div>
 
                             </div>
+
 
                         <?php endforeach; ?>
 
@@ -857,6 +982,7 @@ include '../includes/header.php';
 
                     <div class="text-center py-5">
 
+
                         <div class="mb-4">
 
                             <i
@@ -865,23 +991,30 @@ include '../includes/header.php';
 
                         </div>
 
+
                         <h4>
                             No products found
                         </h4>
 
+
                         <p class="text-muted">
+
                             Try changing your search or filter options.
+
                         </p>
+
 
                         <a
                             href="shop.php"
                             class="btn btn-primary"
                         >
-                            <i class="fas fa-store me-1"></i>
+
                             View All Products
+
                         </a>
 
                     </div>
+
 
                 <?php endif; ?>
 
@@ -892,16 +1025,21 @@ include '../includes/header.php';
 
                 <?php if ($totalPages > 1): ?>
 
+
                     <div
                         class="d-flex justify-content-center mt-5"
                     >
 
-                        <nav aria-label="Shop pagination">
+                        <nav
+                            aria-label="Shop pagination"
+                        >
 
                             <ul class="pagination">
 
 
-                                <!-- PREVIOUS -->
+                                <!-- ==================================
+                                     PREVIOUS
+                                =================================== -->
 
                                 <?php if ($currentPage > 1): ?>
 
@@ -912,22 +1050,27 @@ include '../includes/header.php';
                                             href="<?= htmlspecialchars(
                                                 shopPageUrl(
                                                     $currentPage - 1
-                                                ),
-                                                ENT_QUOTES,
-                                                'UTF-8'
+                                                )
                                             ) ?>"
                                         >
+
                                             Previous
+
                                         </a>
 
                                     </li>
 
+
                                 <?php else: ?>
 
-                                    <li class="page-item disabled">
+                                    <li
+                                        class="page-item disabled"
+                                    >
 
                                         <span class="page-link">
+
                                             Previous
+
                                         </span>
 
                                     </li>
@@ -935,7 +1078,9 @@ include '../includes/header.php';
                                 <?php endif; ?>
 
 
-                                <!-- PAGE NUMBERS -->
+                                <!-- ==================================
+                                     PAGE NUMBERS
+                                =================================== -->
 
                                 <?php
 
@@ -958,8 +1103,10 @@ include '../includes/header.php';
                                     $page++
                                 ): ?>
 
+
                                     <li
-                                        class="page-item <?= $page === $currentPage
+                                        class="page-item
+                                        <?= $page === $currentPage
                                             ? 'active'
                                             : '' ?>"
                                     >
@@ -967,20 +1114,23 @@ include '../includes/header.php';
                                         <a
                                             class="page-link"
                                             href="<?= htmlspecialchars(
-                                                shopPageUrl($page),
-                                                ENT_QUOTES,
-                                                'UTF-8'
+                                                shopPageUrl($page)
                                             ) ?>"
                                         >
+
                                             <?= $page ?>
+
                                         </a>
 
                                     </li>
 
+
                                 <?php endfor; ?>
 
 
-                                <!-- NEXT -->
+                                <!-- ==================================
+                                     NEXT
+                                =================================== -->
 
                                 <?php if (
                                     $currentPage < $totalPages
@@ -993,27 +1143,33 @@ include '../includes/header.php';
                                             href="<?= htmlspecialchars(
                                                 shopPageUrl(
                                                     $currentPage + 1
-                                                ),
-                                                ENT_QUOTES,
-                                                'UTF-8'
+                                                )
                                             ) ?>"
                                         >
+
                                             Next
+
                                         </a>
 
                                     </li>
 
+
                                 <?php else: ?>
 
-                                    <li class="page-item disabled">
+                                    <li
+                                        class="page-item disabled"
+                                    >
 
                                         <span class="page-link">
+
                                             Next
+
                                         </span>
 
                                     </li>
 
                                 <?php endif; ?>
+
 
                             </ul>
 
@@ -1021,13 +1177,18 @@ include '../includes/header.php';
 
                     </div>
 
+
                 <?php endif; ?>
+
 
             </div>
 
         </div>
 
     </div>
+
+</div>
+
 
 </div>
 
