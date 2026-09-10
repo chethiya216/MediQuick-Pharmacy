@@ -143,7 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
                                             <td>
                                                 <span class="text-muted"><?php echo $formattedDate; ?></span>
                                             </td>
-                                            <td class="text-center">
+                                            <!-- <td class="text-center">
                                                 <div class="d-inline-block text-nowrap">
                                                     <button class="btn btn-sm btn-icon" data-bs-toggle="modal" data-bs-target="#viewMessageModal<?php echo $msgId; ?>" title="View">
                                                         <i class="bx bx-show text-primary"></i>
@@ -151,6 +151,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
                                                     <button class="btn btn-sm btn-icon" title="Delete">
                                                         <i class="bx bx-trash text-danger"></i>
                                                     </button>
+                                                </div>
+                                            </td> -->
+                                                <td class="text-center">
+                                                <div class="dropdown">
+                                                    <button type="button" class="btn p-0 dropdown-toggle hide-arrow" data-bs-toggle="dropdown">
+                                                        <i class="bx bx-dots-vertical-rounded"></i>
+                                                    </button>
+                                                    <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#viewMessageModal<?= $msgId; ?>">
+                                                            <i class="bx bx-show me-1 text-primary"></i> View Details
+                                                        </a>
+                                                        <a 
+                                                            class="dropdown-item text-danger" 
+                                                            href="javascript:void(0);"
+                                                            onclick="openDeleteConfirm(
+                                                                event, 
+                                                                <?= $msgId; ?>, 
+                                                                '<?= htmlspecialchars($subject, ENT_QUOTES); ?>', 
+                                                                'handlers/message-handler.php?action=delete&id=<?= $msgId; ?>'
+                                                            )"
+                                                        >
+                                                            <i class="bx bx-trash me-1"></i> Delete
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </td>
                                         </tr>
@@ -191,7 +215,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
                                                             </div>
                                                         </div>
 
-                                                        <form method="POST" action="customer-messages.php" class="mt-3">
+                                                        <form method="POST" action="handlers/message-handler.php" class="mt-3">
+                                                            <input type="hidden" name="action" value="update_status">
                                                             <input type="hidden" name="message_id" value="<?php echo $msgId; ?>">
                                                             
                                                             <div class="mb-3">
@@ -205,7 +230,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 
                                                             <div class="modal-footer px-0 pb-0">
                                                                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                                                                <button type="submit" name="update_status" class="btn btn-primary">
+                                                                <button type="submit" class="btn btn-primary">
                                                                     <i class="bx bx-check-circle me-1"></i> Save Changes
                                                                 </button>
                                                             </div>
@@ -232,6 +257,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['update_status'])) {
 
                 <!-- FOOTER -->
                 <?php require_once __DIR__ . '/includes/footer.php'; ?> 
+                <?php require_once __DIR__ . '/includes/delete-modal.php'; ?> 
 
                 <div class="content-backdrop fade"></div>
             </div>
