@@ -43,6 +43,11 @@ $headerSelectedCategoryId = isset($_GET['category_id']) ? (int)$_GET['category_i
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet">
 
+    <!-- Page-specific CSS (set by individual pages via $page_css, e.g. cart.php) -->
+    <?php if (!empty($page_css)): ?>
+        <link href="assets/css/<?= htmlspecialchars($page_css) ?>" rel="stylesheet">
+    <?php endif; ?>
+
     <!-- =========================================================
          MEDIQUICK HEADER THEME
          Palette:
