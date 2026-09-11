@@ -6,135 +6,111 @@ require_once '../../../includes/db.php';
 requireAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    header("Location: ../create-staff.php");
+    header("Location: ../manage-staff.php");
     exit();
 }
 
-$firstName       = trim($_POST['first_name'] ?? '');
-$lastName        = trim($_POST['last_name'] ?? '');
-$email           = strtolower(trim($_POST['email'] ?? ''));
-$password        = $_POST['password'] ?? '';
-$confirmPassword = $_POST['confirm_password'] ?? '';
-$role            = strtolower(trim($_POST['role'] ?? ''));
-
-// Retain input fields on error
-$_SESSION['staff_form_old'] = [
-    'first_name' => $firstName,
-    'last_name'  => $lastName,
-    'email'      => $email,
-    'role'       => $role
-];
+$action = $_POST['action'] ?? 'create_staff';
 
 /*
 |--------------------------------------------------------------------------
-| Validation
+| Action: Update Staff Member
 |--------------------------------------------------------------------------
 */
+if ($action === 'update_staff') {
+    $staffId         = trim($_POST['staff_id'] ?? '');
+    $firstName       = trim($_POST['first_name'] ?? '');
+    $lastName        = trim($_POST['last_name'] ?? '');
+    $email           = strtolower(trim($_POST['email'] ?? ''));
+    $password        = $_POST['password'] ?? '';
+    $confirmPassword = $_POST['confirm_password'] ?? '';
+    $role            = strtolower(trim($_POST['role'] ?? ''));
+    $status          = strtolower(trim($_POST['status'] ?? 'active'));
 
-if ($firstName === '' || $lastName === '' || $email === '' || $password === '' || $confirmPassword === '' || $role === '') {
-    $_SESSION['staff_form_message'] = "Please fill in all required fields.";
-    $_SESSION['staff_form_message_type'] = "error";
-    header("Location: ../create-staff.php");
-    exit();
-}
+    $redirectUrl = "../create-staff.php?staff_id=" . urlencode($staffId);
 
-if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
-    $_SESSION['staff_form_message'] = "Please enter a valid email address.";
-    $_SESSION['staff_form_message_type'] = "error";
-    header("Location: ../create-staff.php");
-    exit();
-}
-
-if ($password !== $confirmPassword) {
-    $_SESSION['staff_form_message'] = "Passwords do not match.";
-    $_SESSION['staff_form_message_type'] = "error";
-    header("Location: ../create-staff.php");
-    exit();
-}
-
-if (strlen($password) < 8) {
-    $_SESSION['staff_form_message'] = "Password must be at least 8 characters.";
-    $_SESSION['staff_form_message_type'] = "error";
-    header("Location: ../create-staff.php");
-    exit();
-}
-
-if (!in_array($role, ['admin', 'pharmacist', 'superadmin'], true)) {
-    $_SESSION['staff_form_message'] = "Invalid staff role.";
-    $_SESSION['staff_form_message_type'] = "error";
-    header("Location: ../create-staff.php");
-    exit();
-}
-
-if ($role === 'superadmin' && getUserRole() !== 'superadmin') {
-    $_SESSION['staff_form_message'] = "Only a superadmin can create another superadmin.";
-    $_SESSION['staff_form_message_type'] = "error";
-    header("Location: ../create-staff.php");
-    exit();
-}
-
-/*
-|--------------------------------------------------------------------------
-| Check Staff Email
-|--------------------------------------------------------------------------
-*/
-
-$sql = "SELECT staff_id FROM staff WHERE email = ? LIMIT 1";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("s", $email);
-$stmt->execute();
-$stmt->store_result();
-$staffExists = $stmt->num_rows > 0;
-$stmt->close();
-
-if ($staffExists) {
-    $_SESSION['staff_form_message'] = "This email is already registered to a staff account.";
-    $_SESSION['staff_form_message_type'] = "error";
-    header("Location: ../create-staff.php");
-    exit();
-}
-
-/*
-|--------------------------------------------------------------------------
-| Create Staff (Includes Current Hire Date)
-|--------------------------------------------------------------------------
-*/
-
-$staffId      = 'STF-' . strtoupper(bin2hex(random_bytes(4)));
-$passwordHash = password_hash($password, PASSWORD_DEFAULT);
-$hireDate     = date('Y-m-d'); // Automatically set current date
-
-$sql = "INSERT INTO staff (staff_id, first_name, last_name, email, password_hash, role, status, hire_date) VALUES (?, ?, ?, ?, ?, ?, 'active', ?)";
-$stmt = $conn->prepare($sql);
-
-if (!$stmt) {
-    $_SESSION['staff_form_message'] = "Database error: " . $conn->error;
-    $_SESSION['staff_form_message_type'] = "error";
-} else {
-    // 7 string parameters ("sssssss")
-    $stmt->bind_param("sssssss", $staffId, $firstName, $lastName, $email, $passwordHash, $role, $hireDate);
-
-    if ($stmt->execute()) {
-        $_SESSION['staff_form_message'] = "Staff account created successfully.";
-        $_SESSION['staff_form_message_type'] = "success";
-        unset($_SESSION['staff_form_old']); // Clear form values on success
-    } else {
-        $_SESSION['staff_form_message'] = "Failed to create staff account: " . $stmt->error;
+    if (empty($staffId) || $firstName === '' || $lastName === '' || $email === '' || $role === '') {
+        $_SESSION['staff_form_message'] = "Please fill in all required fields.";
         $_SESSION['staff_form_message_type'] = "error";
+        header("Location: " . $redirectUrl);
+        exit();
     }
 
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $_SESSION['staff_form_message'] = "Please enter a valid email address.";
+        $_SESSION['staff_form_message_type'] = "error";
+        header("Location: " . $redirectUrl);
+        exit();
+    }
+
+    // Email uniqueness check (excluding self)
+    $sql = "SELECT staff_id FROM staff WHERE email = ? AND staff_id != ? LIMIT 1";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ss", $email, $staffId);
+    $stmt->execute();
+    $stmt->store_result();
+    if ($stmt->num_rows > 0) {
+        $stmt->close();
+        $_SESSION['staff_form_message'] = "This email is already in use by another staff member.";
+        $_SESSION['staff_form_message_type'] = "error";
+        header("Location: " . $redirectUrl);
+        exit();
+    }
     $stmt->close();
+
+    // Password validation if provided
+    $updatePassword = false;
+    if (!empty($password)) {
+        if ($password !== $confirmPassword) {
+            $_SESSION['staff_form_message'] = "Passwords do not match.";
+            $_SESSION['staff_form_message_type'] = "error";
+            header("Location: " . $redirectUrl);
+            exit();
+        }
+        if (strlen($password) < 8) {
+            $_SESSION['staff_form_message'] = "Password must be at least 8 characters.";
+            $_SESSION['staff_form_message_type'] = "error";
+            header("Location: " . $redirectUrl);
+            exit();
+        }
+        $updatePassword = true;
+    }
+
+    // Execute update query
+    if ($updatePassword) {
+        $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+        $sqlUpdate = "UPDATE staff SET first_name = ?, last_name = ?, email = ?, password_hash = ?, role = ?, status = ? WHERE staff_id = ?";
+        $stmt = $conn->prepare($sqlUpdate);
+        $stmt->bind_param("sssssss", $firstName, $lastName, $email, $passwordHash, $role, $status, $staffId);
+    } else {
+        $sqlUpdate = "UPDATE staff SET first_name = ?, last_name = ?, email = ?, role = ?, status = ? WHERE staff_id = ?";
+        $stmt = $conn->prepare($sqlUpdate);
+        $stmt->bind_param("ssssss", $firstName, $lastName, $email, $role, $status, $staffId);
+    }
+
+    if ($stmt->execute()) {
+        $_SESSION['staff_success'] = "Staff account updated successfully.";
+        $stmt->close();
+        header("Location: ../manage-staff.php");
+        exit();
+    } else {
+        $_SESSION['staff_form_message'] = "Update failed: " . $conn->error;
+        $_SESSION['staff_form_message_type'] = "error";
+        $stmt->close();
+        header("Location: " . $redirectUrl);
+        exit();
+    }
 }
 
-$message = $_SESSION['staff_form_message'] ?? '';
-$messageType = $_SESSION['staff_form_message_type'] ?? '';
-$old = $_SESSION['staff_form_old'] ?? [];
+if ($action === 'toggle_status') {
+    $staffId = $_POST['staff_id'] ?? '';
+    $status  = $_POST['status'] ?? '';
 
-unset(
-    $_SESSION['staff_form_message'],
-    $_SESSION['staff_form_message_type'],
-    $_SESSION['staff_form_old']
-);
-
-header("Location: ../../login.php");
-exit();
+    $sqlUpdate = "UPDATE staff SET status = ? WHERE staff_id = ?";
+    $stmt = $conn->prepare($sqlUpdate);
+    $stmt->bind_param("ss", $status, $staffId);
+    $stmt->execute();
+    $stmt->close();
+    header("Location: ../manage-staff.php");
+    exit();
+}
