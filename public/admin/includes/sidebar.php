@@ -1,3 +1,7 @@
+<?php 
+require_once '../../includes/auth.php';
+?>
+
 <aside id="layout-menu" class="layout-menu menu-vertical menu bg-menu-theme">
 
   <div class="app-brand demo">
@@ -11,7 +15,7 @@
   <div class="menu-inner-shadow"></div>
 
   <ul class="menu-inner py-1">
-
+    
     <li class="menu-item active">
       <a href="index.php" class="menu-link">
         <i class="menu-icon tf-icons bx bx-home-circle"></i>
@@ -19,6 +23,7 @@
       </a>
     </li>
 
+    <?php if($_SESSION['role'] == 'admin' || $_SESSION['role'] == 'superadmin'): ?>
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-user"></i>
@@ -26,20 +31,28 @@
       </a>
 
       <ul class="menu-sub">
+        <?php if($_SESSION['role'] == 'superadmin'): ?>
         <li class="menu-item">
           <a href="manage-staff.php" class="menu-link">
             <div data-i18n="Manage">Manage Staff</div>
           </a>
         </li>
+        <?php endif; ?>
 
+
+        <?php if($_SESSION['role'] == 'admin' || $_SESSION['role'] == 'superadmin'): ?>
         <li class="menu-item">
           <a href="manage-customers.php" class="menu-link">
             <div data-i18n="Verify">Manage Customers</div>
           </a>
         </li>
+        <?php endif; ?>
       </ul>
     </li>
+    <?php endif; ?> 
 
+
+    <?php if($_SESSION['role'] == 'admin' || $_SESSION['role'] == 'superadmin' || $_SESSION['role'] == 'pharmacist'): ?>
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-file-find"></i>
@@ -60,7 +73,9 @@
         </li>
       </ul>
     </li>
+    <?php endif; ?>
 
+    <?php if($_SESSION['role'] == 'admin' || $_SESSION['role'] == 'superadmin'): ?>
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-capsule"></i>
@@ -231,6 +246,7 @@
         </div>
       </a>
     </li> -->
+    <?php endif; ?>
 
     <li class="menu-item menu-logout">
       <a href="/MediQuick-Pharmacy/public/logout.php" class="menu-link">

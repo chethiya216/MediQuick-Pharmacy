@@ -3,7 +3,7 @@ session_start();
 require_once '../../includes/auth.php';
 require_once '../../includes/db.php';
 
-requireAdmin();
+requirePharmacist();
 
 $name = $_SESSION['first_name'] . ' ' . $_SESSION['last_name'];
 

@@ -1,7 +1,7 @@
 <?php
 require_once __DIR__ . '/../../../includes/db.php';
 require_once __DIR__ . '/../../../includes/auth.php';
-requireAdmin();
+requirePharmacist();
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
     header("Location: ../manage-prescriptions.php");

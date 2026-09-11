@@ -104,7 +104,7 @@ function requirePharmacist(): void
     ) {
         http_response_code(403);
 
-        die("Access denied.");
+        die("Access denied. Superadmin, Admin or Pharmacist permission required");
     }
 }
 

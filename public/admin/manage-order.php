@@ -1,5 +1,7 @@
 <?php
 require_once('../../includes/db.php');
+require_once('../../includes/auth.php');
+requireAdmin();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['order_id'])) {
 
