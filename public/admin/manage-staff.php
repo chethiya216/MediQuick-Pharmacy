@@ -153,9 +153,24 @@ unset(
                             </td>
                             <td><?= htmlspecialchars($staff['email']) ?></td>
                             <td>
-                              <span class="badge bg-label-info me-1">
-                                <?= htmlspecialchars(ucfirst($staff['role'] ?? 'Staff')) ?>
-                              </span>
+                                <?php
+                                    // Define hierarchy badge colors based on role
+                                    $roleColors = [
+                                        'superadmin' => 'bg-label-danger',    // Highest: Red / Danger
+                                        'admin'      => 'bg-label-primary',   // High: Purple / Primary
+                                        'pharmacist' => 'bg-label-warning',   // Medium: Orange / Warning
+                                        'staff'      => 'bg-label-info'       // Base: Cyan / Info
+                                    ];
+
+                                    // Determine the correct class (fallback to bg-label-secondary if role is unknown)
+                                    $userRole  = strtolower($staff['role'] ?? 'staff');
+                                    $badgeColor = $roleColors[$userRole] ?? 'bg-label-secondary';
+                                    ?>
+
+                                    <span class="badge <?= $badgeColor ?> me-1">
+                                        <?= htmlspecialchars(ucfirst($staff['role'] ?? 'Staff')) ?>
+                                    </span>
+                                
                             </td>
                             <td>
                               <?php if (($staff['status'] ?? 'active') === 'active'): ?>
