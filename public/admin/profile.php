@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 require_once __DIR__ . '/../../includes/auth.php';
 requireLogin();
 requireAdmin();
+requirePharmacist();
 require_once __DIR__ . '/../../includes/db.php';
 
 $pageTitle = "My Profile - MediQuick";
@@ -130,54 +131,91 @@ unset(
                               required
                             />
                           </div>
+                       
+                          <hr class="my-4">
 
-                          <hr>
-                          <!-- New Password Field -->
-                          <div class="mb-3 col-md-6">
-                            <label for="password" class="form-label">Reset Password</label>
-                            <div class="form-password-toggle">
-                              <div class="input-group input-group-merge">
-                                <input
-                                  type="password"
-                                  class="form-control"
-                                  id="password"
-                                  name="password"
-                                  placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                  maxlength="255" 
-                                />
-                                <span class="input-group-text cursor-pointer toggle-password" data-target="password">
-                                  <i class="bx bx-hide"></i>
-                                </span>
-                              </div>
-                            </div>
-                            <small class="text-muted d-block mt-1">
-                              Leave blank to keep current password. *Must be at least 8 characters long if changing.
-                            </small>
-                          </div>
-
-                          <!-- Confirm Password Field -->
-                          <div class="mb-3 col-md-6">
-                            <label for="confirm_password" class="form-label">Confirm Password</label>
-                            <div class="form-password-toggle">
-                              <div class="input-group input-group-merge">
-                                <input
-                                  type="password"
-                                  class="form-control"
-                                  id="confirm_password"
-                                  name="confirm_password"
-                                  placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
-                                  maxlength="255" 
-                                />
-                                <span class="input-group-text cursor-pointer toggle-password" data-target="confirm_password">
-                                  <i class="bx bx-hide"></i>
-                                </span>
-                              </div>
+                          <!-- Checkbox Toggle -->
+                          <div class="col-12 mb-3">
+                            <div class="form-check">
+                              <label class="form-check-label fw-semibold" for="change_password_toggle">
+                                Change Password
+                              </label>
+                              <input 
+                                class="form-check-input" 
+                                type="checkbox" 
+                                id="change_password_toggle" 
+                                name="change_password_toggle" 
+                                value="1" 
+                              />
+                              
                             </div>
                           </div>
 
-                        </div>
+                          <!-- Password Fields Container (Hidden by default) -->
+                          <div id="passwordFieldsSection" class="row col-12" style="display: none;">
+                            
+                            <!-- Current Password Field -->
+                            <div class="mb-3 col-md-4">
+                              <label for="current_password" class="form-label">Current Password</label>
+                              <div class="form-password-toggle">
+                                <div class="input-group input-group-merge">
+                                  <input
+                                    type="password"
+                                    class="form-control"
+                                    id="current_password"
+                                    name="current_password"
+                                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                    maxlength="255" 
+                                  />
+                                  <span class="input-group-text cursor-pointer toggle-password" data-target="current_password">
+                                    <i class="bx bx-hide"></i>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
 
-                        <div class="mt-2">
+                            <!-- New Password Field -->
+                            <div class="mb-3 col-md-4">
+                              <label for="password" class="form-label">New Password</label>
+                              <div class="form-password-toggle">
+                                <div class="input-group input-group-merge">
+                                  <input
+                                    type="password"
+                                    class="form-control"
+                                    id="new_password"
+                                    name="new_password"
+                                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                    maxlength="255" 
+                                  />
+                                  <span class="input-group-text cursor-pointer toggle-password" data-target="password">
+                                    <i class="bx bx-hide"></i>
+                                  </span>
+                                </div>
+                              </div>
+                              <small class="text-muted d-block mt-1">Must be at least 8 characters.</small>
+                            </div>
+
+                            <!-- Confirm Password Field -->
+                            <div class="mb-3 col-md-4">
+                              <label for="confirm_password" class="form-label">Confirm Password</label>
+                              <div class="form-password-toggle">
+                                <div class="input-group input-group-merge">
+                                  <input
+                                    type="password"
+                                    class="form-control"
+                                    id="confirm_password"
+                                    name="confirm_password"
+                                    placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;"
+                                    maxlength="255" 
+                                  />
+                                  <span class="input-group-text cursor-pointer toggle-password" data-target="confirm_password">
+                                    <i class="bx bx-hide"></i>
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                        <div class="mt-2 mb-4">
                           <button type="submit" class="btn btn-primary me-2">Save changes</button>
                           <button type="reset" class="btn btn-outline-secondary">Cancel</button>
                         </div>
@@ -240,26 +278,24 @@ unset(
     <!-- Page JS: Password Visibility Toggles -->
     <script>
       document.addEventListener('DOMContentLoaded', function () {
-        const toggleButtons = document.querySelectorAll('.toggle-password');
+        const toggleCheckbox = document.getElementById('change_password_toggle');
+        const passwordSection = document.getElementById('passwordFieldsSection');
+        const passwordInputs = passwordSection.querySelectorAll('input');
 
-        toggleButtons.forEach(button => {
-          button.addEventListener('click', function () {
-            const targetId = this.getAttribute('data-target');
-            const passwordInput = document.getElementById(targetId);
-
-            if (passwordInput) {
-              const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-              passwordInput.setAttribute('type', type);
-              
-              const icon = this.querySelector('i');
-              if (icon) {
-                icon.classList.toggle('bx-hide');
-                icon.classList.toggle('bx-show');
-              }
-            }
-          });
+        toggleCheckbox.addEventListener('change', function () {
+          if (this.checked) {
+            passwordSection.style.display = 'flex';
+            passwordInputs.forEach(input => input.setAttribute('required', 'required'));
+          } else {
+            passwordSection.style.display = 'none';
+            passwordInputs.forEach(input => {
+              input.removeAttribute('required');
+              input.value = '';
+            });
+          }
         });
       });
+
     </script>
   </body>
 </html>
