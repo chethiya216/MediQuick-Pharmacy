@@ -27,7 +27,7 @@
 
       <ul class="menu-sub">
         <li class="menu-item">
-          <a href="#" class="menu-link">
+          <a href="manage-staff.php" class="menu-link">
             <div data-i18n="Manage">Manage Staff</div>
           </a>
         </li>
