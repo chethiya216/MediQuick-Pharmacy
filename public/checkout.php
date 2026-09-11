@@ -1,68 +1,59 @@
 <?php
+
 session_start();
 
 require_once __DIR__ . '/../includes/db.php';
 
-/*
-|--------------------------------------------------------------------------
-| DATABASE CHECK
-|--------------------------------------------------------------------------
-*/
 if (!isset($conn) || !($conn instanceof mysqli)) {
     die("Database connection failed.");
 }
 
+
 /*
 |--------------------------------------------------------------------------
-| LOGIN CHECK
+| Checkout page CSS
 |--------------------------------------------------------------------------
 */
+
+$page_css = 'checkout-style.css';
+
+
+/*
+|--------------------------------------------------------------------------
+| Require a logged-in customer
+|--------------------------------------------------------------------------
+*/
+
 if (empty($_SESSION['customer_id'])) {
-    header("Location: login.php?redirect=checkout.php");
+    header('Location: login.php?redirect=checkout.php');
     exit;
 }
 
 $customer_id = (int) $_SESSION['customer_id'];
 
+
 /*
 |--------------------------------------------------------------------------
-| SESSION / HANDLER MESSAGES
+| Require a cart to exist
 |--------------------------------------------------------------------------
 */
-$error = $_SESSION['checkout_error'] ?? '';
-unset($_SESSION['checkout_error']);
 
-// Capture success state and order ID
-$order_success = $_SESSION['order_success'] ?? false;
-$order_id = $_SESSION['last_order_id'] ?? 0;
-
-// FIX: Immediately clear them so refreshing or going back won't trap you on the success page[cite: 3]
-if ($order_success) {
-    unset($_SESSION['order_success']);
-    unset($_SESSION['last_order_id']);
+if (empty($_SESSION['cart_id'])) {
+    header('Location: cart.php');
+    exit;
 }
 
-/*
-|--------------------------------------------------------------------------
-| VARIABLES
-|--------------------------------------------------------------------------
-*/
-$customer = null;
-$cart_items = [];
+$cart_id = (int) $_SESSION['cart_id'];
 
-$subtotal = 0;
-$shipping = 0;
-$tax = 0;
-$total = 0;
 
 /*
 |--------------------------------------------------------------------------
-| GET CUSTOMER DETAILS
+| Load the customer's saved details
 |--------------------------------------------------------------------------
 */
-$stmt = $conn->prepare("
+
+$customer_sql = "
     SELECT
-        customer_id,
         first_name,
         last_name,
         email,
@@ -71,515 +62,611 @@ $stmt = $conn->prepare("
     FROM customers
     WHERE customer_id = ?
     LIMIT 1
-");
-
-$stmt->bind_param("i", $customer_id);
-$stmt->execute();
-
-$result = $stmt->get_result();
-$customer = $result->fetch_assoc();
-
-$stmt->close();
-
-if (!$customer) {
-    session_destroy();
-    header("Location: login.php");
-    exit;
-}
-
-/*
-|--------------------------------------------------------------------------
-| FIND CUSTOMER CART
-|--------------------------------------------------------------------------
-*/
-$stmt = $conn->prepare("
-    SELECT cart_id
-    FROM carts
-    WHERE customer_id = ?
-    LIMIT 1
-");
-
-$stmt->bind_param("i", $customer_id);
-$stmt->execute();
-
-$result = $stmt->get_result();
-$cart = $result->fetch_assoc();
-
-$stmt->close();
-
-if (!$cart) {
-    header("Location: cart.php");
-    exit;
-}
-
-$cart_id = (int) $cart['cart_id'];
-
-/*
-|--------------------------------------------------------------------------
-| GET CART ITEMS
-|--------------------------------------------------------------------------
-*/
-$sql = "
-    SELECT
-        ci.cart_item_id,
-        ci.product_id,
-        ci.quantity,
-
-        p.product_name,
-        p.generic_name,
-        p.sku,
-        p.unit_price,
-        p.discount_percent,
-        p.product_image,
-        p.requires_prescription,
-        p.status
-
-    FROM cart_items ci
-
-    INNER JOIN products p
-        ON ci.product_id = p.product_id
-
-    WHERE ci.cart_id = ?
-
-    ORDER BY ci.cart_item_id DESC
 ";
 
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $cart_id);
-$stmt->execute();
+$customer_stmt = $conn->prepare($customer_sql);
+$customer_stmt->bind_param("i", $customer_id);
+$customer_stmt->execute();
+$customer = $customer_stmt->get_result()->fetch_assoc();
+$customer_stmt->close();
 
-$result = $stmt->get_result();
-
-while ($row = $result->fetch_assoc()) {
-
-    $unit_price = (float) $row['unit_price'];
-    $discount = (float) $row['discount_percent'];
-
-    $discounted_price = $unit_price;
-
-    if ($discount > 0) {
-        $discounted_price =
-            $unit_price - ($unit_price * $discount / 100);
-    }
-
-    $quantity = (int) $row['quantity'];
-
-    $item_subtotal = $discounted_price * $quantity;
-
-    $row['discounted_price'] = $discounted_price;
-    $row['item_subtotal'] = $item_subtotal;
-
-    $cart_items[] = $row;
-
-    $subtotal += $item_subtotal;
+if (!$customer) {
+    die("Customer record not found.");
 }
 
-$stmt->close();
-
-if (empty($cart_items) && !$order_success) {
-    header("Location: cart.php");
-    exit;
-}
-
-$shipping = 3.00;
-$tax = 0.00;
-$total = $subtotal + $shipping + $tax;
-
-$phone = $customer['phone'] ?? '';
-$address = $customer['address'] ?? '';
-$payment_method = 'card';
 
 /*
 |--------------------------------------------------------------------------
-| INCLUDE HEADER
+| Load cart items fresh from the database
+|--------------------------------------------------------------------------
+| Prices, discounts, prescription flags, and status are always read from
+| the database here (never trusted from POST data), so a customer can't
+| tamper with the price they pay.
+*/
+
+function loadCartItems(mysqli $conn, int $cart_id): array
+{
+    $sql = "
+        SELECT
+            ci.cart_item_id,
+            ci.product_id,
+            ci.quantity,
+            p.product_name,
+            p.generic_name,
+            p.sku,
+            p.unit_price,
+            p.discount_percent,
+            p.product_image,
+            p.requires_prescription,
+            p.status
+        FROM cart_items ci
+        INNER JOIN products p
+            ON p.product_id = ci.product_id
+        WHERE ci.cart_id = ?
+        ORDER BY ci.cart_item_id DESC
+    ";
+
+    $stmt = $conn->prepare($sql);
+
+    if (!$stmt) {
+        die("Checkout query failed: " . $conn->error);
+    }
+
+    $stmt->bind_param("i", $cart_id);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    $items    = [];
+    $subtotal = 0;
+
+    while ($row = $result->fetch_assoc()) {
+
+        $unit_price = (float) $row['unit_price'];
+        $discount   = (float) ($row['discount_percent'] ?? 0);
+        $quantity   = (int) $row['quantity'];
+
+        $discounted_price = $unit_price;
+
+        if ($discount > 0) {
+            $discounted_price = $unit_price - ($unit_price * $discount / 100);
+        }
+
+        $item_subtotal = $discounted_price * $quantity;
+
+        $row['discounted_price'] = $discounted_price;
+        $row['item_subtotal']    = $item_subtotal;
+
+        $items[] = $row;
+
+        if ($row['status'] === 'active') {
+            $subtotal += $item_subtotal;
+        }
+    }
+
+    $stmt->close();
+
+    return [$items, $subtotal];
+}
+
+[$cart_items, $subtotal] = loadCartItems($conn, $cart_id);
+
+
+/*
+|--------------------------------------------------------------------------
+| Make sure the cart isn't empty
 |--------------------------------------------------------------------------
 */
+
+if (empty($cart_items)) {
+    header('Location: cart.php');
+    exit;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Block checkout if any product in the cart is no longer active
+|--------------------------------------------------------------------------
+*/
+
+$has_inactive_product = false;
+
+foreach ($cart_items as $item) {
+    if ($item['status'] !== 'active') {
+        $has_inactive_product = true;
+        break;
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Shipping + totals
+|--------------------------------------------------------------------------
+*/
+
+$shipping     = $subtotal > 0 ? 3.00 : 0.00;
+$tax_amount   = 0.00;
+$total        = $subtotal + $shipping + $tax_amount;
+
+
+/*
+|--------------------------------------------------------------------------
+| Helpers
+|--------------------------------------------------------------------------
+*/
+
+function getProductImage($image)
+{
+    if (!empty($image)) {
+        return 'assets/images/' . htmlspecialchars($image);
+    }
+
+    return 'assets/images/no-image.png';
+}
+
+function generateTransactionReference(): string
+{
+    return 'TXN-' . date('Ymd-His') . '-' . strtoupper(bin2hex(random_bytes(3)));
+}
+
+$errors = [];
+
+
+/*
+|--------------------------------------------------------------------------
+| Handle order placement
+|--------------------------------------------------------------------------
+*/
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
+
+    // Re-check everything fresh from the DB right before we commit,
+    // in case another tab changed the cart in the meantime.
+    [$cart_items, $subtotal] = loadCartItems($conn, $cart_id);
+
+    if (empty($cart_items)) {
+        $errors[] = "Your cart is empty.";
+    }
+
+    foreach ($cart_items as $item) {
+        if ($item['status'] !== 'active') {
+            $errors[] = "\"" . $item['product_name'] . "\" is no longer available. Please remove it from your cart.";
+        }
+    }
+
+    $shipping   = $subtotal > 0 ? 3.00 : 0.00;
+    $tax_amount = 0.00;
+    $total      = $subtotal + $shipping + $tax_amount;
+
+    // Delivery details — the `orders` table has no columns of its own for
+    // this, so we save it back onto the customer's profile (customers.address
+    // / customers.phone) and use that as the delivery info for this order.
+    $delivery_address = trim($_POST['delivery_address'] ?? '');
+    $delivery_phone   = trim($_POST['delivery_phone'] ?? '');
+
+    if ($delivery_address === '') {
+        $errors[] = "Please enter a delivery address.";
+    }
+
+    if ($delivery_phone === '') {
+        $errors[] = "Please enter a contact phone number.";
+    }
+
+    // Payment method
+    $payment_method = $_POST['payment_method'] ?? '';
+
+    $allowed_payment_methods = ['card', 'cash', 'bank_transfer', 'mobile_wallet'];
+
+    if (!in_array($payment_method, $allowed_payment_methods, true)) {
+        $errors[] = "Please select a valid payment method.";
+    }
+
+    // If everything checks out, create the order
+    if (empty($errors)) {
+
+        $conn->begin_transaction();
+
+        try {
+
+            $prescription_id = null;
+
+            /*
+            |----------------------------------------------------------------
+            | Save delivery details onto the customer's profile
+            |----------------------------------------------------------------
+            | The `orders` table has no address/phone columns of its own, so
+            | we keep using the customer's saved details as the source of
+            | truth and just update them here if the customer changed them
+            | on this page.
+            */
+
+            $update_customer_sql = "
+                UPDATE customers
+                SET address = ?, phone = ?
+                WHERE customer_id = ?
+            ";
+
+            $update_customer_stmt = $conn->prepare($update_customer_sql);
+            $update_customer_stmt->bind_param(
+                "ssi",
+                $delivery_address,
+                $delivery_phone,
+                $customer_id
+            );
+
+            if (!$update_customer_stmt->execute()) {
+                throw new Exception("Unable to save delivery details: " . $update_customer_stmt->error);
+            }
+
+            $update_customer_stmt->close();
+
+            /*
+            |----------------------------------------------------------------
+            | Create the order
+            |----------------------------------------------------------------
+            */
+
+            $order_sql = "
+                INSERT INTO orders
+                    (customer_id, prescription_id, status, subtotal, tax_amount, shipping_fee, total_amount)
+                VALUES
+                    (?, ?, 'pending', ?, ?, ?, ?)
+            ";
+
+            $order_stmt = $conn->prepare($order_sql);
+            $order_stmt->bind_param(
+                "iidddd",
+                $customer_id,
+                $prescription_id,
+                $subtotal,
+                $tax_amount,
+                $shipping,
+                $total
+            );
+
+            if (!$order_stmt->execute()) {
+                throw new Exception("Unable to create order: " . $order_stmt->error);
+            }
+
+            $order_id = $order_stmt->insert_id;
+            $order_stmt->close();
+
+            /*
+            |----------------------------------------------------------------
+            | Create the order items (one row per purchased product)
+            |----------------------------------------------------------------
+            */
+
+            $order_item_sql = "
+                INSERT INTO order_items
+                    (order_id, product_id, quantity, unit_price_at_purchase, item_subtotal)
+                VALUES
+                    (?, ?, ?, ?, ?)
+            ";
+
+            $order_item_stmt = $conn->prepare($order_item_sql);
+
+            foreach ($cart_items as $item) {
+
+                $product_id     = (int) $item['product_id'];
+                $quantity       = (int) $item['quantity'];
+                $unit_price_paid = $item['discounted_price'];
+                $item_subtotal  = $item['item_subtotal'];
+
+                $order_item_stmt->bind_param(
+                    "iiidd",
+                    $order_id,
+                    $product_id,
+                    $quantity,
+                    $unit_price_paid,
+                    $item_subtotal
+                );
+
+                if (!$order_item_stmt->execute()) {
+                    throw new Exception("Unable to save order item: " . $order_item_stmt->error);
+                }
+            }
+
+            $order_item_stmt->close();
+
+            /*
+            |----------------------------------------------------------------
+            | Simulated payment
+            |----------------------------------------------------------------
+            | There is no real payment gateway wired up. We record the
+            | chosen method and mark it completed immediately, then move
+            | the order to "confirmed".
+            */
+
+            $transaction_reference = generateTransactionReference();
+
+            $payment_sql = "
+                INSERT INTO payments
+                    (order_id, payment_method, amount, transaction_reference, payment_status, paid_at)
+                VALUES
+                    (?, ?, ?, ?, 'completed', NOW())
+            ";
+
+            $payment_stmt = $conn->prepare($payment_sql);
+            $payment_stmt->bind_param(
+                "isds",
+                $order_id,
+                $payment_method,
+                $total,
+                $transaction_reference
+            );
+
+            if (!$payment_stmt->execute()) {
+                throw new Exception("Unable to record payment: " . $payment_stmt->error);
+            }
+
+            $payment_stmt->close();
+
+            $update_order_status_sql = "
+                UPDATE orders
+                SET status = 'confirmed'
+                WHERE order_id = ?
+            ";
+
+            $update_order_status_stmt = $conn->prepare($update_order_status_sql);
+            $update_order_status_stmt->bind_param("i", $order_id);
+            $update_order_status_stmt->execute();
+            $update_order_status_stmt->close();
+
+            /*
+            |----------------------------------------------------------------
+            | Clear the cart
+            |----------------------------------------------------------------
+            */
+
+            $clear_cart_sql = "DELETE FROM cart_items WHERE cart_id = ?";
+            $clear_cart_stmt = $conn->prepare($clear_cart_sql);
+            $clear_cart_stmt->bind_param("i", $cart_id);
+            $clear_cart_stmt->execute();
+            $clear_cart_stmt->close();
+
+            $conn->commit();
+
+            header('Location: order-confirmation.php?order_id=' . $order_id);
+            exit;
+
+        } catch (Exception $e) {
+
+            $conn->rollback();
+            $errors[] = "We couldn't place your order: " . $e->getMessage();
+        }
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Header
+|--------------------------------------------------------------------------
+*/
+
 require_once __DIR__ . '/../includes/header.php';
+
 ?>
 
-<!-- Link to external stylesheet -->
-<link rel="stylesheet" href="assets/css/checkout-style.css">
 
-<!-- Inline Gateway Tweaks for Ultra-Clean Professional Look -->
-<style>
-.gateway-frame {
-    border: 1px solid #e0e0e0;
-    background: #fafbfc;
-    border-radius: 10px;
-    padding: 20px;
-    margin-top: 15px;
-}
-.gateway-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    border-bottom: 1px solid #eee;
-    padding-bottom: 10px;
-}
-.gateway-title {
-    font-size: 14px;
-    font-weight: 700;
-    color: #4a5568;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-}
-.secure-badge {
-    font-size: 12px;
-    color: #2f855a;
-    background: #e6fffa;
-    padding: 3px 8px;
-    border-radius: 12px;
-    font-weight: 600;
-}
-.card-input-wrapper {
-    position: relative;
-}
-.card-input-wrapper input {
-    font-family: monospace;
-    letter-spacing: 1px;
-}
-</style>
+<div class="checkout-page-wrapper">
+
+    <div class="checkout-container">
+
+        <h1 class="page-title">
+            Checkout
+        </h1>
 
 
-<?php if ($order_success): ?>
+        <?php if (!empty($errors)): ?>
 
-<!-- =========================================================
-     ORDER SUCCESS SCREEN
-     ========================================================= -->
-
-<div class="checkout-container">
-
-    <div class="success-box">
-
-        <div class="success-icon">
-            ✓
-        </div>
-
-        <h1>Order Placed Successfully!</h1>
-
-        <p class="success-text">
-            Thank you for shopping with MediQuick.
-            Your order has been successfully placed.
-        </p>
-
-        <div class="success-details">
-
-            <h3>Order Details</h3>
-
-            <div class="detail-row">
-                <span class="detail-label">Order ID</span>
-                <span class="detail-value">#<?= htmlspecialchars($order_id) ?></span>
+            <div class="checkout-errors">
+                <ul>
+                    <?php foreach ($errors as $error): ?>
+                        <li><?= htmlspecialchars($error) ?></li>
+                    <?php endforeach; ?>
+                </ul>
             </div>
 
-            <div class="detail-row">
-                <span class="detail-label">Customer</span>
-                <span class="detail-value">
-                    <?= htmlspecialchars($customer['first_name'] . ' ' . $customer['last_name']) ?>
-                </span>
+        <?php endif; ?>
+
+
+        <?php if ($has_inactive_product): ?>
+
+            <div class="checkout-warning">
+                One or more items in your cart are no longer available.
+                Please <a href="cart.php">go back to your cart</a> and remove them before checking out.
             </div>
 
-            <div class="detail-row">
-                <span class="detail-label">Payment Method</span>
-                <span class="detail-value">
-                    <?= htmlspecialchars(ucfirst(str_replace('_', ' ', $payment_method))) ?>
-                </span>
+        <?php endif; ?>
+
+
+        <form method="POST" class="checkout-layout">
+
+            <div class="checkout-main">
+
+                <!-- =============================================
+                     ORDER ITEMS
+                ============================================== -->
+
+                <div class="checkout-section">
+
+                    <h2>Your Order</h2>
+
+                    <div class="checkout-items">
+
+                        <?php foreach ($cart_items as $item): ?>
+
+                            <div class="checkout-item">
+
+                                <div class="product-image">
+                                    <img
+                                        src="<?= getProductImage($item['product_image']) ?>"
+                                        alt="<?= htmlspecialchars($item['product_name']) ?>"
+                                    >
+                                </div>
+
+                                <div class="item-details">
+
+                                    <h3 class="product-name">
+                                        <?= htmlspecialchars($item['product_name']) ?>
+                                    </h3>
+
+                                    <?php if (!empty($item['requires_prescription'])): ?>
+                                        <div class="prescription-warning">
+                                            Prescription required
+                                        </div>
+                                    <?php endif; ?>
+
+                                    <p class="item-meta">
+                                        Qty: <?= (int) $item['quantity'] ?>
+                                        &times;
+                                        $<?= number_format($item['discounted_price'], 2) ?>
+                                    </p>
+
+                                </div>
+
+                                <div class="item-total">
+                                    $<?= number_format($item['item_subtotal'], 2) ?>
+                                </div>
+
+                            </div>
+
+                        <?php endforeach; ?>
+
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     DELIVERY DETAILS
+                ============================================== -->
+
+                <div class="checkout-section">
+
+                    <h2>Delivery Details</h2>
+
+                    <div class="form-group">
+                        <label for="delivery_address">Delivery address *</label>
+                        <textarea
+                            id="delivery_address"
+                            name="delivery_address"
+                            rows="3"
+                            required
+                        ><?= htmlspecialchars($_POST['delivery_address'] ?? $customer['address'] ?? '') ?></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="delivery_phone">Contact phone *</label>
+                        <input
+                            type="text"
+                            id="delivery_phone"
+                            name="delivery_phone"
+                            value="<?= htmlspecialchars($_POST['delivery_phone'] ?? $customer['phone'] ?? '') ?>"
+                            required
+                        >
+                    </div>
+
+                </div>
+
+
+                <!-- =============================================
+                     PAYMENT METHOD
+                ============================================== -->
+
+                <div class="checkout-section">
+
+                    <h2>Payment Method</h2>
+
+                    <p class="form-note">
+                        This is a simulated checkout — no real payment is processed.
+                    </p>
+
+                    <div class="payment-options">
+
+                        <?php
+                        $payment_labels = [
+                            'card'          => 'Credit / Debit Card',
+                            'cash'          => 'Cash on Delivery',
+                            'bank_transfer' => 'Bank Transfer',
+                            'mobile_wallet' => 'Mobile Wallet',
+                        ];
+
+                        $selected_method = $_POST['payment_method'] ?? 'card';
+                        ?>
+
+                        <?php foreach ($payment_labels as $value => $label): ?>
+
+                            <label class="payment-option">
+                                <input
+                                    type="radio"
+                                    name="payment_method"
+                                    value="<?= $value ?>"
+                                    <?= $selected_method === $value ? 'checked' : '' ?>
+                                >
+                                <?= $label ?>
+                            </label>
+
+                        <?php endforeach; ?>
+
+                    </div>
+
+                </div>
+
             </div>
 
-            <div class="detail-row">
-                <span class="detail-label">Payment Status</span>
-                <span class="detail-value">
-                    <span class="status-badge payment-completed">
-                        <?= ($payment_method === 'cash') ? "Pending" : "Completed" ?>
-                    </span>
-                </span>
+
+            <!-- =============================================
+                 ORDER SUMMARY
+            ============================================== -->
+
+            <div class="checkout-summary">
+
+                <h2>Order Summary</h2>
+
+                <div class="summary-row">
+                    <span>Subtotal</span>
+                    <span>$<?= number_format($subtotal, 2) ?></span>
+                </div>
+
+                <div class="summary-row">
+                    <span>Shipping</span>
+                    <span>$<?= number_format($shipping, 2) ?></span>
+                </div>
+
+                <div class="summary-row summary-total">
+                    <span>Total</span>
+                    <strong>$<?= number_format($total, 2) ?></strong>
+                </div>
+
+                <button
+                    type="submit"
+                    name="place_order"
+                    value="1"
+                    class="place-order-btn"
+                    <?= $has_inactive_product ? 'disabled' : '' ?>
+                >
+                    Place Order
+                </button>
+
+                <a href="cart.php" class="back-to-cart-btn">
+                    Back to Cart
+                </a>
+
             </div>
 
-            <div class="detail-row">
-                <span class="detail-label">Order Status</span>
-                <span class="detail-value">
-                    <span class="status-badge">Pending</span>
-                </span>
-            </div>
-
-            <div class="detail-row">
-                <span class="detail-label">Subtotal</span>
-                <span class="detail-value">$<?= number_format($subtotal, 2) ?></span>
-            </div>
-
-            <div class="detail-row">
-                <span class="detail-label">Shipping</span>
-                <span class="detail-value">$<?= number_format($shipping, 2) ?></span>
-            </div>
-
-            <div class="detail-row">
-                <span class="detail-label">Tax</span>
-                <span class="detail-value">$<?= number_format($tax, 2) ?></span>
-            </div>
-
-            <div class="detail-row success-total">
-                <span>Total</span>
-                <span>$<?= number_format($total, 2) ?></span>
-            </div>
-
-        </div>
-
-        <div class="success-buttons">
-            <a href="my-orders.php" class="success-btn success-btn-primary">View My Orders</a>
-            <a href="shop.php" class="success-btn success-btn-secondary">Continue Shopping</a>
-        </div>
+        </form>
 
     </div>
 
 </div>
 
 
-<?php else: ?>
-
-<!-- =========================================================
-     CHECKOUT FORM
-     ========================================================= -->
-
-<div class="checkout-container">
-
-    <h1 class="checkout-title">Checkout</h1>
-
-    <?php if ($error !== ''): ?>
-        <div class="error-message">
-            <strong>Error:</strong> <?= htmlspecialchars($error) ?>
-        </div>
-    <?php endif; ?>
-
-
-    <form method="POST" action="handlers/checkout-handler.php">
-
-        <div class="checkout-grid">
-
-            <!-- LEFT SIDE -->
-            <div>
-
-                <!-- CUSTOMER DETAILS -->
-                <div class="checkout-card">
-                    <h2>Delivery Information</h2>
-
-                    <div class="form-group">
-                        <label>First Name</label>
-                        <input type="text" value="<?= htmlspecialchars($customer['first_name']) ?>" class="readonly-input" readonly>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Last Name</label>
-                        <input type="text" value="<?= htmlspecialchars($customer['last_name']) ?>" class="readonly-input" readonly>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Email</label>
-                        <input type="email" value="<?= htmlspecialchars($customer['email']) ?>" class="readonly-input" readonly>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="text" name="phone" value="<?= htmlspecialchars($phone) ?>" placeholder="Enter your phone number" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Delivery Address</label>
-                        <textarea name="address" placeholder="Enter your delivery address" required><?= htmlspecialchars($address) ?></textarea>
-                    </div>
-                </div>
-
-
-                <!-- PAYMENT GATEWAY CONTAINER -->
-                <div class="checkout-card">
-                    <h2>Payment Method</h2>
-
-                    <!-- CARD OPTION -->
-                    <label class="payment-option">
-                        <input type="radio" name="payment_method" value="card" <?= $payment_method === 'card' ? 'checked' : '' ?> onchange="showCardDetails()">
-                        <strong>Credit / Debit Card</strong> <span style="font-size: 12px; color: #718096; float: right;">Visa, MasterCard, Amex</span>
-                    </label>
-
-                    <!-- CASH OPTION -->
-                    <label class="payment-option">
-                        <input type="radio" name="payment_method" value="cash" <?= $payment_method === 'cash' ? 'checked' : '' ?> onchange="hideCardDetails()">
-                        <strong>Cash on Delivery</strong>
-                    </label>
-
-                    <!-- PROFESSIONAL GATEWAY SIMULATION WRAPPER -->
-                    <div id="cardDetails" class="gateway-frame">
-                        
-                        <div class="gateway-header" style="margin-bottom: 0;">
-                            <span class="gateway-title">Secure Card Details</span>
-                            <span class="secure-badge">🔒 256-bit SSL Encrypted</span>
-                        </div>
-
-                        <div class="form-group" style="margin-top: 15px;">
-                            <label>Card Information</label>
-                            <div class="card-input-wrapper">
-                                <input type="text" id="cardNumber" name="card_number" maxlength="19" placeholder="4242 4242 4242 4242" autocomplete="cc-number">
-                            </div>
-                        </div>
-
-                        <div class="card-row">
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label>Expiration Date</label>
-                                <input type="text" id="cardExpiry" name="card_expiry" maxlength="7" placeholder="MM/YYYY" autocomplete="cc-exp">
-                            </div>
-
-                            <div class="form-group" style="margin-bottom:0;">
-                                <label>CVV / CVC</label>
-                                <input type="password" name="card_cvv" maxlength="4" placeholder="123" autocomplete="cc-csc">
-                            </div>
-                        </div>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-
-            <!-- RIGHT SIDE - ORDER SUMMARY -->
-            <div>
-
-                <div class="checkout-card">
-                    <h2>Your Order</h2>
-
-                    <?php foreach ($cart_items as $item): ?>
-                        <div class="summary-item">
-                            <?php if (!empty($item['product_image'])): ?>
-                                <img src="<?= htmlspecialchars($item['product_image']) ?>" alt="<?= htmlspecialchars($item['product_name']) ?>" class="product-image">
-                            <?php else: ?>
-                                <div class="product-image"></div>
-                            <?php endif; ?>
-
-                            <div class="product-info">
-                                <div class="product-name"><?= htmlspecialchars($item['product_name']) ?></div>
-                                <div class="product-qty">Qty: <?= (int)$item['quantity'] ?></div>
-                            </div>
-
-                            <div class="product-price">$<?= number_format($item['item_subtotal'], 2) ?></div>
-                        </div>
-                    <?php endforeach; ?>
-
-                    <div style="margin-top:20px;">
-                        <div class="summary-row">
-                            <span>Subtotal</span>
-                            <strong>$<?= number_format($subtotal, 2) ?></strong>
-                        </div>
-
-                        <div class="summary-row">
-                            <span>Shipping</span>
-                            <strong>$<?= number_format($shipping, 2) ?></strong>
-                        </div>
-
-                        <div class="summary-row">
-                            <span>Tax</span>
-                            <strong>$<?= number_format($tax, 2) ?></strong>
-                        </div>
-
-                        <div class="summary-row summary-total">
-                            <span>Total</span>
-                            <span>$<?= number_format($total, 2) ?></span>
-                        </div>
-                    </div>
-
-                    <button type="submit" class="place-order-btn">
-                        Pay $<?= number_format($total, 2) ?> Now
-                    </button>
-
-                </div>
-
-            </div>
-
-        </div>
-
-    </form>
-
-</div>
-
-<?php endif; ?>
-
-
-<script>
-function showCardDetails() {
-    document.getElementById('cardDetails').style.display = 'block';
-}
-
-function hideCardDetails() {
-    document.getElementById('cardDetails').style.display = 'none';
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-    const selectedPayment = document.querySelector('input[name="payment_method"]:checked');
-    if (selectedPayment) {
-        if (selectedPayment.value === 'card') {
-            showCardDetails();
-        } else {
-            hideCardDetails();
-        }
-    }
-
-    // Auto-space card number every 4 digits
-    const cardNumberInput = document.getElementById('cardNumber');
-    if (cardNumberInput) {
-        cardNumberInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            let formattedValue = '';
-            for (let i = 0; i < value.length; i++) {
-                if (i > 0 && i % 4 === 0) {
-                    formattedValue += ' ';
-                }
-                formattedValue += value[i];
-            }
-            e.target.value = formattedValue;
-        });
-    }
-
-    // Auto-slash expiration date with MM/YYYY formatting & past-date protection
-    const cardExpiryInput = document.getElementById('cardExpiry');
-    if (cardExpiryInput) {
-        cardExpiryInput.addEventListener('input', function (e) {
-            let value = e.target.value.replace(/\D/g, '');
-            
-            // Limit total digits to 6 (MMYYYY)
-            if (value.length > 6) {
-                value = value.slice(0, 6);
-            }
-            
-            if (value.length >= 2) {
-                let month = parseInt(value.slice(0, 2), 10);
-                if (month > 12) {
-                    month = 12;
-                    value = '12' + value.slice(2);
-                } else if (month === 0) {
-                    month = 1;
-                    value = '01' + value.slice(2);
-                }
-
-                // Check year validity (Minimum year is 2026)
-                if (value.length >= 6) {
-                    let year = parseInt(value.slice(2, 6), 10);
-                    let currentYear = 2026;
-                    let currentMonth = 9;
-
-                    if (year < currentYear) {
-                        value = value.slice(0, 2) + currentYear;
-                    } else if (year === currentYear && month < currentMonth) {
-                        value = ('0' + currentMonth).slice(-2) + value.slice(2);
-                    }
-                }
-
-                e.target.value = value.length > 2 ? value.slice(0, 2) + '/' + value.slice(2) : value;
-            } else {
-                e.target.value = value;
-            }
-        });
-    }
-});
-</script>
-
-
 <?php
+
 require_once __DIR__ . '/../includes/footer.php';
+
 ?>
