@@ -6,6 +6,7 @@ ini_set('display_errors', 1);
 include_once __DIR__ . '/../../includes/auth.php';
 
 requireLogin();
+requireAdmin();
 
 require_once __DIR__ . '/../../includes/db.php';
 

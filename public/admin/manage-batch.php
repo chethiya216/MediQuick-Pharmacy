@@ -1,7 +1,8 @@
 <?php
 
 session_start();
-
+require_once '../../includes/auth.php';
+requireAdmin();
 require_once '../../includes/db.php';
 
 $success = '';

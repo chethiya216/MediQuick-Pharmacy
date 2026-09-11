@@ -4,6 +4,9 @@ session_start();
 
 require_once '../../includes/db.php';
 require_once '../../includes/upload-helper.php';
+require_once '../../includes/auth.php';
+
+requireAdmin();
 
 $message = '';
 $message_type = '';
