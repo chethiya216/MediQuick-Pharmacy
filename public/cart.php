@@ -1,44 +1,608 @@
 <?php
+
 session_start();
 
 require_once __DIR__ . '/../includes/db.php';
 
-
 if (!isset($conn) || !($conn instanceof mysqli)) {
-    die("Database connection is not available.");
+    die("Database connection failed.");
 }
 
 
-if (empty($_SESSION['cart_id'])) {
+/*
+|--------------------------------------------------------------------------
+| Cart page CSS
+|--------------------------------------------------------------------------
+*/
 
-    // Guest cart - customer_id intentionally omitted
-    $stmt = $conn->prepare("
-        INSERT INTO carts (created_at, updated_at)
-        VALUES (NOW(), NOW())
-    ");
+$page_css = 'cart-style.css';
 
-    if (!$stmt) {
-        die("Failed to create cart: " . $conn->error);
-    }
 
-    if (!$stmt->execute()) {
-        die("Failed to create cart: " . $stmt->error);
-    }
+/*
+|--------------------------------------------------------------------------
+| Check customer login
+|--------------------------------------------------------------------------
+| A cart belongs to a customer, so the customer must be logged in.
+*/
 
-    $_SESSION['cart_id'] = $conn->insert_id;
+if (empty($_SESSION['customer_id'])) {
 
-    $stmt->close();
+    header('Location: login.php?redirect=cart.php');
+    exit;
 }
 
-$cartId = (int) $_SESSION['cart_id'];
+$customer_id = (int) $_SESSION['customer_id'];
+
+if ($customer_id <= 0) {
+    die("Invalid customer account.");
+}
 
 
-$stmt = $conn->prepare("
+/*
+|--------------------------------------------------------------------------
+| Find or create customer's cart
+|--------------------------------------------------------------------------
+*/
+
+$cart_id = 0;
+
+
+/*
+|--------------------------------------------------------------------------
+| Find existing cart
+|--------------------------------------------------------------------------
+*/
+
+$cart_sql = "
+    SELECT cart_id
+    FROM carts
+    WHERE customer_id = ?
+    LIMIT 1
+";
+
+$cart_stmt = $conn->prepare($cart_sql);
+
+if (!$cart_stmt) {
+    die("Cart lookup failed: " . $conn->error);
+}
+
+$cart_stmt->bind_param("i", $customer_id);
+$cart_stmt->execute();
+
+$cart_result = $cart_stmt->get_result();
+
+if ($cart_row = $cart_result->fetch_assoc()) {
+
+    $cart_id = (int) $cart_row['cart_id'];
+
+}
+
+$cart_stmt->close();
+
+
+/*
+|--------------------------------------------------------------------------
+| Create cart if customer does not have one
+|--------------------------------------------------------------------------
+*/
+
+if ($cart_id <= 0) {
+
+    $create_cart_sql = "
+        INSERT INTO carts (
+            customer_id,
+            created_at,
+            updated_at
+        )
+        VALUES (?, NOW(), NOW())
+    ";
+
+    $create_cart_stmt = $conn->prepare($create_cart_sql);
+
+    if (!$create_cart_stmt) {
+        die("Unable to prepare cart creation: " . $conn->error);
+    }
+
+    $create_cart_stmt->bind_param("i", $customer_id);
+
+    if (!$create_cart_stmt->execute()) {
+
+        /*
+        |--------------------------------------------------------------
+        | If another request already created the cart because of the
+        | UNIQUE customer_id constraint, try finding it again.
+        |--------------------------------------------------------------
+        */
+
+        $create_cart_stmt->close();
+
+        $retry_cart_sql = "
+            SELECT cart_id
+            FROM carts
+            WHERE customer_id = ?
+            LIMIT 1
+        ";
+
+        $retry_cart_stmt = $conn->prepare($retry_cart_sql);
+
+        if (!$retry_cart_stmt) {
+            die("Unable to find customer cart.");
+        }
+
+        $retry_cart_stmt->bind_param("i", $customer_id);
+        $retry_cart_stmt->execute();
+
+        $retry_cart_result = $retry_cart_stmt->get_result();
+
+        if ($retry_cart_row = $retry_cart_result->fetch_assoc()) {
+
+            $cart_id = (int) $retry_cart_row['cart_id'];
+
+        }
+
+        $retry_cart_stmt->close();
+
+    } else {
+
+        $cart_id = $conn->insert_id;
+
+        $create_cart_stmt->close();
+    }
+}
+
+
+if ($cart_id <= 0) {
+    die("Unable to create or find your shopping cart.");
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Keep cart ID in session
+|--------------------------------------------------------------------------
+*/
+
+$_SESSION['cart_id'] = $cart_id;
+
+
+/*
+|--------------------------------------------------------------------------
+| AJAX: update quantity or remove a cart item
+|--------------------------------------------------------------------------
+*/
+
+if (
+    $_SERVER['REQUEST_METHOD'] === 'POST'
+    && isset($_POST['cart_item_id'])
+) {
+
+    header('Content-Type: application/json');
+
+    $post_cart_item_id = (int) $_POST['cart_item_id'];
+
+    $post_quantity = isset($_POST['quantity'])
+        ? (int) $_POST['quantity']
+        : 0;
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Validate cart item ID
+    |--------------------------------------------------------------------------
+    */
+
+    if ($post_cart_item_id <= 0) {
+
+        echo json_encode([
+            'success' => false,
+            'message' => 'Invalid cart item.'
+        ]);
+
+        exit;
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Confirm item belongs to this customer's cart
+    |--------------------------------------------------------------------------
+    */
+
+    $ajax_check_sql = "
+        SELECT cart_item_id
+        FROM cart_items
+        WHERE cart_item_id = ?
+          AND cart_id = ?
+        LIMIT 1
+    ";
+
+    $ajax_check_stmt = $conn->prepare($ajax_check_sql);
+
+    if (!$ajax_check_stmt) {
+
+        echo json_encode([
+            'success' => false,
+            'message' => 'Unable to check cart item.'
+        ]);
+
+        exit;
+    }
+
+    $ajax_check_stmt->bind_param(
+        "ii",
+        $post_cart_item_id,
+        $cart_id
+    );
+
+    $ajax_check_stmt->execute();
+
+    $ajax_check_result = $ajax_check_stmt->get_result();
+
+
+    if ($ajax_check_result->num_rows === 0) {
+
+        $ajax_check_stmt->close();
+
+        echo json_encode([
+            'success' => false,
+            'message' => 'That item is not in your cart.'
+        ]);
+
+        exit;
+    }
+
+    $ajax_check_stmt->close();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Remove item
+    |--------------------------------------------------------------------------
+    */
+
+    if ($post_quantity <= 0) {
+
+        $ajax_delete_sql = "
+            DELETE FROM cart_items
+            WHERE cart_item_id = ?
+              AND cart_id = ?
+        ";
+
+        $ajax_delete_stmt = $conn->prepare($ajax_delete_sql);
+
+        if (!$ajax_delete_stmt) {
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unable to remove item.'
+            ]);
+
+            exit;
+        }
+
+        $ajax_delete_stmt->bind_param(
+            "ii",
+            $post_cart_item_id,
+            $cart_id
+        );
+
+
+        if (!$ajax_delete_stmt->execute()) {
+
+            $ajax_delete_stmt->close();
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unable to remove item.'
+            ]);
+
+            exit;
+        }
+
+        $ajax_delete_stmt->close();
+
+    } else {
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update quantity
+        |--------------------------------------------------------------------------
+        */
+
+        $ajax_update_sql = "
+            UPDATE cart_items
+            SET quantity = ?
+            WHERE cart_item_id = ?
+              AND cart_id = ?
+        ";
+
+        $ajax_update_stmt = $conn->prepare($ajax_update_sql);
+
+        if (!$ajax_update_stmt) {
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unable to update quantity.'
+            ]);
+
+            exit;
+        }
+
+        $ajax_update_stmt->bind_param(
+            "iii",
+            $post_quantity,
+            $post_cart_item_id,
+            $cart_id
+        );
+
+
+        if (!$ajax_update_stmt->execute()) {
+
+            $ajax_update_stmt->close();
+
+            echo json_encode([
+                'success' => false,
+                'message' => 'Unable to update quantity.'
+            ]);
+
+            exit;
+        }
+
+        $ajax_update_stmt->close();
+    }
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update cart timestamp
+    |--------------------------------------------------------------------------
+    */
+
+    $ajax_touch_sql = "
+        UPDATE carts
+        SET updated_at = NOW()
+        WHERE cart_id = ?
+    ";
+
+    $ajax_touch_stmt = $conn->prepare($ajax_touch_sql);
+
+    if ($ajax_touch_stmt) {
+
+        $ajax_touch_stmt->bind_param(
+            "i",
+            $cart_id
+        );
+
+        $ajax_touch_stmt->execute();
+        $ajax_touch_stmt->close();
+    }
+
+
+    echo json_encode([
+        'success' => true
+    ]);
+
+    exit;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Add product to cart
+|--------------------------------------------------------------------------
+| Called when:
+|
+| cart.php?product_id=X
+|
+*/
+
+if (!empty($_GET['product_id'])) {
+
+    $product_id = (int) $_GET['product_id'];
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Check product exists and is active
+    |--------------------------------------------------------------------------
+    */
+
+    $product_check_sql = "
+        SELECT product_id
+        FROM products
+        WHERE product_id = ?
+          AND status = 'active'
+        LIMIT 1
+    ";
+
+    $product_check_stmt = $conn->prepare($product_check_sql);
+
+    if (!$product_check_stmt) {
+        die("Product check failed: " . $conn->error);
+    }
+
+    $product_check_stmt->bind_param(
+        "i",
+        $product_id
+    );
+
+    $product_check_stmt->execute();
+
+    $product_check_result =
+        $product_check_stmt->get_result();
+
+
+    if ($product_check_result->num_rows > 0) {
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Check whether product is already in cart
+        |--------------------------------------------------------------------------
+        */
+
+        $existing_item_sql = "
+            SELECT cart_item_id, quantity
+            FROM cart_items
+            WHERE cart_id = ?
+              AND product_id = ?
+            LIMIT 1
+        ";
+
+        $existing_item_stmt =
+            $conn->prepare($existing_item_sql);
+
+        if (!$existing_item_stmt) {
+
+            $product_check_stmt->close();
+
+            die("Unable to check cart item.");
+        }
+
+        $existing_item_stmt->bind_param(
+            "ii",
+            $cart_id,
+            $product_id
+        );
+
+        $existing_item_stmt->execute();
+
+        $existing_item_result =
+            $existing_item_stmt->get_result();
+
+
+        if ($existing_item =
+            $existing_item_result->fetch_assoc()
+        ) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Product already exists
+            | Increase quantity
+            |--------------------------------------------------------------------------
+            */
+
+            $new_quantity =
+                (int) $existing_item['quantity'] + 1;
+
+
+            $update_item_sql = "
+                UPDATE cart_items
+                SET quantity = ?
+                WHERE cart_item_id = ?
+                  AND cart_id = ?
+            ";
+
+            $update_item_stmt =
+                $conn->prepare($update_item_sql);
+
+            if ($update_item_stmt) {
+
+                $update_item_stmt->bind_param(
+                    "iii",
+                    $new_quantity,
+                    $existing_item['cart_item_id'],
+                    $cart_id
+                );
+
+                $update_item_stmt->execute();
+
+                $update_item_stmt->close();
+            }
+
+        } else {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Product is not in cart
+            | Add new item
+            |--------------------------------------------------------------------------
+            */
+
+            $insert_item_sql = "
+                INSERT INTO cart_items (
+                    cart_id,
+                    product_id,
+                    quantity
+                )
+                VALUES (?, ?, 1)
+            ";
+
+            $insert_item_stmt =
+                $conn->prepare($insert_item_sql);
+
+            if ($insert_item_stmt) {
+
+                $insert_item_stmt->bind_param(
+                    "ii",
+                    $cart_id,
+                    $product_id
+                );
+
+                $insert_item_stmt->execute();
+
+                $insert_item_stmt->close();
+            }
+        }
+
+
+        $existing_item_stmt->close();
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Update cart timestamp
+        |--------------------------------------------------------------------------
+        */
+
+        $touch_cart_sql = "
+            UPDATE carts
+            SET updated_at = NOW()
+            WHERE cart_id = ?
+        ";
+
+        $touch_cart_stmt =
+            $conn->prepare($touch_cart_sql);
+
+        if ($touch_cart_stmt) {
+
+            $touch_cart_stmt->bind_param(
+                "i",
+                $cart_id
+            );
+
+            $touch_cart_stmt->execute();
+
+            $touch_cart_stmt->close();
+        }
+    }
+
+
+    $product_check_stmt->close();
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Redirect back to clean cart URL
+    |--------------------------------------------------------------------------
+    */
+
+    header('Location: cart.php');
+    exit;
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Get cart items
+|--------------------------------------------------------------------------
+*/
+
+$sql = "
     SELECT
         ci.cart_item_id,
         ci.product_id,
         ci.quantity,
-
         p.product_name,
         p.generic_name,
         p.sku,
@@ -56,563 +620,170 @@ $stmt = $conn->prepare("
     WHERE ci.cart_id = ?
 
     ORDER BY ci.cart_item_id DESC
-");
+";
+
+
+$stmt = $conn->prepare($sql);
 
 if (!$stmt) {
-    die("Failed to load cart: " . $conn->error);
+    die("Cart query failed: " . $conn->error);
 }
 
-$stmt->bind_param("i", $cartId);
+$stmt->bind_param(
+    "i",
+    $cart_id
+);
 
-if (!$stmt->execute()) {
-    die("Failed to load cart items: " . $stmt->error);
-}
+$stmt->execute();
 
 $result = $stmt->get_result();
 
-$cartItems = [];
+
+$cart_items = [];
+
 $subtotal = 0;
+
 
 while ($row = $result->fetch_assoc()) {
 
-    $unitPrice = (float) $row['unit_price'];
-    $discountPercent = (float) $row['discount_percent'];
-    $quantity = (int) $row['quantity'];
+    $unit_price =
+        (float) $row['unit_price'];
 
-  
-    if ($discountPercent > 0) {
+    $discount =
+        (float) ($row['discount_percent'] ?? 0);
 
-        $discountedPrice =
-            $unitPrice - ($unitPrice * ($discountPercent / 100));
+    $quantity =
+        (int) $row['quantity'];
 
-    } else {
 
-        $discountedPrice = $unitPrice;
+    /*
+    |--------------------------------------------------------------------------
+    | Calculate discounted price
+    |--------------------------------------------------------------------------
+    */
 
+    $discounted_price = $unit_price;
+
+    if ($discount > 0) {
+
+        $discounted_price =
+            $unit_price
+            - ($unit_price * $discount / 100);
     }
 
-    $discountedPrice = max(0, $discountedPrice);
 
- 
-    $itemSubtotal = $discountedPrice * $quantity;
+    /*
+    |--------------------------------------------------------------------------
+    | Calculate item subtotal
+    |--------------------------------------------------------------------------
+    */
 
-    $subtotal += $itemSubtotal;
+    $item_subtotal =
+        $discounted_price * $quantity;
 
-    $row['discounted_price'] = $discountedPrice;
-    $row['item_subtotal'] = $itemSubtotal;
 
-    $cartItems[] = $row;
+    $row['discounted_price'] =
+        $discounted_price;
+
+    $row['item_subtotal'] =
+        $item_subtotal;
+
+
+    $cart_items[] = $row;
+
+    $subtotal += $item_subtotal;
 }
 
+
 $stmt->close();
+
 
 /*
 |--------------------------------------------------------------------------
 | Shipping
 |--------------------------------------------------------------------------
 */
-$shipping = count($cartItems) > 0 ? 3.00 : 0.00;
+
+$shipping = 0;
+
+if (!empty($cart_items)) {
+    $shipping = 3.00;
+}
+
 
 /*
 |--------------------------------------------------------------------------
-| Final total
+| Total
 |--------------------------------------------------------------------------
 */
-$total = $subtotal + $shipping;
+
+$total =
+    $subtotal + $shipping;
+
 
 /*
 |--------------------------------------------------------------------------
-| Helper function for product image
+| Product image
 |--------------------------------------------------------------------------
 */
+
 function getProductImage($image)
 {
     if (!empty($image)) {
-        return 'assets/images/' . htmlspecialchars($image);
+
+        return 'assets/images/'
+            . htmlspecialchars($image);
     }
 
     return 'assets/images/no-image.png';
 }
 
+
 /*
 |--------------------------------------------------------------------------
-| Include Header
+| Header
 |--------------------------------------------------------------------------
 */
+
 require_once __DIR__ . '/../includes/header.php';
+
 ?>
-
-<!-- =========================================================
-     CART PAGE
-========================================================= -->
-
-<style>
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cart Page Styles
-    |--------------------------------------------------------------------------
-    */
-
-    .cart-page-wrapper {
-        width: 100%;
-        padding: 50px 0;
-        background: #f5f7fa;
-        min-height: 500px;
-    }
-
-    .cart-container {
-        width: 90%;
-        max-width: 1200px;
-        margin: 0 auto;
-    }
-
-    .page-title {
-        font-size: 32px;
-        margin: 0 0 30px;
-        color: #1d3557;
-        font-weight: 700;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cart Layout
-    |--------------------------------------------------------------------------
-    */
-
-    .cart-layout {
-        display: grid;
-        grid-template-columns: 1fr 350px;
-        gap: 25px;
-        align-items: start;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Cart Items
-    |--------------------------------------------------------------------------
-    */
-
-    .cart-items {
-        background: #fff;
-        border-radius: 12px;
-        padding: 20px;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .cart-item {
-        display: flex;
-        gap: 20px;
-        padding: 20px 0;
-        border-bottom: 1px solid #eee;
-        align-items: center;
-    }
-
-    .cart-item:last-child {
-        border-bottom: none;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Product Image
-    |--------------------------------------------------------------------------
-    */
-
-    .product-image {
-        width: 110px;
-        height: 110px;
-        object-fit: contain;
-        border: 1px solid #eee;
-        border-radius: 10px;
-        background: #fff;
-        padding: 8px;
-        flex-shrink: 0;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Product Details
-    |--------------------------------------------------------------------------
-    */
-
-    .item-details {
-        flex: 1;
-        min-width: 0;
-    }
-
-    .product-name {
-        margin: 0 0 6px;
-        font-size: 20px;
-        color: #1d3557;
-        font-weight: 600;
-    }
-
-    .generic-name {
-        color: #777;
-        margin-bottom: 8px;
-        font-size: 14px;
-    }
-
-    .sku {
-        color: #999;
-        font-size: 13px;
-        margin-bottom: 10px;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Price
-    |--------------------------------------------------------------------------
-    */
-
-    .price {
-        font-size: 18px;
-        font-weight: bold;
-        color: #198754;
-    }
-
-    .old-price {
-        color: #999;
-        text-decoration: line-through;
-        font-size: 14px;
-        margin-left: 8px;
-    }
-
-    .discount {
-        display: inline-block;
-        margin-left: 8px;
-        background: #dc3545;
-        color: #fff;
-        padding: 3px 7px;
-        border-radius: 4px;
-        font-size: 12px;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Prescription Warning
-    |--------------------------------------------------------------------------
-    */
-
-    .prescription-warning {
-        color: #dc3545;
-        font-size: 13px;
-        margin-top: 8px;
-        font-weight: 500;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Quantity
-    |--------------------------------------------------------------------------
-    */
-
-    .quantity-section {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        margin-top: 15px;
-        flex-wrap: wrap;
-    }
-
-    .quantity-btn {
-        width: 32px;
-        height: 32px;
-        border: 1px solid #ccc;
-        background: #fff;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 18px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: 0.2s;
-    }
-
-    .quantity-btn:hover {
-        background: #f0f0f0;
-    }
-
-    .quantity {
-        min-width: 35px;
-        text-align: center;
-        font-weight: bold;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Remove Button
-    |--------------------------------------------------------------------------
-    */
-
-    .remove-btn {
-        border: none;
-        background: #dc3545;
-        color: #fff;
-        padding: 8px 12px;
-        border-radius: 5px;
-        cursor: pointer;
-        margin-left: 10px;
-        transition: 0.2s;
-    }
-
-    .remove-btn:hover {
-        background: #bb2d3b;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Item Total
-    |--------------------------------------------------------------------------
-    */
-
-    .item-total {
-        min-width: 120px;
-        text-align: right;
-        font-size: 18px;
-        font-weight: bold;
-        color: #1d3557;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Order Summary
-    |--------------------------------------------------------------------------
-    */
-
-    .summary {
-        background: #fff;
-        border-radius: 12px;
-        padding: 25px;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-        position: sticky;
-        top: 20px;
-    }
-
-    .summary h2 {
-        margin-top: 0;
-        margin-bottom: 25px;
-        color: #1d3557;
-        font-size: 24px;
-    }
-
-    .summary-row {
-        display: flex;
-        justify-content: space-between;
-        margin: 15px 0;
-        color: #555;
-    }
-
-    .summary-total {
-        border-top: 1px solid #ddd;
-        padding-top: 18px;
-        font-size: 22px;
-        font-weight: bold;
-        color: #1d3557;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Checkout Button
-    |--------------------------------------------------------------------------
-    */
-
-    .checkout-btn {
-        display: block;
-        width: 100%;
-        padding: 14px;
-        background: #198754;
-        color: #fff;
-        text-align: center;
-        text-decoration: none;
-        border-radius: 7px;
-        margin-top: 20px;
-        font-weight: bold;
-        border: none;
-        cursor: pointer;
-        font-size: 16px;
-        transition: 0.2s;
-    }
-
-    .checkout-btn:hover {
-        background: #157347;
-        color: #fff;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Continue Shopping
-    |--------------------------------------------------------------------------
-    */
-
-    .continue-btn {
-        display: block;
-        width: 100%;
-        padding: 12px;
-        background: #fff;
-        color: #1d3557;
-        text-align: center;
-        text-decoration: none;
-        border: 1px solid #1d3557;
-        border-radius: 7px;
-        margin-top: 10px;
-        transition: 0.2s;
-    }
-
-    .continue-btn:hover {
-        background: #f0f4f8;
-        color: #1d3557;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Empty Cart
-    |--------------------------------------------------------------------------
-    */
-
-    .empty-cart {
-        background: #fff;
-        border-radius: 12px;
-        padding: 60px 20px;
-        text-align: center;
-        box-shadow: 0 3px 12px rgba(0, 0, 0, 0.08);
-    }
-
-    .empty-cart h2 {
-        color: #1d3557;
-        margin-bottom: 10px;
-    }
-
-    .empty-cart p {
-        color: #777;
-        margin-bottom: 25px;
-    }
-
-    .shop-btn {
-        display: inline-block;
-        padding: 12px 25px;
-        background: #198754;
-        color: #fff;
-        text-decoration: none;
-        border-radius: 7px;
-        transition: 0.2s;
-    }
-
-    .shop-btn:hover {
-        background: #157347;
-        color: #fff;
-    }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Mobile Responsive
-    |--------------------------------------------------------------------------
-    */
-
-    @media (max-width: 800px) {
-
-        .cart-page-wrapper {
-            padding: 30px 0;
-        }
-
-        .cart-container {
-            width: 94%;
-        }
-
-        .cart-layout {
-            grid-template-columns: 1fr;
-        }
-
-        .cart-item {
-            flex-wrap: wrap;
-            align-items: flex-start;
-        }
-
-        .product-image {
-            width: 90px;
-            height: 90px;
-        }
-
-        .item-details {
-            width: calc(100% - 110px);
-        }
-
-        .item-total {
-            width: 100%;
-            text-align: left;
-            padding-left: 0;
-            margin-top: 5px;
-        }
-
-        .summary {
-            position: static;
-        }
-
-    }
-
-    @media (max-width: 500px) {
-
-        .page-title {
-            font-size: 26px;
-        }
-
-        .cart-items {
-            padding: 15px;
-        }
-
-        .cart-item {
-            gap: 12px;
-        }
-
-        .product-image {
-            width: 75px;
-            height: 75px;
-        }
-
-        .item-details {
-            width: calc(100% - 87px);
-        }
-
-        .product-name {
-            font-size: 17px;
-        }
-
-        .remove-btn {
-            margin-left: 5px;
-        }
-
-    }
-
-</style>
 
 
 <div class="cart-page-wrapper">
 
     <div class="cart-container">
 
+
+        <!-- Page title -->
+
         <h1 class="page-title">
-            Your Shopping Cart
+            Shopping Cart
         </h1>
 
 
-        <?php if (empty($cartItems)): ?>
+        <?php if (empty($cart_items)): ?>
 
-            <!-- =====================================================
-                 EMPTY CART
-            ====================================================== -->
+
+            <!-- Empty cart -->
 
             <div class="empty-cart">
+
+                <div class="empty-cart-icon">
+                    🛒
+                </div>
 
                 <h2>
                     Your cart is empty
                 </h2>
 
                 <p>
-                    You haven't added any products to your cart yet.
+                    You haven't added any products
+                    to your cart yet.
                 </p>
 
                 <a
-                    href="products.php"
+                    href="shop.php"
                     class="shop-btn"
                 >
                     Continue Shopping
@@ -623,60 +794,72 @@ require_once __DIR__ . '/../includes/header.php';
 
         <?php else: ?>
 
-            <!-- =====================================================
-                 CART + SUMMARY
-            ====================================================== -->
 
             <div class="cart-layout">
 
 
-                <!-- =================================================
+                <!-- =====================================================
                      CART ITEMS
-                ================================================== -->
+                ====================================================== -->
 
                 <div class="cart-items">
 
-                    <?php foreach ($cartItems as $item): ?>
 
-                        <div
-                            class="cart-item"
-                            data-cart-item-id="<?= (int) $item['cart_item_id'] ?>"
-                        >
-
-                            <!-- Product Image -->
-
-                            <img
-                                class="product-image"
-                                src="<?= getProductImage($item['product_image']) ?>"
-                                alt="<?= htmlspecialchars($item['product_name']) ?>"
-                                onerror="this.src='assets/images/no-image.png'"
-                            >
+                    <?php foreach ($cart_items as $item): ?>
 
 
-                            <!-- Product Details -->
+                        <div class="cart-item">
+
+
+                            <!-- Product image -->
+
+                            <div class="product-image">
+
+                                <img
+                                    src="<?= getProductImage($item['product_image']) ?>"
+                                    alt="<?= htmlspecialchars($item['product_name']) ?>"
+                                >
+
+                            </div>
+
+
+                            <!-- Product details -->
 
                             <div class="item-details">
 
-                                <h3 class="product-name">
-                                    <?= htmlspecialchars($item['product_name']) ?>
-                                </h3>
+
+                                <h2 class="product-name">
+
+                                    <?= htmlspecialchars(
+                                        $item['product_name']
+                                    ) ?>
+
+                                </h2>
 
 
                                 <?php if (!empty($item['generic_name'])): ?>
 
-                                    <div class="generic-name">
-                                        <?= htmlspecialchars($item['generic_name']) ?>
-                                    </div>
+                                    <p class="generic-name">
+
+                                        <?= htmlspecialchars(
+                                            $item['generic_name']
+                                        ) ?>
+
+                                    </p>
 
                                 <?php endif; ?>
 
 
                                 <?php if (!empty($item['sku'])): ?>
 
-                                    <div class="sku">
+                                    <p class="sku">
+
                                         SKU:
-                                        <?= htmlspecialchars($item['sku']) ?>
-                                    </div>
+                                        <?= htmlspecialchars(
+                                            $item['sku']
+                                        ) ?>
+
+                                    </p>
 
                                 <?php endif; ?>
 
@@ -685,30 +868,45 @@ require_once __DIR__ . '/../includes/header.php';
 
                                 <div class="price">
 
-                                    $<?= number_format(
-                                        $item['discounted_price'],
-                                        2
-                                    ) ?>
 
-
-                                    <?php if ((float) $item['discount_percent'] > 0): ?>
+                                    <?php if ($item['discount_percent'] > 0): ?>
 
                                         <span class="old-price">
+
                                             $<?= number_format(
                                                 $item['unit_price'],
                                                 2
                                             ) ?>
+
                                         </span>
 
 
                                         <span class="discount">
-                                            -<?= number_format(
+
+                                            <?= number_format(
                                                 $item['discount_percent'],
                                                 0
-                                            ) ?>%
+                                            ) ?>% OFF
+
                                         </span>
 
                                     <?php endif; ?>
+
+
+                                    <strong>
+
+                                        $<?= number_format(
+                                            $item['discounted_price'],
+                                            2
+                                        ) ?>
+
+                                    </strong>
+
+
+                                    <span class="per-item">
+                                        / item
+                                    </span>
+
 
                                 </div>
 
@@ -718,7 +916,9 @@ require_once __DIR__ . '/../includes/header.php';
                                 <?php if (!empty($item['requires_prescription'])): ?>
 
                                     <div class="prescription-warning">
+
                                         Prescription required
+
                                     </div>
 
                                 <?php endif; ?>
@@ -728,28 +928,28 @@ require_once __DIR__ . '/../includes/header.php';
 
                                 <div class="quantity-section">
 
-                                    <!-- Decrease -->
 
                                     <button
                                         type="button"
                                         class="quantity-btn"
                                         onclick="changeQuantity(
                                             <?= (int) $item['cart_item_id'] ?>,
-                                            <?= max(0, (int) $item['quantity'] - 1) ?>
+                                            <?= max(
+                                                1,
+                                                $item['quantity'] - 1
+                                            ) ?>
                                         )"
                                     >
                                         −
                                     </button>
 
 
-                                    <!-- Current Quantity -->
-
                                     <span class="quantity">
+
                                         <?= (int) $item['quantity'] ?>
+
                                     </span>
 
-
-                                    <!-- Increase -->
 
                                     <button
                                         type="button"
@@ -763,25 +963,26 @@ require_once __DIR__ . '/../includes/header.php';
                                     </button>
 
 
-                                    <!-- Remove -->
-
-                                    <button
-                                        type="button"
-                                        class="remove-btn"
-                                        onclick="changeQuantity(
-                                            <?= (int) $item['cart_item_id'] ?>,
-                                            0
-                                        )"
-                                    >
-                                        Remove
-                                    </button>
-
                                 </div>
+
+
+                                <!-- Remove -->
+
+                                <button
+                                    type="button"
+                                    class="remove-btn"
+                                    onclick="removeItem(
+                                        <?= (int) $item['cart_item_id'] ?>
+                                    )"
+                                >
+                                    Remove
+                                </button>
+
 
                             </div>
 
 
-                            <!-- Item Total -->
+                            <!-- Item total -->
 
                             <div class="item-total">
 
@@ -792,25 +993,27 @@ require_once __DIR__ . '/../includes/header.php';
 
                             </div>
 
+
                         </div>
 
+
                     <?php endforeach; ?>
+
 
                 </div>
 
 
-                <!-- =================================================
+                <!-- =====================================================
                      ORDER SUMMARY
-                ================================================== -->
+                ====================================================== -->
 
                 <div class="summary">
+
 
                     <h2>
                         Order Summary
                     </h2>
 
-
-                    <!-- Subtotal -->
 
                     <div class="summary-row">
 
@@ -819,13 +1022,16 @@ require_once __DIR__ . '/../includes/header.php';
                         </span>
 
                         <span>
-                            $<?= number_format($subtotal, 2) ?>
+
+                            $<?= number_format(
+                                $subtotal,
+                                2
+                            ) ?>
+
                         </span>
 
                     </div>
 
-
-                    <!-- Shipping -->
 
                     <div class="summary-row">
 
@@ -834,13 +1040,16 @@ require_once __DIR__ . '/../includes/header.php';
                         </span>
 
                         <span>
-                            $<?= number_format($shipping, 2) ?>
+
+                            $<?= number_format(
+                                $shipping,
+                                2
+                            ) ?>
+
                         </span>
 
                     </div>
 
-
-                    <!-- Total -->
 
                     <div class="summary-row summary-total">
 
@@ -848,9 +1057,14 @@ require_once __DIR__ . '/../includes/header.php';
                             Total
                         </span>
 
-                        <span>
-                            $<?= number_format($total, 2) ?>
-                        </span>
+                        <strong>
+
+                            $<?= number_format(
+                                $total,
+                                2
+                            ) ?>
+
+                        </strong>
 
                     </div>
 
@@ -865,20 +1079,22 @@ require_once __DIR__ . '/../includes/header.php';
                     </a>
 
 
-                    <!-- Continue Shopping -->
-
                     <a
-                        href="products.php"
+                        href="shop.php"
                         class="continue-btn"
                     >
                         Continue Shopping
                     </a>
 
+
                 </div>
+
 
             </div>
 
+
         <?php endif; ?>
+
 
     </div>
 
@@ -887,80 +1103,165 @@ require_once __DIR__ . '/../includes/header.php';
 
 <script>
 
+
 /*
 |--------------------------------------------------------------------------
-| Change Cart Quantity
+| Change quantity
 |--------------------------------------------------------------------------
 */
-function changeQuantity(cartItemId, quantity) {
 
-    fetch("update_cart.php", {
+function changeQuantity(cartItemId, quantity)
+{
 
-        method: "POST",
+    if (quantity < 1) {
+        quantity = 1;
+    }
 
-        headers: {
-            "Content-Type": "application/x-www-form-urlencoded"
-        },
 
-        body:
-            "cart_item_id=" +
-            encodeURIComponent(cartItemId) +
-            "&quantity=" +
-            encodeURIComponent(quantity)
+    const formData =
+        new URLSearchParams();
 
-    })
 
-    .then(response => {
+    formData.append(
+        'cart_item_id',
+        cartItemId
+    );
 
-        if (!response.ok) {
-            throw new Error("HTTP error " + response.status);
+
+    formData.append(
+        'quantity',
+        quantity
+    );
+
+
+    fetch(
+        'cart.php',
+        {
+            method: 'POST',
+
+            headers: {
+                'Content-Type':
+                    'application/x-www-form-urlencoded'
+            },
+
+            body:
+                formData.toString()
         }
+    )
 
-        return response.json();
 
-    })
+    .then(response => response.json())
+
 
     .then(data => {
 
         if (data.success) {
 
-            location.reload();
+            window.location.reload();
 
         } else {
 
             alert(
                 data.message ||
-                "Unable to update cart."
+                'Unable to update cart.'
             );
-
         }
 
     })
 
+
     .catch(error => {
 
-        console.error("Cart update error:", error);
+        console.error(error);
 
         alert(
-            "Something went wrong while updating the cart."
+            'Something went wrong while updating the cart.'
         );
 
     });
 
 }
 
+
+/*
+|--------------------------------------------------------------------------
+| Remove item
+|--------------------------------------------------------------------------
+*/
+
+function removeItem(cartItemId)
+{
+
+    const formData =
+        new URLSearchParams();
+
+
+    formData.append(
+        'cart_item_id',
+        cartItemId
+    );
+
+
+    formData.append(
+        'quantity',
+        0
+    );
+
+
+    fetch(
+        'cart.php',
+        {
+            method: 'POST',
+
+            headers: {
+                'Content-Type':
+                    'application/x-www-form-urlencoded'
+            },
+
+            body:
+                formData.toString()
+        }
+    )
+
+
+    .then(response => response.json())
+
+
+    .then(data => {
+
+        if (data.success) {
+
+            window.location.reload();
+
+        } else {
+
+            alert(
+                data.message ||
+                'Unable to remove item.'
+            );
+        }
+
+    })
+
+
+    .catch(error => {
+
+        console.error(error);
+
+        alert(
+            'Something went wrong while removing the item.'
+        );
+
+    });
+
+}
+
+
 </script>
 
 
 <?php
-/*
-|--------------------------------------------------------------------------
-| Include Footer
-|--------------------------------------------------------------------------
-*/
+
 require_once __DIR__ . '/../includes/footer.php';
+
 ?>
-
-</body>
-
-</html>

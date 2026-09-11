@@ -1,4 +1,4 @@
-!-- MediQuick Footer Start -->
+<!-- MediQuick Footer Start -->
 <style>
     .mq-footer {
         --mq-deep: #2720FF;
@@ -366,6 +366,3 @@
 
 <!-- Template Javascript -->
 <script src="assets/js/main.js"></script>
-
-
-    
