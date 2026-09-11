@@ -1,4 +1,3 @@
-<!-- MediQuick Footer Start -->
 <style>
     .mq-footer {
         --mq-deep: #2720FF;
@@ -327,16 +326,6 @@
                 </ul>
             </div>
 
-            <div class="col-lg-4 col-md-6">
-                <h5 class="mq-footer-title">Newsletter</h5>
-                <p class="mq-footer-text mb-3">
-                    Get MediQuick updates, new product information and pharmacy offers.
-                </p>
-                <div class="mq-newsletter">
-                    <input type="email" placeholder="Enter your email" aria-label="Email address">
-                    <button type="button">Subscribe</button>
-                </div>
-            </div>
         </div>
     </div>
 
