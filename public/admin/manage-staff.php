@@ -9,10 +9,29 @@ require_once __DIR__ . '/../../includes/db.php';
 
 $pageTitle = "Manage Staff - MediQuick";
 
-// Fetch all staff members from database
-$sql = "SELECT staff_id, first_name, last_name, email, role, status, created_at FROM staff ORDER BY created_at DESC";
-$result = $conn->query($sql);
-$staffList = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+// Search & Filter setup
+$search = trim($_GET['search'] ?? '');
+
+if (!empty($search)) {
+    // Search query with prepared statement
+    $sql = "SELECT staff_id, first_name, last_name, email, role, status, created_at 
+            FROM staff 
+            WHERE first_name LIKE ? OR last_name LIKE ? OR email LIKE ? OR role LIKE ?
+            ORDER BY created_at DESC";
+            
+    $searchTerm = "%{$search}%";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("ssss", $searchTerm, $searchTerm, $searchTerm, $searchTerm);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $staffList = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+    $stmt->close();
+} else {
+    // Default fetch without search
+    $sql = "SELECT staff_id, first_name, last_name, email, role, status, created_at FROM staff ORDER BY created_at DESC";
+    $result = $conn->query($sql);
+    $staffList = $result ? $result->fetch_all(MYSQLI_ASSOC) : [];
+}
 
 // Pull flash messages/old inputs, then clear them
 $errors  = $_SESSION['staff_errors'] ?? [];
@@ -85,7 +104,28 @@ unset(
 
               <!-- Staff List Table -->
               <div class="card">
-                <h5 class="card-header">All Staff Members</h5>
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <h5 class="mb-0">All Staff Members</h5>
+                    
+                    <!-- SEARCH FORM -->
+                    <form method="GET" action="" class="d-flex gap-2">
+                        <div class="input-group input-group-merge">
+                            <span class="input-group-text" id="basic-addon-search31"><i class="bx bx-search"></i></span>
+                            <input
+                                type="text"
+                                name="search"
+                                class="form-control"
+                                placeholder="Search staff..."
+                                value="<?= htmlspecialchars($search); ?>"
+                                aria-label="Search staff..."
+                            />
+                        </div>
+                        <?php if (!empty($search)): ?>
+                            <a href="manage-staff.php" class="btn btn-outline-secondary">Clear</a>
+                        <?php endif; ?>
+                    </form>
+                </div>
+                
                 <div class="table-responsive text-nowrap">
                   <table class="table table-hover">
                     <thead>
@@ -101,7 +141,9 @@ unset(
                     <tbody class="table-border-bottom-0">
                       <?php if (empty($staffList)): ?>
                         <tr>
-                          <td colspan="6" class="text-center py-4">No staff members found.</td>
+                          <td colspan="6" class="text-center py-4">
+                            <?= !empty($search) ? 'No staff members found matching "' . htmlspecialchars($search) . '".' : 'No staff members found.' ?>
+                          </td>
                         </tr>
                       <?php else: ?>
                         <?php foreach ($staffList as $staff): ?>
@@ -135,7 +177,7 @@ unset(
                                   </a>
 
                                   <!-- Toggle Status / Deactivate -->
-                                  <form method="POST" action="handlers/manage-staff-handler.php">
+                                  <form method="POST" action="handlers/staff-handler.php">
                                     <input type="hidden" name="action" value="toggle_status" />
                                     <input type="hidden" name="staff_id" value="<?= htmlspecialchars($staff['staff_id']) ?>" />
                                     <input type="hidden" name="current_status" value="<?= htmlspecialchars($staff['status'] ?? 'active') ?>" />
@@ -157,74 +199,6 @@ unset(
 
             </div>
             <!-- / Content -->
-
-            <!-- Modal: Add New Staff -->
-            <div class="modal fade" id="addStaffModal" tabindex="-1" aria-hidden="true">
-              <div class="modal-dialog modal-dialog-centered" role="document">
-                <div class="modal-content">
-                  <div class="modal-header">
-                    <h5 class="modal-title" id="modalCenterTitle">Add New Staff Member</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                  </div>
-                  <form method="POST" action="handlers/manage-staff-handler.php">
-                    <input type="hidden" name="action" value="add_staff" />
-                    
-                    <div class="modal-body">
-                      <div class="row">
-                        <div class="col mb-3">
-                          <label for="first_name_modal" class="form-label">First Name</label>
-                          <input type="text" id="first_name_modal" name="first_name" class="form-control" placeholder="John" value="<?= htmlspecialchars($old['first_name'] ?? '') ?>" required />
-                        </div>
-                        <div class="col mb-3">
-                          <label for="last_name_modal" class="form-label">Last Name</label>
-                          <input type="text" id="last_name_modal" name="last_name" class="form-control" placeholder="Doe" value="<?= htmlspecialchars($old['last_name'] ?? '') ?>" required />
-                        </div>
-                      </div>
-
-                      <div class="row">
-                        <div class="col mb-3">
-                          <label for="email_modal" class="form-label">Email</label>
-                          <input type="email" id="email_modal" name="email" class="form-control" placeholder="john.doe@example.com" value="<?= htmlspecialchars($old['email'] ?? '') ?>" required />
-                        </div>
-                        <div class="col mb-3">
-                          <label for="role_modal" class="form-label">Role</label>
-                          <select id="role_modal" name="role" class="form-select" required>
-                            <option value="staff" selected>Staff</option>
-                            <option value="admin">Admin</option>
-                          </select>
-                        </div>
-                      </div>
-
-                      <div class="row">
-                        <div class="col mb-3">
-                          <label for="password_modal" class="form-label">Password</label>
-                          <div class="input-group input-group-merge">
-                            <input type="password" id="password_modal" name="password" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" required />
-                            <span class="input-group-text cursor-pointer toggle-password" data-target="password_modal">
-                              <i class="bx bx-hide pe-none"></i>
-                            </span>
-                          </div>
-                        </div>
-                        <div class="col mb-3">
-                          <label for="confirm_password_modal" class="form-label">Confirm Password</label>
-                          <div class="input-group input-group-merge">
-                            <input type="password" id="confirm_password_modal" name="confirm_password" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" required />
-                            <span class="input-group-text cursor-pointer toggle-password" data-target="confirm_password_modal">
-                              <i class="bx bx-hide pe-none"></i>
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div class="modal-footer">
-                      <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Close</button>
-                      <button type="submit" class="btn btn-primary">Create Account</button>
-                    </div>
-                  </form>
-                </div>
-              </div>
-            </div>
 
             <!-- Footer -->
             <?php require_once __DIR__ . '/includes/footer.php'; ?>

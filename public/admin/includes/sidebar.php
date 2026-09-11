@@ -21,7 +21,7 @@
 
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
-        <i class="menu-icon tf-icons bx bx-file-find"></i>
+        <i class="menu-icon tf-icons bx bx-user"></i>
         <div data-i18n="Prescription">Users</div>
       </a>
 
@@ -33,8 +33,8 @@
         </li>
 
         <li class="menu-item">
-          <a href="#" class="menu-link">
-            <div data-i18n="Verify">Manage Users</div>
+          <a href="manage-customers.php" class="menu-link">
+            <div data-i18n="Verify">Manage Customers</div>
           </a>
         </li>
       </ul>
@@ -124,7 +124,7 @@
       </ul>
     </li>
 
-    <li class="menu-item">
+    <!-- <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
         <i class="menu-icon tf-icons bx bx-group"></i>
         <div data-i18n="Customers">Customers</div>
@@ -137,7 +137,7 @@
           </a>
         </li>
       </ul>
-    </li>
+    </li> -->
 
     <li class="menu-item">
       <a href="javascript:void(0);" class="menu-link menu-toggle">
@@ -223,14 +223,14 @@
       </a>
     </li>
 
-    <li class="menu-item menu-logout">
+    <!-- <li class="menu-item menu-logout">
       <a href="create-staff.php" class="menu-link">
         <i class="menu-icon tf-icons bx bx-user-plus"></i>
         <div data-i18n="Create Staff Member">
           Create Staff Member
         </div>
       </a>
-    </li>
+    </li> -->
 
     <li class="menu-item menu-logout">
       <a href="/MediQuick-Pharmacy/public/logout.php" class="menu-link">
