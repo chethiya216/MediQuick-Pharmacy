@@ -187,20 +187,23 @@ unset(
                                 </button>
                                 <div class="dropdown-menu">
                                   <!-- Edit action / view logic -->
-                                  <a class="dropdown-item" href="edit-staff.php?id=<?= urlencode($staff['staff_id']) ?>">
+                                  <a class="dropdown-item" href="create-staff.php?id=<?= htmlspecialchars($staff['staff_id']) ?>">
                                     <i class="bx bx-edit-alt me-1"></i> Edit
                                   </a>
 
                                   <!-- Toggle Status / Deactivate -->
-                                  <form method="POST" action="handlers/staff-handler.php">
+                                 <form method="POST" action="handlers/staff-handler.php">
                                     <input type="hidden" name="action" value="toggle_status" />
                                     <input type="hidden" name="staff_id" value="<?= htmlspecialchars($staff['staff_id']) ?>" />
-                                    <input type="hidden" name="current_status" value="<?= htmlspecialchars($staff['status'] ?? 'active') ?>" />
+                                    
+                                    <!-- Send the target status as 'status' -->
+                                    <input type="hidden" name="status" value="<?= ($staff['status'] ?? 'active') === 'active' ? 'inactive' : 'active' ?>" />
+
                                     <button type="submit" class="dropdown-item text-<?= ($staff['status'] ?? 'active') === 'active' ? 'danger' : 'success' ?>">
-                                      <i class="bx bx-power-off me-1"></i> 
-                                      <?= ($staff['status'] ?? 'active') === 'active' ? 'Deactivate' : 'Activate' ?>
+                                    <i class="bx bx-power-off me-1"></i> 
+                                    <?= ($staff['status'] ?? 'active') === 'active' ? 'Deactivate' : 'Activate' ?>
                                     </button>
-                                  </form>
+                                </form>
                                 </div>
                               </div>
                             </td>
