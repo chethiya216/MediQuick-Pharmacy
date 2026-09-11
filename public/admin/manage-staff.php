@@ -61,9 +61,9 @@ unset(
               <div class="d-flex justify-content-between align-items-center mb-4">
                 <h4 class="fw-bold py-3 mb-0"><span class="text-muted fw-light">User Management /</span> Staff</h4>
                 <!-- Button to trigger Add Staff Modal -->
-                <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addStaffModal">
-                  <i class="bx bx-plus me-1"></i> Add New Staff
-                </button>
+                <a href="create-staff.php" class="btn btn-primary">
+                    <i class="bx bx-plus me-1"></i> Add New Staff Member
+                </a>
               </div>
 
               <!-- Alert Messages -->
