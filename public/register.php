@@ -1,8 +1,7 @@
 <?php
-
 session_start();
 
-require_once '../includes/header.php';
+// 1. Include database connection first
 require_once '../includes/db.php';
 
 $message = '';
@@ -167,10 +166,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         );
 
                         if ($stmt->execute()) {
-
-                            $message = "Registration successful! You can now login.";
-                            $messageType = "success";
-
+                            // Redirect works successfully now because no HTML headers/output were sent yet
                             header("Location: login.php");
                             exit;
 
@@ -188,17 +184,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
+// 2. Include header.php AFTER processing logic, right before HTML rendering begins
+require_once '../includes/header.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
 
 <body>
 
-    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+    <!-- Spinner with immediate self-destruct script to prevent hanging -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center" style="z-index: 99999;">
         <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
             <span class="sr-only">Loading...</span>
         </div>
     </div>
+    <script>
+        // Removes the spinner instantly so external template scripts can't lock it
+        (function() {
+            const s = document.getElementById('spinner');
+            if (s) s.remove();
+        })();
+    </script>
 
     <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center py-5 bg-light">
         <div class="container my-auto">
@@ -270,7 +276,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <span class="input-group-text bg-transparent border-0 ps-3 text-muted">
                                     <i class="fas fa-calendar-alt"></i>
                                 </span>
-                                <input type="date" class="form-control bg-transparent border-0 py-3 pe-3 text-muted" id="dob" name="dob" value="<?php echo htmlspecialchars($_POST['date_of_birth'] ?? ''); ?>" required>
+                                <input type="date" class="form-control bg-transparent border-0 py-3 pe-3 text-muted" id="dob" name="dob" value="<?php echo htmlspecialchars($_POST['dob'] ?? ''); ?>" required>
                             </div>
                         </div>
 
@@ -283,9 +289,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input type="password" class="form-control bg-transparent border-0 py-3" id="register-password" name="password" placeholder="Password (min. 8 characters)" minlength="8" required>
                                 
                                 <span class="input-group-text bg-transparent border-0 pe-3 text-muted" 
-                                      data-toggle="password" 
-                                      data-target="register-password" 
-                                      style="cursor: pointer;">
+                                    data-toggle="password" 
+                                    data-target="register-password" 
+                                    style="cursor: pointer;">
                                     <i class="fas fa-eye"></i>
                                 </span>
                             </div>
@@ -300,9 +306,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <input type="password" class="form-control bg-transparent border-0 py-3" id="confirm-password" name="confirm_password" placeholder="Confirm Password" minlength="8" required>
                                 
                                 <span class="input-group-text bg-transparent border-0 pe-3 text-muted" 
-                                      data-toggle="password" 
-                                      data-target="confirm-password" 
-                                      style="cursor: pointer;">
+                                    data-toggle="password" 
+                                    data-target="confirm-password" 
+                                    style="cursor: pointer;">
                                     <i class="fas fa-eye"></i>
                                 </span>
                             </div>
