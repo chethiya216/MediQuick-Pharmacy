@@ -54,6 +54,11 @@ function productImage($product)
         font-weight: 500;
     }
 
+    .product-image {
+        height: auto;
+        width: 100%;
+    }
+
     .discount-badge {
         display: inline-block;
         margin: 4px auto 0;
