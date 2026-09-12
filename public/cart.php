@@ -729,13 +729,22 @@ $total =
 
 function getProductImage($image)
 {
+    /*
+     * product_image values in the database already contain the public
+     * relative path, for example: uploads/products/example.jpg
+     */
     if (!empty($image)) {
+        $image = str_replace('\\', '/', trim($image));
+        $image = ltrim($image, '/');
 
-        return 'assets/images/'
-            . htmlspecialchars($image);
+        // Prevent a stored path from escaping the public uploads folder.
+        if (strpos($image, 'uploads/products/') === 0) {
+            return htmlspecialchars($image, ENT_QUOTES, 'UTF-8');
+        }
     }
 
-    return 'assets/images/no-image.png';
+    // Safe fallback available inside the existing public assets.
+    return 'assets/img/product-1.png';
 }
 
 
