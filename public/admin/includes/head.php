@@ -23,6 +23,7 @@
     <!-- Vendors CSS -->
     <link rel="stylesheet" href="../admin-assets/assets/vendor/libs/perfect-scrollbar/perfect-scrollbar.css" />
     <link rel="stylesheet" href="../admin-assets/assets/vendor/libs/apex-charts/apex-charts.css" />
+    <link rel="stylesheet" href="../admin-assets/assets/css/custom.css" />
 
     <!-- Helpers -->
     <script src="../admin-assets/assets/vendor/js/helpers.js"></script>
