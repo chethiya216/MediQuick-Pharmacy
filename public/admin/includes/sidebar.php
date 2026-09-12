@@ -215,6 +215,14 @@ $currentPage = basename($_SERVER['PHP_SELF']);
     </li>
     <?php endif; ?>
 
+    <!-- User Home -->
+    <li class="menu-item menu-logout">
+      <a href="/MediQuick-Pharmacy/public/index.php" class="menu-link">
+        <i class="menu-icon tf-icons bx bx-home-alt"></i>
+        <div data-i18n="Log out">Go to Customer Home</div>
+      </a>
+    </li>
+
     <!-- Logout -->
     <li class="menu-item menu-logout">
       <a href="/MediQuick-Pharmacy/public/logout.php" class="menu-link">
