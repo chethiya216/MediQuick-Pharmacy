@@ -457,14 +457,6 @@ if ($headerCartStmt) {
 </head>
 
 <body>
-
-    <!-- Loading Spinner -->
-    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center" style="z-index:9999;">
-        <div class="spinner-border" style="width:3rem;height:3rem;color:#00A3FF;" role="status">
-            <span class="sr-only">Loading...</span>
-        </div>
-    </div>
-
     <!-- ================= TOP BAR ================= -->
     <div class="container-fluid mq-topbar px-5 d-none d-lg-block">
         <div class="row align-items-center" style="height:45px;">
