@@ -7,9 +7,6 @@ require_once('../includes/db.php');
 require_once('../includes/auth.php');
 require_once('../includes/head.php');
 
-
-
-
 $currentPage = basename($_SERVER['PHP_SELF'] ?? '');
 
 /* Load the real active categories from the database. */
