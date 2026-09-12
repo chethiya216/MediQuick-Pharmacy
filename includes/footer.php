@@ -312,7 +312,7 @@
                     <li><a href="index.php"><i class="fas fa-angle-right"></i> Home</a></li>
                     <li><a href="shop.php"><i class="fas fa-angle-right"></i> Shop</a></li>
                     <li><a href="cart.php"><i class="fas fa-angle-right"></i> Cart</a></li>
-                    <li><a href="contact.html"><i class="fas fa-angle-right"></i> Contact</a></li>
+                    <li><a href="contact.php"><i class="fas fa-angle-right"></i> Contact</a></li>
                 </ul>
             </div>
 
