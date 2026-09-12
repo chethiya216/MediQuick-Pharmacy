@@ -7,6 +7,21 @@ if (session_status() === PHP_SESSION_NONE) {
 
 /*
 |--------------------------------------------------------------------------
+| Access Denied Redirect Helper
+|--------------------------------------------------------------------------
+*/
+
+function denyAccess(string $message = "Access denied. You do not have permission to view this resource."): void
+{
+    $_SESSION['auth_error'] = $message;
+    http_response_code(403);
+    header("Location: access-denied.php");
+    exit;
+}
+
+
+/*
+|--------------------------------------------------------------------------
 | Check if user is logged in
 |--------------------------------------------------------------------------
 */
@@ -26,6 +41,7 @@ function isLoggedIn(): bool
 function requireLogin(): void
 {
     if (!isLoggedIn()) {
+        $_SESSION['auth_error'] = "Please log in to access this page.";
         header("Location: ../login.php");
         exit;
     }
@@ -56,13 +72,8 @@ function requireAdmin(): void
 
     $role = getUserRole();
 
-    if (
-        $role !== 'admin' &&
-        $role !== 'superadmin'
-    ) {
-        http_response_code(403);
-
-        die("Access denied. Admin permission required.");
+    if ($role !== 'admin' && $role !== 'superadmin') {
+        denyAccess("Access denied. Admin or Superadmin permission is required.");
     }
 }
 
@@ -78,9 +89,7 @@ function requireSuperAdmin(): void
     requireLogin();
 
     if (getUserRole() !== 'superadmin') {
-        http_response_code(403);
-
-        die("Access denied. Superadmin permission required.");
+        denyAccess("Access denied. Superadmin permission is required.");
     }
 }
 
@@ -102,11 +111,16 @@ function requirePharmacist(): void
         $role !== 'admin' &&
         $role !== 'superadmin'
     ) {
-        http_response_code(403);
-
-        die("Access denied. Superadmin, Admin or Pharmacist permission required");
+        denyAccess("Access denied. Superadmin, Admin, or Pharmacist permission is required.");
     }
 }
+
+
+/*
+|--------------------------------------------------------------------------
+| Get User By ID
+|--------------------------------------------------------------------------
+*/
 
 function getUserById($userId) {
     global $conn;
