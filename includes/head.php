@@ -31,6 +31,7 @@
     <link href="assets/css/style.css" rel="stylesheet">
     <link href="assets/vendor/css/core.css" rel="stylesheet">
     <link href="assets/css/header-style.css" rel="stylesheet">
+    <link href="assets/css/checkout-style.css" rel="stylesheet">
     <link href="assets/css/cart-style.css" rel="stylesheet">
     <link href="assets/css/footer-style.css" rel="stylesheet">
 </head>
