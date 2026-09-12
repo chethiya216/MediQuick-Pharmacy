@@ -522,6 +522,7 @@ CREATE TABLE IF NOT EXISTS `product_batches` (
   `product_id` int NOT NULL,
   `supplier_id` int DEFAULT NULL,
   `batch_number` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `purchase_reference` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `initial_quantity` int NOT NULL DEFAULT '0',
   `quantity_on_hand` int NOT NULL DEFAULT '0',
   `purchase_price` decimal(10,2) DEFAULT '0.00',
@@ -529,6 +530,8 @@ CREATE TABLE IF NOT EXISTS `product_batches` (
   `manufacture_date` date DEFAULT NULL,
   `expiry_date` date NOT NULL,
   `received_date` date NOT NULL,
+  `invoice_file` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` enum('active','expired','recalled','depleted') COLLATE utf8mb4_unicode_ci DEFAULT 'active',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -537,23 +540,24 @@ CREATE TABLE IF NOT EXISTS `product_batches` (
   KEY `supplier_id` (`supplier_id`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+
 --
 -- Dumping data for table `product_batches`
 --
 
-INSERT INTO `product_batches` (`batch_id`, `product_id`, `supplier_id`, `batch_number`, `initial_quantity`, `quantity_on_hand`, `purchase_price`, `selling_price`, `manufacture_date`, `expiry_date`, `received_date`, `status`, `created_at`, `updated_at`) VALUES
-(1, 1, 1, 'BN-PAN-2025-01', 500, 320, 9.50, 15.00, '2025-01-10', '2027-01-10', '2025-01-20', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
-(2, 1, 2, 'BN-PAN-2025-02', 500, 500, 9.80, 15.00, '2025-03-01', '2027-03-01', '2025-03-15', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
-(3, 2, 2, 'BN-AMX-2024-09', 200, 85, 30.00, 45.50, '2024-09-01', '2026-09-01', '2024-09-10', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
-(4, 3, 3, 'BN-NEU-2025-04', 150, 110, 14.00, 22.00, '2025-04-12', '2027-04-12', '2025-04-25', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
-(5, 4, 1, 'BN-CET-2025-02', 50, 28, 900.00, 1250.00, '2025-02-01', '2028-02-01', '2025-02-20', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
-(6, 5, 2, 'BN-AUG-2024-11', 100, 42, 85.00, 120.00, '2024-11-05', '2026-11-05', '2024-11-18', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
-(7, 6, 3, 'BN-BEN-2025-05', 80, 60, 130.00, 185.00, '2025-05-01', '2027-05-01', '2025-05-10', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
-(8, 7, 1, 'BN-SEV-2024-06', 60, 0, 600.00, 850.00, '2024-06-01', '2026-06-01', '2024-06-15', 'depleted', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
-(9, 8, 3, 'BN-VOL-2025-01', 40, 18, 230.00, 340.00, '2025-01-15', '2027-01-15', '2025-02-01', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
-(10, 9, 2, 'BN-INS-2025-06', 30, 30, 1050.00, 1450.00, '2025-06-01', '2026-12-01', '2025-06-10', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
-(11, 10, 1, 'BN-DIS-2023-01', 300, 45, 5.00, 8.00, '2023-01-01', '2025-01-01', '2023-01-15', 'expired', '2026-08-28 18:25:04', '2026-08-28 18:25:04');
-
+INSERT INTO `product_batches` (`batch_id`, `product_id`, `supplier_id`, `batch_number`, `purchase_reference`, `initial_quantity`, `quantity_on_hand`, `purchase_price`, `selling_price`, `manufacture_date`, `expiry_date`, `received_date`, `invoice_file`, `notes`, `status`, `created_at`, `updated_at`
+) VALUES
+(1, 1, 1, 'BN-PAN-2025-01', 'INV-2025-001', 500, 320, 9.50, 15.00, '2025-01-10', '2027-01-10', '2025-01-20', 'invoices/invoice_a1b2c3d4_1740000001.jpg', 'Store in a cool dry place below 25°C.', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
+(2, 1, 2, 'BN-PAN-2025-02', 'INV-2025-014', 500, 500, 9.80, 15.00, '2025-03-01', '2027-03-01', '2025-03-15', 'invoices/invoice_e5f6g7h8_1740000002.jpg', 'Standard delivery, intact packaging.', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
+(3, 2, 2, 'BN-AMX-2024-09', 'INV-2024-089', 200, 85, 30.00, 45.50, '2024-09-01', '2026-09-01', '2024-09-10', 'invoices/invoice_i9j0k1l2_1740000003.pdf', 'Antibiotic batch - check humidity levels.', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
+(4, 3, 3, 'BN-NEU-2025-04', 'INV-2025-045', 150, 110, 14.00, 22.00, '2025-04-12', '2027-04-12', '2025-04-25', 'invoices/invoice_m3n4o5p6_1740000004.png', 'Keep away from direct sunlight.', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
+(5, 4, 1, 'BN-CET-2025-02', 'INV-2025-022', 50, 28, 900.00, 1250.00, '2025-02-01', '2028-02-01', '2025-02-20', 'invoices/invoice_q7r8s9t0_1740000005.jpg', 'High-value consignment.', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
+(6, 5, 2, 'BN-AUG-2024-11', 'INV-2024-112', 100, 42, 85.00, 120.00, '2024-11-05', '2026-11-05', '2024-11-18', NULL, 'Sample checked and approved.', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
+(7, 6, 3, 'BN-BEN-2025-05', 'INV-2025-067', 80, 60, 130.00, 185.00, '2025-05-01', '2027-05-01', '2025-05-10', 'invoices/invoice_u1v2w3x4_1740000007.webp', 'Requires refrigeration (2°C to 8°C).', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
+(8, 7, 1, 'BN-SEV-2024-06', 'INV-2024-051', 60, 0, 600.00, 850.00, '2024-06-01', '2026-06-01', '2024-06-15', 'invoices/invoice_y5z6a7b8_1740000008.jpg', 'All stock sold out.', 'depleted', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
+(9, 8, 3, 'BN-VOL-2025-01', 'INV-2025-008', 40, 18, 230.00, 340.00, '2025-01-15', '2027-01-15', '2025-02-01', NULL, 'Fragile glass containers.', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
+(10, 9, 2, 'BN-INS-2025-06', 'INV-2025-099', 30, 30, 1050.00, 1450.00, '2025-06-01', '2026-12-01', '2025-06-10', 'invoices/invoice_c9d0e1f2_1740000010.jpg', 'Cold chain maintained during transit.', 'active', '2026-08-28 18:25:04', '2026-08-28 18:25:04'),
+(11, 10, 1, 'BN-DIS-2023-01', 'INV-2023-003', 300, 45, 5.00, 8.00, '2023-01-01', '2025-01-01', '2023-01-15', 'invoices/invoice_g3h4i5j6_1740000011.png', 'Batch expired. Awaiting safe disposal.', 'expired', '2026-08-28 18:25:04', '2026-08-28 18:25:04');
 -- --------------------------------------------------------
 
 --
