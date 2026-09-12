@@ -48,12 +48,25 @@ ORDER BY o.order_id DESC
 ";
 
 $result = $conn->query($sql);
+
+// Helper array to assign Sneat template badge colors
+$statusBadges = [
+    'pending'   => 'bg-label-warning',
+    'confirmed' => 'bg-label-info',
+    'shipped'   => 'bg-label-primary',
+    'delivered' => 'bg-label-success',
+    'cancelled' => 'bg-label-danger'
+];
 ?>
 
+<!DOCTYPE html>
 <html
     lang="en"
     class="light-style layout-menu-fixed"
     dir="ltr"
+    data-theme="theme-default"
+    data-assets-path="../assets/"
+    data-template="vertical-menu-template-free"
 >
 
 <head>
@@ -63,58 +76,49 @@ $result = $conn->query($sql);
 <body>
 
 <div class="layout-wrapper layout-content-navbar">
-<div class="layout-container">
+    <div class="layout-container">
 
-    <?php include 'includes/sidebar.php'; ?>
+        <?php include 'includes/sidebar.php'; ?>
 
-    <div class="layout-page">
+        <div class="layout-page">
 
-        <?php include 'includes/header.php'; ?>
+            <?php include 'includes/header.php'; ?>
 
-        <div class="content-wrapper">
+            <div class="content-wrapper">
 
-            <div class="container-xxl flex-grow-1 container-p-y">
+                <div class="container-xxl flex-grow-1 container-p-y">
 
-                <div class="d-flex justify-content-between align-items-center mb-4">
-                    <h4 class="fw-bold mb-0">
-                        Manage Orders
+                    <h4 class="fw-bold py-3 mb-4">
+                        <span class="text-muted fw-light">Management /</span> Orders
                     </h4>
-                </div>
 
-                <div class="card">
+                    <div class="card">
+                        <h5 class="card-header">Order List</h5>
 
-                    <div class="card-header">
-                        <h5 class="card-title mb-0">
-                            Order List
-                        </h5>
-                    </div>
-
-                    <div class="card-body">
-
-                        <div class="table-responsive">
-
-                            <table class="table table-hover table-bordered">
-
-                                <thead class="table-light">
+                        <div class="table-responsive text-nowrap">
+                            <table class="table table-hover">
+                                <thead>
                                     <tr>
                                         <th>Order ID</th>
                                         <th>Customer</th>
                                         <th>Order Date</th>
                                         <th>Total Amount</th>
-                                        <th>Status</th>
+                                        <th>Status Badge</th>
+                                        <th>Update Status</th>
                                     </tr>
                                 </thead>
-
-                                <tbody>
+                                <tbody class="table-border-bottom-0">
 
                                 <?php if($result && $result->num_rows > 0): ?>
 
-                                    <?php while($row = $result->fetch_assoc()): ?>
+                                    <?php while($row = $result->fetch_assoc()): 
+                                        $currentStatus = strtolower($row['status']);
+                                        $badgeClass = $statusBadges[$currentStatus] ?? 'bg-label-secondary';
+                                    ?>
 
                                         <tr>
-
                                             <td>
-                                                #<?= $row['order_id']; ?>
+                                                <strong>#<?= $row['order_id']; ?></strong>
                                             </td>
 
                                             <td>
@@ -122,77 +126,35 @@ $result = $conn->query($sql);
                                             </td>
 
                                             <td>
-                                                <?= date(
-                                                    'Y-m-d H:i',
-                                                    strtotime($row['order_date'])
-                                                ); ?>
+                                                <?= date('M d, Y H:i', strtotime($row['order_date'])); ?>
                                             </td>
 
                                             <td>
-                                                Rs.
-                                                <?= number_format(
-                                                    $row['total_amount'],
-                                                    2
-                                                ); ?>
+                                                Rs. <?= number_format($row['total_amount'], 2); ?>
                                             </td>
 
                                             <td>
+                                                <span class="badge <?= $badgeClass; ?> me-1">
+                                                    <?= ucfirst($row['status']); ?>
+                                                </span>
+                                            </td>
 
-                                                <form method="POST">
-
-                                                    <input
-                                                        type="hidden"
-                                                        name="order_id"
-                                                        value="<?= $row['order_id']; ?>"
-                                                    >
-
+                                            <td>
+                                                <form method="POST" class="d-flex align-items-center">
+                                                    <input type="hidden" name="order_id" value="<?= $row['order_id']; ?>">
                                                     <select
                                                         name="status"
-                                                        class="form-select"
+                                                        class="form-select form-select-sm w-auto"
                                                         onchange="this.form.submit();"
                                                     >
-
-                                                        <option
-                                                            value="pending"
-                                                            <?= ($row['status']=='pending') ? 'selected' : ''; ?>
-                                                        >
-                                                            Pending
-                                                        </option>
-
-                                                        <option
-                                                            value="confirmed"
-                                                            <?= ($row['status']=='confirmed') ? 'selected' : ''; ?>
-                                                        >
-                                                            Confirmed
-                                                        </option>
-
-                                                        <option
-                                                            value="shipped"
-                                                            <?= ($row['status']=='shipped') ? 'selected' : ''; ?>
-                                                        >
-                                                            Shipped
-                                                        </option>
-
-                                                        <option
-                                                            value="delivered"
-                                                            <?= ($row['status']=='delivered') ? 'selected' : ''; ?>
-                                                        >
-                                                            Delivered
-                                                        </option>
-
-                                                        <option
-                                                            value="cancelled"
-                                                            <?= ($row['status']=='cancelled') ? 'selected' : ''; ?>
-                                                        >
-                                                            Cancelled
-                                                        </option>
-
+                                                        <option value="pending" <?= ($currentStatus=='pending') ? 'selected' : ''; ?>>Pending</option>
+                                                        <option value="confirmed" <?= ($currentStatus=='confirmed') ? 'selected' : ''; ?>>Confirmed</option>
+                                                        <option value="shipped" <?= ($currentStatus=='shipped') ? 'selected' : ''; ?>>Shipped</option>
+                                                        <option value="delivered" <?= ($currentStatus=='delivered') ? 'selected' : ''; ?>>Delivered</option>
+                                                        <option value="cancelled" <?= ($currentStatus=='cancelled') ? 'selected' : ''; ?>>Cancelled</option>
                                                     </select>
-
                                                 </form>
-
                                             </td>
-
                                         </tr>
 
                                     <?php endwhile; ?>
@@ -200,10 +162,7 @@ $result = $conn->query($sql);
                                 <?php else: ?>
 
                                     <tr>
-                                        <td
-                                            colspan="5"
-                                            class="text-center"
-                                        >
+                                        <td colspan="6" class="text-center py-4">
                                             No orders found
                                         </td>
                                     </tr>
@@ -211,26 +170,23 @@ $result = $conn->query($sql);
                                 <?php endif; ?>
 
                                 </tbody>
-
                             </table>
-
                         </div>
-
                     </div>
 
                 </div>
 
+                <?php include 'includes/footer.php'; ?>
+
+                <div class="content-backdrop fade"></div>
+
             </div>
-
-            <?php include 'includes/footer.php'; ?>
-
-            <div class="content-backdrop fade"></div>
 
         </div>
 
     </div>
 
-</div>
+    <div class="layout-overlay layout-menu-toggle"></div>
 </div>
 
 </body>
