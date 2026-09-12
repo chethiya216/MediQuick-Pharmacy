@@ -4,6 +4,9 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 require_once('../includes/db.php');
+require_once('../includes/auth.php');
+
+
 
 $currentPage = basename($_SERVER['PHP_SELF'] ?? '');
 
@@ -476,7 +479,7 @@ if ($headerCartStmt) {
                     <div class="dropdown-menu dropdown-menu-end mq-category-menu mt-2">
 
                         <!-- My Account - Always visible -->
-                        <a href="manageaccount.php" class="dropdown-item <?= $currentPage === 'manageaccount.php' ? 'active' : '' ?>">
+                        <a href="manage-account.php" class="dropdown-item <?= $currentPage === 'manage-account.php' ? 'active' : '' ?>">
                             <span><i class="fas fa-user me-2"></i> My Account</span>
                         </a>
 
@@ -617,9 +620,15 @@ if ($headerCartStmt) {
                         <a href="cart.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'cart.php' ? 'active' : '' ?>">
                             <i class="fas fa-shopping-cart me-1"></i> Cart
                         </a>
-                        <a href="manageaccount.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'manageaccount.php' ? 'active' : '' ?>">
+                        <?php if(isLoggedIn()): ?>
+                        <a href="manage-account.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'manage-account.php' ? 'active' : '' ?>">
                             <i class="fas fa-user me-1"></i> My Account
                         </a>
+                        <?php else: ?>
+                        <a href="login.php" class="nav-item nav-link mq-nav-link">
+                            <i class="fas fa-sign-in-alt me-1"></i> My Account
+                        </a>
+                        <?php endif; ?>
                     </div>
 
                 </div>

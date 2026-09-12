@@ -319,7 +319,7 @@
             <div class="col-6 col-md-3 col-lg-2">
                 <h5 class="mq-footer-title">Customer</h5>
                 <ul class="mq-footer-links">
-                    <li><a href="manageaccount.php"><i class="fas fa-angle-right"></i> My Account</a></li>
+                    <li><a href="manage-account.php"><i class="fas fa-angle-right"></i> My Account</a></li>
                     <li><a href="login.php"><i class="fas fa-angle-right"></i> Login</a></li>
                     <li><a href="register.php"><i class="fas fa-angle-right"></i> Register</a></li>
                     <li><a href="checkout.html"><i class="fas fa-angle-right"></i> Checkout</a></li>
