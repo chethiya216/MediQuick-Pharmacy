@@ -34,20 +34,21 @@ $totalPages = ceil($totalPrescriptions / $limit);
 if ($totalPages < 1) { $totalPages = 1; }
 if ($page > $totalPages) { $page = $totalPages; }
 
-// 2. Fetch paginated prescriptions with user/patient details
+// 2. Fetch paginated prescriptions with customer/patient details
 $sql = "
     SELECT 
         pr.prescription_id,
-        pr.staff_id,
+        pr.customer_id,
         pr.file_path,
         pr.rejection_reason,
         pr.status,
         pr.created_at,
-        s.first_name,
-        s.last_name,
-        s.email
+        c.first_name,
+        c.last_name,
+        c.email,
+        c.phone
     FROM prescriptions pr
-    LEFT JOIN staff s ON pr.staff_id = s.staff_id
+    LEFT JOIN customers c ON pr.customer_id = c.customer_id
     ORDER BY pr.prescription_id DESC
     LIMIT ? OFFSET ?
 ";
@@ -176,7 +177,7 @@ function getPageUrl($pageNumber, $queryParams) {
                                                 <?php
                                                 $status = strtolower(trim($row['status'] ?? 'pending'));
 
-                                                if ($status === 'approved' || $status === 'fulfilled') {
+                                                if ($status === 'approved' || $status === 'fulfilled' || $status === 'verified') {
                                                     $badge = 'bg-label-success';
                                                 } elseif ($status === 'rejected' || $status === 'cancelled') {
                                                     $badge = 'bg-label-danger';
@@ -223,7 +224,7 @@ function getPageUrl($pageNumber, $queryParams) {
 
                                     <!-- NO PRESCRIPTIONS FOUND -->
                                     <tr>
-                                        <td colspan="8" class="text-center">
+                                        <td colspan="7" class="text-center">
                                             No prescriptions found.
                                         </td>
                                     </tr>
