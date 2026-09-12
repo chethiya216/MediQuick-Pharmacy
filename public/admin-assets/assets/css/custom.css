@@ -1,0 +1,175 @@
+ .batch-page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+
+        .batch-page-header h4 {
+            margin: 0;
+        }
+
+        .batch-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .batch-card {
+            margin-bottom: 18px;
+        }
+
+        .batch-card .card-header {
+            padding: 16px 20px;
+            font-weight: 600;
+        }
+
+        .batch-card .card-body {
+            padding: 20px;
+        }
+
+        .form-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: #566a7f;
+        }
+
+        .required {
+            color: #ff3e1d;
+        }
+
+        .invoice-box {
+            border: 1px dashed #d9dee3;
+            border-radius: 6px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .invoice-box i {
+            font-size: 38px;
+            margin-bottom: 8px;
+        }
+
+        .invoice-box small {
+            display: block;
+            margin-top: 8px;
+        }
+
+        .price-input {
+            position: relative;
+        }
+
+        .price-input .currency {
+            position: absolute;
+            left: 13px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #8592a3;
+            z-index: 2;
+        }
+
+        .price-input input {
+            padding-left: 42px;
+        }
+
+        @media (max-width: 768px) {
+            .batch-page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .batch-actions {
+                width: 100%;
+            }
+
+            .batch-actions .btn {
+                flex: 1;
+            }
+        }
+
+
+
+        .batch-page-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+        }
+
+        .batch-page-header h4 {
+            margin: 0;
+        }
+
+        .add-batch-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .batch-stat-card {
+            height: 100%;
+        }
+
+        .batch-stat-number {
+            font-size: 28px;
+            font-weight: 600;
+        }
+
+        .batch-filter-row {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .batch-search {
+            flex: 1;
+        }
+
+        .batch-table th {
+            white-space: nowrap;
+        }
+
+        .batch-table td {
+            vertical-align: middle;
+        }
+
+        .expiry-badge {
+            font-size: 12px;
+            padding: 5px 10px;
+            border-radius: 20px;
+        }
+
+        .batch-actions {
+            display: flex;
+            gap: 6px;
+            white-space: nowrap;
+        }
+
+        .empty-batches {
+            text-align: center;
+            padding: 50px 20px !important;
+            color: #8592a3;
+        }
+
+        .empty-batches i {
+            font-size: 45px;
+        }
+
+        @media (max-width: 768px) {
+
+            .batch-page-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
+            }
+
+            .batch-filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .batch-search {
+                width: 100%;
+            }
+
+        }
