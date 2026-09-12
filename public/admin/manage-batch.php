@@ -8,56 +8,6 @@ require_once '../../includes/db.php';
 $success = '';
 $delete_error = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_batch'])) {
-
-    $batch_id = (int)($_POST['batch_id'] ?? 0);
-
-    if ($batch_id > 0) {
-
-        $delete_stmt = $conn->prepare("
-            DELETE FROM product_batches
-            WHERE batch_id = ?
-        ");
-
-        if (!$delete_stmt) {
-            die("Database error: " . $conn->error);
-        }
-
-        $delete_stmt->bind_param("i", $batch_id);
-
-        if ($delete_stmt->execute()) {
-
-            $delete_stmt->close();
-
-            header("Location: manage-batch.php?success=deleted");
-            exit;
-
-        } else {
-
-            $delete_error = "Unable to delete product batch.";
-            $delete_stmt->close();
-        }
-    }
-}
-
-if (isset($_GET['success'])) {
-
-    switch ($_GET['success']) {
-
-        case 'added':
-            $success = "Product batch added successfully.";
-            break;
-
-        case 'updated':
-            $success = "Product batch updated successfully.";
-            break;
-
-        case 'deleted':
-            $success = "Product batch deleted successfully.";
-            break;
-    }
-}
-
 $search = trim($_GET['search'] ?? '');
 
 $expiry_filter = $_GET['expiry'] ?? 'all';
@@ -70,10 +20,14 @@ $sql = "
     SELECT
         pb.batch_id,
         pb.product_id,
+        pb.supplier_id,
         pb.batch_number,
         pb.quantity_on_hand,
+        pb.purchase_price,
+        pb.selling_price,
         pb.expiry_date,
         pb.received_date,
+        pb.status,
         p.product_name,
         p.sku
     FROM product_batches pb
@@ -555,7 +509,11 @@ $stats = $stats_query->fetch_assoc();
 
                                     <th>
                                         Status
-                                    </th>
+                                    </th> 
+                                    
+                                    <!-- <th>
+                                        Invoice
+                                    </th> -->
 
                                     <th>
                                         Actions
@@ -669,6 +627,17 @@ $stats = $stats_query->fetch_assoc();
 
                                             </td>
 
+                                            <!-- <td>
+                                                <?php if (!empty($row['invoice_file'])): ?>
+                                                <img src="../uploads/<?= htmlspecialchars($row['invoice_file']); ?>"
+                                                        alt="Invoice Image" 
+                                                        class="img-thumbnail" 
+                                                        style="width: 150px; height: 100px; object-fit: cover;">
+                                                <?php else: ?>
+                                                    <span class="badge bg-secondary">No Image</span>
+                                                <?php endif; ?>
+                                            </td> -->
+
                                             <td>
 
                                                 <div class="batch-actions">
@@ -685,15 +654,18 @@ $stats = $stats_query->fetch_assoc();
                                                             value="<?= (int)$row['batch_id'] ?>"
                                                         >
 
-                                                        <button
-                                                            type="submit"
-                                                            name="delete_batch"
-                                                            class="btn btn-sm btn-outline-danger"
+                                                       <button 
+                                                            type="button" 
+                                                            class="btn btn-sm btn-outline-danger" 
                                                             title="Delete"
+                                                            onclick="openDeleteConfirm(
+                                                                event, 
+                                                                <?= (int)$row['batch_id']; ?>, 
+                                                                '<?= htmlspecialchars($row['batch_number'], ENT_QUOTES); ?>', 
+                                                                'handlers/product-batch-handler.php?action=delete&batch_id=<?= (int)$row['batch_id']; ?>'
+                                                            )"
                                                         >
-
                                                             <i class="bx bx-trash"></i>
-
                                                         </button>
 
                                                     </form>
@@ -752,6 +724,7 @@ $stats = $stats_query->fetch_assoc();
                 </div>
 
                 <?php require_once 'includes/footer.php'; ?>
+                <?php require_once 'includes/delete-modal.php'; ?>
 
                 <div class="content-backdrop fade"></div>
 
