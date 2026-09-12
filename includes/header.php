@@ -1,4 +1,8 @@
 <?php
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
 require_once('../includes/db.php');
 
 $currentPage = basename($_SERVER['PHP_SELF'] ?? '');
@@ -18,7 +22,34 @@ if ($headerCategoryQuery) {
     }
 }
 
-$headerSelectedCategoryId = isset($_GET['category_id']) ? (int)$_GET['category_id'] : 0;
+$headerSelectedCategoryId = isset($_GET['category']) ? (int)$_GET['category'] : 0;
+
+/* Calculate the current cart balance using the logged-in customer.
+   Guest carts use customer_id = 0 in the current database structure. */
+$headerCustomerId = !empty($_SESSION['user_id']) ? (int)$_SESSION['user_id'] : 0;
+$headerCartTotal = 0.00;
+
+$headerCartStmt = $conn->prepare("
+    SELECT COALESCE(SUM(
+        ci.quantity * (p.unit_price - (p.unit_price * COALESCE(p.discount_percent, 0) / 100))
+    ), 0) AS cart_total
+    FROM carts c
+    LEFT JOIN cart_items ci ON ci.cart_id = c.cart_id
+    LEFT JOIN products p ON p.product_id = ci.product_id
+    WHERE c.customer_id = ?
+");
+
+if ($headerCartStmt) {
+    $headerCartStmt->bind_param("i", $headerCustomerId);
+    $headerCartStmt->execute();
+    $headerCartResult = $headerCartStmt->get_result();
+
+    if ($headerCartRow = $headerCartResult->fetch_assoc()) {
+        $headerCartTotal = (float)$headerCartRow['cart_total'];
+    }
+
+    $headerCartStmt->close();
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -43,9 +74,8 @@ $headerSelectedCategoryId = isset($_GET['category_id']) ? (int)$_GET['category_i
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
     <link href="assets/css/style.css" rel="stylesheet">
 
-    <!-- Page-specific CSS (set by individual pages via $page_css, e.g. cart.php) -->
     <?php if (!empty($page_css)): ?>
-        <link href="assets/css/<?= htmlspecialchars($page_css) ?>" rel="stylesheet">
+        <link href="assets/css/<?= htmlspecialchars($page_css, ENT_QUOTES, 'UTF-8') ?>" rel="stylesheet">
     <?php endif; ?>
 
     <!-- =========================================================
@@ -248,7 +278,49 @@ $headerSelectedCategoryId = isset($_GET['category_id']) ? (int)$_GET['category_i
             width: 28px;
         }
 
-        /* ---------- Phone button ---------- */
+        /* ---------- All Categories dropdown ---------- */
+        .mq-all-categories {
+            position: relative;
+        }
+
+        .mq-all-categories > .mq-nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .mq-all-categories > .dropdown-menu {
+            min-width: 270px;
+            max-height: 420px;
+            overflow-y: auto;
+            margin-top: 0 !important;
+        }
+
+        .mq-all-categories > .dropdown-menu .dropdown-item {
+            color: var(--mq-text);
+            padding: 10px 13px;
+            border-radius: 9px;
+            transition: .2s ease;
+        }
+
+        .mq-all-categories > .dropdown-menu .dropdown-item:hover,
+        .mq-all-categories > .dropdown-menu .dropdown-item.active {
+            color: var(--mq-blue);
+            background: var(--mq-light);
+        }
+
+        @media (min-width: 992px) {
+            .mq-all-categories:hover > .dropdown-menu {
+                display: block;
+            }
+
+            .mq-all-categories > .dropdown-menu {
+                left: 0;
+                top: 100%;
+            }
+        }
+
+                /* ---------- Phone button ---------- */
         .mq-phone-btn {
             display: inline-flex;
             align-items: center;
@@ -297,6 +369,21 @@ $headerSelectedCategoryId = isset($_GET['category_id']) ? (int)$_GET['category_i
         .mq-category-count {
             color: var(--mq-muted);
             font-size: 12px;
+        }
+
+        /* ---------- Dashboard Login / Logout ---------- */
+        .mq-category-menu .dropdown-divider {
+            margin: 6px 8px;
+            border-color: var(--mq-border);
+        }
+
+        .mq-category-menu .text-danger {
+            color: #dc3545 !important;
+        }
+
+        .mq-category-menu .text-danger:hover {
+            color: #fff !important;
+            background: #dc3545 !important;
         }
 
         /* ---------- Mobile ---------- */
@@ -395,18 +482,35 @@ $headerSelectedCategoryId = isset($_GET['category_id']) ? (int)$_GET['category_i
                     </a>
 
                     <div class="dropdown-menu dropdown-menu-end mq-category-menu mt-2">
+
+                        <!-- My Account - Always visible -->
                         <a href="manageaccount.php" class="dropdown-item <?= $currentPage === 'manageaccount.php' ? 'active' : '' ?>">
                             <span><i class="fas fa-user me-2"></i> My Account</span>
                         </a>
+
+                        <!-- My Cart - Always visible -->
                         <a href="cart.php" class="dropdown-item <?= $currentPage === 'cart.php' ? 'active' : '' ?>">
                             <span><i class="fas fa-shopping-cart me-2"></i> My Cart</span>
                         </a>
-                        <a href="#" class="dropdown-item">
-                            <span><i class="fas fa-heart me-2"></i> Wishlist</span>
-                        </a>
-                        <a href="#" class="dropdown-item">
-                            <span><i class="fas fa-bell me-2"></i> Notifications</span>
-                        </a>
+
+                        <div class="dropdown-divider"></div>
+
+                        <?php if (!empty($_SESSION['user_id'])): ?>
+
+                            <!-- Logout when logged in -->
+                            <a href="logout.php" class="dropdown-item text-danger">
+                                <span><i class="fas fa-sign-out-alt me-2"></i> Logout</span>
+                            </a>
+
+                        <?php else: ?>
+
+                            <!-- Login when logged out -->
+                            <a href="login.php" class="dropdown-item">
+                                <span><i class="fas fa-sign-in-alt me-2"></i> Login</span>
+                            </a>
+
+                        <?php endif; ?>
+
                     </div>
                 </div>
             </div>
@@ -427,11 +531,11 @@ $headerSelectedCategoryId = isset($_GET['category_id']) ? (int)$_GET['category_i
 
                 <!-- Search -->
                 <div class="col-lg-6 col-md-8 mt-3 mt-md-0">
-                    <form action="index.php" method="get" class="mq-search" id="mqCategorySearchForm">
+                    <form action="shop.php" method="get" class="mq-search" id="mqCategorySearchForm">
                         <input type="text" name="search" value="<?= htmlspecialchars($_GET['search'] ?? '') ?>" placeholder="Search medicines, health products..." aria-label="Search products">
 
-                        <select name="category_id" aria-label="Select category" onchange="this.form.submit()">
-                            <option value="">All Categories</option>
+                        <select name="category" aria-label="Select category" onchange="this.form.submit()">
+                            <option value="0">All Categories</option>
                             <?php foreach ($headerCategories as $headerCategory): ?>
                                 <option value="<?= (int)$headerCategory['category_id'] ?>"
                                     <?= $headerSelectedCategoryId === (int)$headerCategory['category_id'] ? 'selected' : '' ?>>
@@ -449,16 +553,12 @@ $headerSelectedCategoryId = isset($_GET['category_id']) ? (int)$_GET['category_i
                 <!-- Quick actions -->
                 <div class="col-lg-3 d-none d-lg-block">
                     <div class="mq-quick-actions">
-                        <a href="#" class="mq-action" title="Compare">
-                            <i class="fas fa-random"></i>
-                        </a>
-                        <a href="#" class="mq-action" title="Wishlist">
-                            <i class="fas fa-heart"></i>
-                        </a>
                         <a href="cart.php" class="mq-action" title="Shopping Cart">
                             <i class="fas fa-shopping-cart"></i>
                         </a>
-                        <span class="mq-cart-info">Cart</span>
+                        <span class="mq-cart-info">
+                            Balance: $<?= number_format($headerCartTotal, 2) ?>
+                        </span>
                     </div>
                 </div>
 
@@ -482,7 +582,40 @@ $headerSelectedCategoryId = isset($_GET['category_id']) ? (int)$_GET['category_i
                 </button>
 
                 <div class="collapse navbar-collapse" id="navbarCollapse">
-                    <div class="navbar-nav mx-auto align-items-lg-center">
+                    <div class="navbar-nav me-auto align-items-lg-center">
+                        <!-- All Categories -->
+                        <div class="nav-item dropdown mq-all-categories">
+                            <a href="shop.php"
+                               class="nav-link mq-nav-link dropdown-toggle <?= $headerSelectedCategoryId > 0 ? 'active' : '' ?>"
+                               id="allCategoriesDropdown"
+                               role="button"
+                               data-bs-toggle="dropdown"
+                               aria-expanded="false">
+                                <i class="fas fa-th-large me-1"></i> All Categories
+                            </a>
+
+                            <div class="dropdown-menu mq-category-menu" aria-labelledby="allCategoriesDropdown">
+                                <a href="shop.php?category=0"
+                                   class="dropdown-item <?= $headerSelectedCategoryId === 0 && $currentPage === 'shop.php' ? 'active' : '' ?>">
+                                    <i class="fas fa-layer-group me-2"></i> All Categories
+                                </a>
+
+                                <div class="dropdown-divider"></div>
+
+                                <?php if (!empty($headerCategories)): ?>
+                                    <?php foreach ($headerCategories as $headerCategory): ?>
+                                        <a href="shop.php?category=<?= (int)$headerCategory['category_id'] ?>"
+                                           class="dropdown-item <?= $headerSelectedCategoryId === (int)$headerCategory['category_id'] ? 'active' : '' ?>">
+                                            <i class="fas fa-chevron-right me-2" style="font-size:10px;"></i>
+                                            <?= htmlspecialchars($headerCategory['category_name']) ?>
+                                        </a>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <span class="dropdown-item text-muted">No categories available</span>
+                                <?php endif; ?>
+                            </div>
+                        </div>
+
                         <a href="index.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'index.php' ? 'active' : '' ?>">
                             <i class="fas fa-home me-1"></i> Home
                         </a>
@@ -492,18 +625,11 @@ $headerSelectedCategoryId = isset($_GET['category_id']) ? (int)$_GET['category_i
                         <a href="cart.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'cart.php' ? 'active' : '' ?>">
                             <i class="fas fa-shopping-cart me-1"></i> Cart
                         </a>
-                        <a href="contact.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'contact.php' ? 'active' : '' ?>">
-                            <i class="fas fa-envelope me-1"></i> Contact
-                        </a>
                         <a href="manageaccount.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'manageaccount.php' ? 'active' : '' ?>">
                             <i class="fas fa-user me-1"></i> My Account
                         </a>
                     </div>
 
-                    <a href="contact.php" class="btn mq-phone-btn">
-                        <i class="fas fa-phone-alt"></i>
-                        <span>+94 11 234 5678</span>
-                    </a>
                 </div>
             </nav>
         </div>
