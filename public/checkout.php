@@ -3,6 +3,7 @@
 session_start();
 
 require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../includes/head.php';
 
 if (!isset($conn) || !($conn instanceof mysqli)) {
     die("Database connection failed.");
