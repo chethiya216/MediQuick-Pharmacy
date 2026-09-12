@@ -76,120 +76,103 @@ if ($historyStmt) {
 include_once __DIR__ . '/../includes/header.php';
 ?>
 
-<div class="container py-5">
+<div class="prescription-page-wrapper">
+    <div class="prescription-container">
 
-    <!-- PAGE HEADER -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h4 class="fw-bold m-0">
-            Upload a Prescription
-        </h4>
-    </div>
+        <h1 class="page-title">Upload a Prescription</h1>
 
-    <!-- SUCCESS MESSAGE -->
-    <?php if ($flashSuccess): ?>
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <?= htmlspecialchars($flashSuccess); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-    <!-- ERROR MESSAGE -->
-    <?php if ($flashError): ?>
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <?= htmlspecialchars($flashError); ?>
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        </div>
-    <?php endif; ?>
-
-    <div class="row g-4">
-
-        <!-- UPLOAD FORM -->
-        <div class="col-lg-5">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        New Prescription
-                    </h5>
-                </div>
-
-                <div class="card-body">
-                    <form
-                        action="handlers/upload-prescription-handler.php"
-                        method="POST"
-                        enctype="multipart/form-data"
-                        id="prescriptionForm"
-                    >
-                        <!-- CSRF -->
-                        <input
-                            type="hidden"
-                            name="csrf_token"
-                            value="<?= htmlspecialchars($csrfToken); ?>"
-                        >
-
-                        <!-- DATE -->
-                        <div class="mb-3">
-                            <label for="issue_date" class="form-label">
-                                Date Issued
-                            </label>
-                            <input
-                                type="date"
-                                class="form-control"
-                                id="issue_date"
-                                name="issue_date"
-                                max="<?= date('Y-m-d'); ?>"
-                            >
-                        </div>
-
-                        <!-- PRESCRIPTION FILE -->
-                        <div class="mb-2">
-                            <label class="form-label">
-                                Prescription
-                                <span class="text-danger">*</span>
-                            </label>
-
-                            <div class="upload-drop" id="dropZone">
-                                <i class="bi"></i>
-                                <p class="mb-1 fw-semibold" id="dropLabel">
-                                    Click to choose a prescription or drag it here
-                                </p>
-                                <p class="text-muted small mb-0">
-                                    JPG, PNG or PDF - max 5MB
-                                </p>
-                            </div>
-
-                            <input
-                                type="file"
-                                class="d-none"
-                                id="prescription_file"
-                                name="prescription_file"
-                                accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
-                                required
-                            >
-                        </div>
-
-                        <!-- FILE ERROR -->
-                        <div id="fileError" class="text-danger small mb-3"></div>
-
-                        <!-- SUBMIT -->
-                        <button type="submit" class="btn btn-primary w-100">
-                            Submit Prescription
-                        </button>
-                    </form>
-                </div>
+        <!-- SUCCESS MESSAGE -->
+        <?php if ($flashSuccess): ?>
+            <div class="alert alert-success alert-dismissible fade show shadow-sm mb-4" role="alert">
+                <?= htmlspecialchars($flashSuccess); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
-        </div>
+        <?php endif; ?>
 
-        <!-- PRESCRIPTION HISTORY -->
-        <div class="col-lg-7">
-            <div class="card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        Your Prescriptions
-                    </h5>
-                </div>
+        <!-- ERROR MESSAGE -->
+        <?php if ($flashError): ?>
+            <div class="alert alert-danger alert-dismissible fade show shadow-sm mb-4" role="alert">
+                <?= htmlspecialchars($flashError); ?>
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        <?php endif; ?>
 
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0 prescription-table">
+        <div class="prescription-layout">
+
+            <!-- UPLOAD FORM -->
+            <div class="prescription-card">
+                <h2>New Prescription</h2>
+
+                <form
+                    action="handlers/upload-prescription-handler.php"
+                    method="POST"
+                    enctype="multipart/form-data"
+                    id="prescriptionForm"
+                >
+                    <!-- CSRF -->
+                    <input
+                        type="hidden"
+                        name="csrf_token"
+                        value="<?= htmlspecialchars($csrfToken); ?>"
+                    >
+
+                    <!-- DATE -->
+                    <div class="mb-3">
+                        <label for="issue_date" class="form-label">
+                            Date Issued
+                        </label>
+                        <input
+                            type="date"
+                            class="form-control"
+                            id="issue_date"
+                            name="issue_date"
+                            max="<?= date('Y-m-d'); ?>"
+                        >
+                    </div>
+
+                    <!-- PRESCRIPTION FILE -->
+                    <div class="mb-3">
+                        <label class="form-label">
+                            Prescription
+                            <span class="text-danger">*</span>
+                        </label>
+
+                        <div class="upload-drop" id="dropZone">
+                            <i class="bi bi-cloud-arrow-up"></i>
+                            <p class="mb-1 fw-semibold" id="dropLabel">
+                                Click to choose a prescription or drag it here
+                            </p>
+                            <p class="text-muted small mb-0">
+                                JPG, PNG or PDF - max 5MB
+                            </p>
+                        </div>
+
+                        <input
+                            type="file"
+                            class="d-none"
+                            id="prescription_file"
+                            name="prescription_file"
+                            accept=".jpg,.jpeg,.png,.pdf,image/jpeg,image/png,application/pdf"
+                            required
+                        >
+                    </div>
+
+                    <!-- FILE ERROR -->
+                    <div id="fileError" class="text-danger small mb-3"></div>
+
+                    <!-- SUBMIT -->
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold">
+                        Submit Prescription
+                    </button>
+                </form>
+            </div>
+
+            <!-- PRESCRIPTION HISTORY -->
+            <div class="prescription-card">
+                <h5>Your Prescriptions</h5>
+
+                <div class="table-responsive mb-0">
+                    <table class="prescription-table">
                         <thead>
                             <tr>
                                 <th>#</th>
@@ -270,7 +253,7 @@ include_once __DIR__ . '/../includes/header.php';
                                         <?php endif; ?>
                                     </td>
 
-                                    <td>
+                                    <td class="text-nowrap">
                                         <?= htmlspecialchars($row['created_at'] ?? ''); ?>
                                     </td>
 
@@ -301,8 +284,8 @@ include_once __DIR__ . '/../includes/header.php';
                     </table>
                 </div>
             </div>
-        </div>
 
+        </div>
     </div>
 </div>
 

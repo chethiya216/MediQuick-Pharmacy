@@ -53,11 +53,6 @@ if ($headerCartStmt) {
     $headerCartStmt->close();
 }
 ?>
-<!DOCTYPE html>
-<html lang="en">
-
-
-
 <body>
     <!-- ================= TOP BAR ================= -->
     <div class="container-fluid mq-topbar px-5 d-none d-lg-block">
@@ -85,6 +80,11 @@ if ($headerCartStmt) {
                         <!-- My Cart - Always visible -->
                         <a href="cart.php" class="dropdown-item <?= $currentPage === 'cart.php' ? 'active' : '' ?>">
                             <span><i class="fas fa-shopping-cart me-2"></i> My Cart</span>
+                        </a>
+
+                        <!-- Upload Prescription - Added Link -->
+                        <a href="upload-prescription.php" class="dropdown-item <?= $currentPage === 'upload-prescription.php' ? 'active' : '' ?>">
+                            <span><i class="fas fa-file-medical me-2"></i> Upload Prescription</span>
                         </a>
 
                         <div class="dropdown-divider"></div>
@@ -219,6 +219,12 @@ if ($headerCartStmt) {
                         <a href="cart.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'cart.php' ? 'active' : '' ?>">
                             <i class="fas fa-shopping-cart me-1"></i> Cart
                         </a>
+                        
+                        <!-- Upload Prescription Nav Link -->
+                        <a href="upload-prescription.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'upload-prescription.php' ? 'active' : '' ?>">
+                            <i class="fas fa-file-medical me-1"></i> Upload Prescription
+                        </a>
+
                         <?php if(isLoggedIn()): ?>
                         <a href="manage-account.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'manage-account.php' ? 'active' : '' ?>">
                             <i class="fas fa-user me-1"></i> My Account
