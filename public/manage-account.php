@@ -1,6 +1,9 @@
 <?php
 session_start();
 require_once('../includes/db.php');
+require_once('../includes/auth.php');
+
+isLoggedIn();
 
 $customerId = !empty($_SESSION['user_id'])
     ? (int) $_SESSION['user_id']
@@ -30,7 +33,7 @@ function getCustomer(mysqli $conn, int $customerId): ?array
 $customer = getCustomer($conn, $customerId);
 
 if (!$customer) {
-    die('Customer not found. Please use a valid customer_id, for example manageaccount.php?customer_id=1');
+    die('Customer not found. Please use a valid customer_id, for example manage-account.php?customer_id=1');
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -68,7 +71,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $_SESSION['email'] = $email;
                     $_SESSION['account_success'] = 'Personal information updated successfully.';
                     $stmt->close();
-                    header('Location: manageaccount.php');
+                    header('Location: manage-account.php');
                     exit;
                 }
                 $errorMessage = 'Could not update your information. Database error: ' . $stmt->error;
@@ -99,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($stmt->execute()) {
                 $_SESSION['account_success'] = 'Password changed successfully.';
                 $stmt->close();
-                header('Location: manageaccount.php');
+                header('Location: manage-account.php');
                 exit;
             }
             $errorMessage = 'Could not change your password. Database error: ' . $stmt->error;
@@ -117,7 +120,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
         
         $_SESSION['account_success'] = 'Successfully logged out of all other devices.';
-        header('Location: manageaccount.php');
+        header('Location: manage-account.php');
         exit;
     }
 
@@ -252,7 +255,7 @@ require_once('../includes/header.php');
             <nav class="account-nav">
                 <a href="#profile"><span class="nav-icon"><i class="fa fa-user"></i></span><span>Profile</span></a>
                 <a href="#security"><span class="nav-icon"><i class="fa fa-lock"></i></span><span>Security</span></a>
-                <a href="manageaccount.php" class="active"><span class="nav-icon"><i class="fa fa-cog"></i></span><span>Account</span></a>
+                <a href="manage-account.php" class="active"><span class="nav-icon"><i class="fa fa-cog"></i></span><span>Account</span></a>
             </nav>
         </aside>
 
@@ -329,7 +332,7 @@ require_once('../includes/header.php');
                 </div>
                 <div class="account-card-body">
                     <!-- Log out all devices form -->
-                    <form method="POST" action="manageaccount.php" onsubmit="return confirm('Are you sure you want to log out of all other devices?');" class="action-item" style="border-top:0; padding-top:0;">
+                    <form method="POST" action="manage-account.php" onsubmit="return confirm('Are you sure you want to log out of all other devices?');" class="action-item" style="border-top:0; padding-top:0;">
                         <input type="hidden" name="action" value="logout_all">
                         <div class="action-left">
                             <div class="label">Log out of all devices</div>
@@ -339,7 +342,7 @@ require_once('../includes/header.php');
                     </form>
 
                     <!-- Delete account form -->
-                    <form method="POST" action="manageaccount.php" id="delete-account-form" class="action-item">
+                    <form method="POST" action="manage-account.php" id="delete-account-form" class="action-item">
                         <input type="hidden" name="action" value="delete_account">
                         <div class="action-left">
                             <div class="label">Delete account</div>
@@ -357,7 +360,7 @@ require_once('../includes/header.php');
 <div class="account-modal" id="profile-modal" aria-hidden="true">
  <div class="account-modal-box" role="dialog" aria-modal="true">
   <div class="account-modal-head"><div class="account-modal-title"><div class="modal-icon"><i class="fa fa-user"></i></div><div><h3>Edit personal information</h3><p>Update your account details</p></div></div><button type="button" class="modal-close" data-close-modal="profile-modal"><i class="fa fa-times"></i></button></div>
-  <form method="POST" action="manageaccount.php">
+  <form method="POST" action="manage-account.php">
    <input type="hidden" name="action" value="update_profile">
    <div class="account-modal-body">
     <?php if ($openModal === 'profile-modal' && $errorMessage !== ''): ?><div class="modal-message error"><?= htmlspecialchars($errorMessage) ?></div><?php endif; ?>
@@ -377,7 +380,7 @@ require_once('../includes/header.php');
 <div class="account-modal" id="password-modal" aria-hidden="true">
  <div class="account-modal-box" role="dialog" aria-modal="true">
   <div class="account-modal-head"><div class="account-modal-title"><div class="modal-icon"><i class="fa fa-lock"></i></div><div><h3>Change password</h3><p>Update your account password</p></div></div><button type="button" class="modal-close" data-close-modal="password-modal"><i class="fa fa-times"></i></button></div>
-  <form method="POST" action="manageaccount.php" id="password-form">
+  <form method="POST" action="manage-account.php" id="password-form">
    <input type="hidden" name="action" value="change_password">
    <div class="account-modal-body">
     <?php if ($openModal === 'password-modal' && $errorMessage !== ''): ?><div class="modal-message error"><?= htmlspecialchars($errorMessage) ?></div><?php endif; ?>
