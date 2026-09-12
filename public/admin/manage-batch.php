@@ -8,6 +8,56 @@ require_once '../../includes/db.php';
 $success = '';
 $delete_error = '';
 
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['delete_batch'])) {
+
+    $batch_id = (int)($_POST['batch_id'] ?? 0);
+
+    if ($batch_id > 0) {
+
+        $delete_stmt = $conn->prepare("
+            DELETE FROM product_batches
+            WHERE batch_id = ?
+        ");
+
+        if (!$delete_stmt) {
+            die("Database error: " . $conn->error);
+        }
+
+        $delete_stmt->bind_param("i", $batch_id);
+
+        if ($delete_stmt->execute()) {
+
+            $delete_stmt->close();
+
+            header("Location: manage-batch.php?success=deleted");
+            exit;
+
+        } else {
+
+            $delete_error = "Unable to delete product batch.";
+            $delete_stmt->close();
+        }
+    }
+}
+
+if (isset($_GET['success'])) {
+
+    switch ($_GET['success']) {
+
+        case 'added':
+            $success = "Product batch added successfully.";
+            break;
+
+        case 'updated':
+            $success = "Product batch updated successfully.";
+            break;
+
+        case 'deleted':
+            $success = "Product batch deleted successfully.";
+            break;
+    }
+}
+
 $search = trim($_GET['search'] ?? '');
 
 $expiry_filter = $_GET['expiry'] ?? 'all';
