@@ -219,11 +219,6 @@ if ($headerCartStmt) {
                         <a href="cart.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'cart.php' ? 'active' : '' ?>">
                             <i class="fas fa-shopping-cart me-1"></i> Cart
                         </a>
-                        
-                        <!-- Upload Prescription Nav Link -->
-                        <a href="upload-prescription.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'upload-prescription.php' ? 'active' : '' ?>">
-                            <i class="fas fa-file-medical me-1"></i> Upload Prescription
-                        </a>
 
                         <?php if(isLoggedIn()): ?>
                         <a href="manage-account.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'manage-account.php' ? 'active' : '' ?>">
