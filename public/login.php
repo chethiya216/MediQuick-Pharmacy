@@ -250,7 +250,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <!-- Links -->
                         <div class="d-flex justify-content-between small">
                             <a href="register.php" class="text-primary fw-bold text-decoration-none">Register now</a>
-                            <a href="#" class="text-muted text-decoration-none">Forgot password?</a>
+                            <a href="forgot-password.php" class="text-muted text-decoration-none">Forgot password?</a>
                         </div>
 
                     </form>
@@ -258,7 +258,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
                 <!-- Right Side Image Column -->
                 <div class="col-lg-6 d-none d-lg-block position-relative">
-                    <img src="assets/img/carousel-1.png" alt="Login Banner" class="w-100 h-100" style="object-fit: cover; position: absolute; top: 0; left: 0;">
+                    <img src="assets/img/MediQuick Pharmacy auth banner.png" alt="Login Banner" class="w-100 h-100" style="object-fit: cover; position: absolute; top: 0; left: 0;">
                 </div>
 
             </div>

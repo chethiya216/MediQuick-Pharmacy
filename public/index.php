@@ -95,7 +95,7 @@ function productImage($product)
             </div>
 
             <div class="col-lg-6 order-1 order-lg-2 text-center">
-                <img src="assets/img/carousel-1.png"
+                <img src="assets/img/MediQuick Pharmacy auth banner.png"
                      class="img-fluid w-100 hero-image"
                      alt="Pharmacy">
             </div>

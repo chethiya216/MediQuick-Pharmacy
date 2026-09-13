@@ -1,62 +1,146 @@
-<?php
+<?php 
+ob_start();   
 session_start();
-require 'db.php';  
-
+require_once '../includes/head.php'; 
+require_once '../includes/db.php';
 
 $message = '';
-$alert_type = 'danger';
+$messageType = '';
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $email = trim($_POST['email']);
+    $email = strtolower(trim($_POST['email'] ?? ''));
+    $newPassword = $_POST['new_password'] ?? '';
 
-    $stmt = $conn->prepare("SELECT id FROM users WHERE email = ?");
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    
-    if ($stmt->get_result()->num_rows > 0) {
-        // Password reset link or token logic goes here
-        $message = "Password reset instructions have been sent to your email.";
-        $alert_type = 'success';
+    if ($email === '' || $newPassword === '') {
+        $message = "Please fill in all fields.";
+        $messageType = "danger";
     } else {
-        $message = "Email address not found.";
+        // Hash the new password securely
+        $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
+        $userUpdated = false;
+
+        // 1. Check & Update Customers Table
+        $stmt = $conn->prepare("SELECT customer_id FROM customers WHERE email = ? LIMIT 1");
+        $stmt->bind_param("s", $email);
+        $stmt->execute();
+        $isCustomer = $stmt->get_result()->num_rows > 0;
+        $stmt->close();
+
+        if ($isCustomer) {
+            $updateStmt = $conn->prepare("UPDATE customers SET password_hash = ? WHERE email = ?");
+            $updateStmt->bind_param("ss", $hashedPassword, $email);
+            $updateStmt->execute();
+            $userUpdated = $updateStmt->affected_rows >= 0; // True if statement executed
+            $updateStmt->close();
+        } else {
+            // 2. Check & Update Staff Table if not found in customers
+            $stmt = $conn->prepare("SELECT staff_id FROM staff WHERE email = ? LIMIT 1");
+            $stmt->bind_param("s", $email);
+            $stmt->execute();
+            $isStaff = $stmt->get_result()->num_rows > 0;
+            $stmt->close();
+
+            if ($isStaff) {
+                $updateStmt = $conn->prepare("UPDATE staff SET password_hash = ? WHERE email = ?");
+                $updateStmt->bind_param("ss", $hashedPassword, $email);
+                $updateStmt->execute();
+                $userUpdated = $updateStmt->affected_rows >= 0;
+                $updateStmt->close();
+            }
+        }
+
+        if ($userUpdated) {
+            $message = "Your password has been updated successfully! You can now log in.";
+            $messageType = "success";
+        } else {
+            $message = "Email address not found.";
+            $messageType = "danger";
+        }
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>Reset Password</title>
+    <title>Reset Password - MediQuick Pharmacy</title>
 </head>
 <body>
-    <?php include 'partials/spinner.php'; ?>
 
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="card shadow border-0 rounded-3 p-4">
-                    <h3 class="text-center mb-3">Reset Password</h3>
-                    <p class="text-muted text-center mb-4">Enter your email address to receive password reset instructions.</p>
+    <!-- Spinner Start -->
+    <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+        <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
+            <span class="sr-only">Loading...</span>
+        </div>
+    </div>
+    <!-- Spinner End -->
 
-                    <?php if ($message): ?>
-                        <div class="alert alert-<?= $alert_type ?>"><?= htmlspecialchars($message) ?></div>
+    <!-- Forgot Password Section Start -->
+    <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center py-5 bg-light">
+        <div class="container my-auto">
+            <div class="row g-0 shadow-lg rounded overflow-hidden justify-content-center align-items-stretch">
+                
+                <!-- Reset Form Column -->
+                <div class="col-lg-6 bg-white p-4 p-sm-5 d-flex flex-column justify-content-center">
+                    
+                    <h1 class="mb-2 text-center text-lg-start fw-bold fs-3">MediQuick Pharmacy</h1>
+                    <h2 class="mb-3 text-center text-lg-start fw-bold fs-4 text-muted">Reset Password</h2>
+                    <p class="text-muted small text-center text-lg-start mb-4">Enter your registered email address and your new password below.</p>
+                    
+                    <!-- Alert Message Display -->
+                    <?php if (!empty($message)): ?>
+                        <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show" role="alert">
+                            <?php echo htmlspecialchars($message); ?>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
                     <?php endif; ?>
 
-                    <form action="password-reset.php" method="POST">
+                    <form action="forgot-password.php" method="POST">
+                        
+                        <!-- Email Field -->
                         <div class="mb-3">
-                            <label class="form-label">Email address</label>
-                            <input type="email" name="email" class="form-control" placeholder="Enter your registered email" required>
+                            <div class="input-group border rounded bg-light">
+                                <span class="input-group-text bg-transparent border-0 ps-3 text-muted">
+                                    <i class="fas fa-envelope"></i>
+                                </span>
+                                <input type="email" class="form-control bg-transparent border-0 py-3 pe-3" id="reset-email" name="email" placeholder="Email address" value="<?php echo htmlspecialchars($_POST['email'] ?? ''); ?>" required>
+                            </div>
                         </div>
-                        <button type="submit" class="btn btn-primary w-100 rounded-pill py-2">Send Reset Link</button>
+
+                        <!-- New Password Field -->
+                        <div class="mb-4">
+                            <div class="input-group border rounded bg-light">
+                                <span class="input-group-text bg-transparent border-0 ps-3 text-muted">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                <input type="password" class="form-control bg-transparent border-0 py-3 pe-3" id="new-password" name="new_password" placeholder="New Password" required>
+                            </div>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <div class="d-grid gap-2 mb-4">
+                            <button type="submit" name="reset_submit" class="btn btn-primary px-4 py-3 font-weight-bold text-uppercase rounded">Update Password</button>
+                        </div>
+
+                        <!-- Back to Login Link -->
+                        <div class="text-center text-lg-start small">
+                            <a href="login.php" class="text-primary fw-bold text-decoration-none">
+                                <i class="fas fa-arrow-left me-1"></i> Back to Login
+                            </a>
+                        </div>
+
                     </form>
-                    <div class="text-center mt-3">
-                        <a href="login.php" class="text-primary"><i class="fas fa-arrow-left me-1"></i> Back to Login</a>
-                    </div>
                 </div>
+
+                <!-- Right Side Image Column -->
+                <div class="col-lg-6 d-none d-lg-block position-relative">
+                    <img src="assets/img/MediQuick Pharmacy auth banner.png" alt="Reset Password Banner" class="w-100 h-100" style="object-fit: cover; position: absolute; top: 0; left: 0;">
+                </div>
+
             </div>
         </div>
     </div>
+    <!-- Forgot Password Section End -->
 
-    <?php include 'partials/scripts.php'; ?>
+    <?php require_once '../includes/footer.php'; ?>
 </body>
 </html>
