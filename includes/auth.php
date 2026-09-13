@@ -7,7 +7,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 
 if (!defined('BASE_URL')) {
-    define('BASE_URL', '/GitHub/MediQuick-Pharmacy/public');
+    define('BASE_URL', '/MediQuick-Pharmacy/public');
 }
 
 
