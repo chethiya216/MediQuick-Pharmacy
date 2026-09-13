@@ -129,7 +129,6 @@ unset($_SESSION['flash_error']);
                               value="<?= $p['product_id'] ?>" 
                               data-name="<?= htmlspecialchars($p['product_name']) ?>" 
                               data-price="<?= $p['unit_price'] ?>"
-                              data-stock="<?= $p['stock_quantity'] ?>"
                             >
                               <?= htmlspecialchars($p['product_name']) ?> (Stock: <?= $p['stock_quantity'] ?>) - $<?= number_format($p['unit_price'], 2) ?>
                             </option>
