@@ -2,12 +2,10 @@
 session_start();
 
 // 1. Check Admin/Pharmacist Authentication
-if (empty($_SESSION['admin_id'])) {
-    header('Location: login.php');
-    exit;
-}
+require_once __DIR__ . '/../../includes/auth.php';
+requirePharmacist();
 
-require_once __DIR__ . '/../includes/db.php';
+require_once __DIR__ . '/../../includes/db.php';
 
 $prescription_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
 
@@ -20,7 +18,7 @@ $sql = "
     SELECT 
         p.prescription_id,
         p.customer_id,
-        p.prescription_file,
+        p.file_path,
         p.status,
         p.created_at,
         c.first_name,
@@ -30,7 +28,7 @@ $sql = "
     FROM prescriptions p
     INNER JOIN customers c ON c.customer_id = p.customer_id
     WHERE p.prescription_id = ?
-      AND p.status = 'confirmed' 
+      AND p.status IN ('verified', 'confirmed') -- Allows both verified and confirmed statuses
     LIMIT 1
 ";
 
@@ -157,8 +155,8 @@ while ($row = $products_res->fetch_assoc()) {
             <p><strong>Email:</strong> <?= htmlspecialchars($prescription['email']) ?></p>
 
             <h4>Uploaded Prescription Document</h4>
-            <a href="../<?= htmlspecialchars($prescription['prescription_file']) ?>" target="_blank">
-                <img src="../<?= htmlspecialchars($prescription['prescription_file']) ?>" alt="Prescription Image" class="rx-image">
+            <a href="../<?= htmlspecialchars($prescription['file_path']) ?>" target="_blank">
+                <img src="../<?= htmlspecialchars($prescription['file_path']) ?>" alt="Prescription Image" class="rx-image">
             </a>
         </div>
 
