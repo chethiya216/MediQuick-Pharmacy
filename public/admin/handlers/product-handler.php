@@ -91,7 +91,6 @@ $categoryId     = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : n
 $dosageForm     = trim($_POST['dosage_form'] ?? '');
 $strength       = trim($_POST['strength'] ?? '') ?: null;
 $unitPrice      = $_POST['unit_price'] ?? '';
-$quantity       = $_POST['quantity'] ?? 0;
 $discountPct    = $_POST['discount_percent'] ?? '0';
 $requiresRx     = isset($_POST['requires_prescription']) ? (int)$_POST['requires_prescription'] : 0;
 $reorderLevel   = (int)($_POST['reorder_level'] ?? 0);
@@ -127,9 +126,6 @@ if (empty($categoryId)) {
 
 if ($unitPrice === '' || !is_numeric($unitPrice) || (float)$unitPrice < 0) {
     $errors[] = "Unit price must be a valid non-negative number.";
-}
-if ($quantity === '' || !is_numeric($quantity) || (float)$quantity < 0) {
-    $errors[] = "Quantity must be a valid non-negative number.";
 }
 
 if (!in_array($status, ['active', 'draft', 'archived'], true)) {
@@ -232,7 +228,6 @@ $conn->begin_transaction();
 
 try {
     $unitPriceFloat   = (float)$unitPrice;
-    $stockQtyInt      = (int)$quantity;
     $discountPctFloat = (float)$discountPct;
 
     if ($isEdit) {
@@ -243,7 +238,7 @@ try {
                 UPDATE products SET
                     product_name = ?, generic_name = ?, description = ?, sku = ?, barcode = ?,
                     category_id = ?, dosage_form = ?, strength = ?, unit_price = ?, discount_percent = ?,
-                    requires_prescription = ?, reorder_level = ?, stock_quantity = ?, product_image = ?, status = ?
+                    requires_prescription = ?, reorder_level = ?, product_image = ?, status = ?
                 WHERE product_id = ?
             ";
             $stmt = $conn->prepare($sql);
@@ -251,10 +246,10 @@ try {
 
             // Types: sssss i s s d d i i i s s i (16 total)
             $stmt->bind_param(
-                "sssssissddiiissi",
+                "sssssissddiissi",
                 $productName, $genericName, $description, $sku, $barcode,
                 $categoryId, $dosageForm, $strength, $unitPriceFloat, $discountPctFloat,
-                $requiresRx, $reorderLevel, $stockQtyInt, $productImagePath, $status, $productId
+                $requiresRx, $reorderLevel, $productImagePath, $status, $productId
             );
         } else {
             // Keep existing image -> skip updating product_image
@@ -262,7 +257,7 @@ try {
                 UPDATE products SET
                     product_name = ?, generic_name = ?, description = ?, sku = ?, barcode = ?,
                     category_id = ?, dosage_form = ?, strength = ?, unit_price = ?, discount_percent = ?,
-                    requires_prescription = ?, reorder_level = ?, stock_quantity = ?, status = ?
+                    requires_prescription = ?, reorder_level = ?, status = ?
                 WHERE product_id = ?
             ";
             $stmt = $conn->prepare($sql);
@@ -270,10 +265,10 @@ try {
 
             // Types: sssss i s s d d i i i s i (15 total)
             $stmt->bind_param(
-                "sssssissddiiisi",
+                "sssssissddiisi",
                 $productName, $genericName, $description, $sku, $barcode,
                 $categoryId, $dosageForm, $strength, $unitPriceFloat, $discountPctFloat,
-                $requiresRx, $reorderLevel, $stockQtyInt, $status, $productId
+                $requiresRx, $reorderLevel, $status, $productId
             );
         }
 
@@ -291,8 +286,8 @@ try {
             INSERT INTO products (
                 product_name, generic_name, description, sku, barcode,
                 category_id, dosage_form, strength, unit_price, discount_percent,
-                requires_prescription, reorder_level, stock_quantity, product_image, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                requires_prescription, reorder_level, product_image, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ";
 
         $stmt = $conn->prepare($sql);
@@ -300,10 +295,10 @@ try {
 
         // Types: sssss i s s d d i i i s s (15 total)
         $stmt->bind_param(
-            "sssssissddiiiss",
+            "sssssissddiiss",
             $productName, $genericName, $description, $sku, $barcode,
             $categoryId, $dosageForm, $strength, $unitPriceFloat, $discountPctFloat,
-            $requiresRx, $reorderLevel, $stockQtyInt, $productImagePath, $status
+            $requiresRx, $reorderLevel, $productImagePath, $status
         );
 
         if (!$stmt->execute()) {
