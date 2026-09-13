@@ -185,14 +185,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 
 // 2. Include header.php AFTER processing logic, right before HTML rendering begins
-require_once '../includes/header.php';
+require_once '../includes/head.php';
 ?>
 <!DOCTYPE html>
 <html lang="en">
-
+<head>
+    <title>Register - MediQuick Pharmacy</title>
+</head>
 <body>
 
-    <!-- Spinner with immediate self-destruct script to prevent hanging -->
+    <!-- Spinner Start -->
     <div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center" style="z-index: 99999;">
         <div class="spinner-border text-primary" style="width: 3rem; height: 3rem;" role="status">
             <span class="sr-only">Loading...</span>
@@ -205,16 +207,20 @@ require_once '../includes/header.php';
             if (s) s.remove();
         })();
     </script>
+    <!-- Spinner End -->
 
+    <!-- Register Section Start -->
     <div class="container-fluid min-vh-100 d-flex align-items-center justify-content-center py-5 bg-light">
         <div class="container my-auto">
             <div class="row g-0 shadow-lg rounded overflow-hidden justify-content-center align-items-stretch">
                 
+                <!-- Register Form Column -->
                 <div class="col-lg-6 bg-white p-4 p-sm-5 d-flex flex-column justify-content-center">
                     
                     <h1 class="mb-2 text-center text-lg-start fw-bold fs-3">Welcome to MediQuick Pharmacy!</h1>
                     <h2 class="mb-4 text-center text-lg-start fw-bold fs-4 text-muted">Create an Account</h2>
                     
+                    <!-- Alert Message Display -->
                     <?php if (!empty($message)): ?>
                         <div class="alert alert-<?php echo $messageType; ?> alert-dismissible fade show" role="alert">
                             <?php echo htmlspecialchars($message); ?>
@@ -224,6 +230,7 @@ require_once '../includes/header.php';
 
                     <form action="register.php" method="POST">
                         
+                        <!-- First Name & Last Name Row -->
                         <div class="row g-2 mb-3">
                             <div class="col-md-6">
                                 <div class="input-group border rounded bg-light">
@@ -243,6 +250,7 @@ require_once '../includes/header.php';
                             </div>
                         </div>
 
+                        <!-- Email Field -->
                         <div class="mb-3">
                             <div class="input-group border rounded bg-light">
                                 <span class="input-group-text bg-transparent border-0 ps-3 text-muted">
@@ -252,6 +260,7 @@ require_once '../includes/header.php';
                             </div>
                         </div>
 
+                        <!-- Phone Field -->
                         <div class="mb-3">
                             <div class="input-group border rounded bg-light">
                                 <span class="input-group-text bg-transparent border-0 ps-3 text-muted">
@@ -261,6 +270,7 @@ require_once '../includes/header.php';
                             </div>
                         </div>
 
+                        <!-- Address Field -->
                         <div class="mb-3">
                             <div class="input-group border rounded bg-light">
                                 <span class="input-group-text bg-transparent border-0 ps-3 pt-3 align-items-start text-muted">
@@ -314,10 +324,12 @@ require_once '../includes/header.php';
                             </div>
                         </div>
 
+                        <!-- Submit Button -->
                         <div class="mb-3">
                             <button type="submit" name="register_submit" class="btn btn-primary w-100 py-3 font-weight-bold text-uppercase">Register</button>
                         </div>
 
+                        <!-- Back to Login Link -->
                         <div class="text-center small">
                             <span class="text-muted">Already have an account?</span>
                             <a href="login.php" class="text-primary fw-bold text-decoration-none ms-1">Login here</a>
@@ -326,15 +338,16 @@ require_once '../includes/header.php';
                     </form>
                 </div>
 
+                <!-- Right Side Image Column -->
                 <div class="col-lg-6 d-none d-lg-block position-relative">
-                    <img src="assets/img/carousel-1.png" alt="Register Banner" class="w-100 h-100" style="object-fit: cover; position: absolute; top: 0; left: 0;">
+                    <img src="assets/img/MediQuick Pharmacy auth banner.png" alt="Register Banner" class="w-100 h-100" style="object-fit: cover; position: absolute; top: 0; left: 0;">
                 </div>
 
             </div>
         </div>
     </div>
+    <!-- Register Section End -->
 
     <?php require_once '../includes/footer.php'; ?>
 </body>
-
 </html>
