@@ -34,22 +34,26 @@ $totalPages = ceil($totalProducts / $limit);
 if ($totalPages < 1) { $totalPages = 1; }
 if ($page > $totalPages) { $page = $totalPages; }
 
-// 2. Fetch paginated products with category details
+// 2. Fetch paginated products with category and batch details (stock & earliest expiry)
 $sql = "
     SELECT 
         p.product_id,
         p.product_name,
         p.product_image,
         p.sku,
-        p.stock_quantity,
         p.created_at,
         c.category_name,
         p.unit_price,
         p.requires_prescription,
-        p.status
+        p.status,
+        COALESCE(SUM(pb.quantity_on_hand), 0) AS total_stock,
+        COUNT(pb.batch_id) AS total_batches,
+        MIN(CASE WHEN pb.quantity_on_hand > 0 THEN pb.expiry_date END) AS earliest_expiry
     FROM products p
     LEFT JOIN categories c ON p.category_id = c.category_id
-    ORDER BY p.product_id DESC
+    LEFT JOIN product_batches pb ON p.product_id = pb.product_id
+    GROUP BY p.product_id
+    ORDER BY p.product_id ASC
     LIMIT ? OFFSET ?
 ";
 
@@ -128,7 +132,8 @@ function getPageUrl($pageNumber, $queryParams) {
                                         <th>SKU</th>
                                         <th>Category</th>
                                         <th>Price</th>
-                                        <th>Quantity</th>
+                                        <th>Total Stock</th>
+                                        <th>Earliest Expiry</th>
                                         <th>Status</th>
                                         <th>Created At</th>
                                         <th>Actions</th>
@@ -157,7 +162,7 @@ function getPageUrl($pageNumber, $queryParams) {
                                                     <img src="../<?= htmlspecialchars($row['product_image']); ?>" 
                                                         alt="Product Image" 
                                                         class="img-thumbnail" 
-                                                        style="width: 150px; height: 100px; object-fit: cover;">
+                                                        style="width: 80px; height: 60px; object-fit: cover;">
                                                 <?php else: ?>
                                                     <span class="badge bg-secondary">No Image</span>
                                                 <?php endif; ?>
@@ -168,6 +173,9 @@ function getPageUrl($pageNumber, $queryParams) {
                                                 <strong>
                                                     <?= htmlspecialchars($row['product_name']); ?>
                                                 </strong>
+                                                <?php if ($row['requires_prescription']): ?>
+                                                    <span class="badge bg-label-warning ms-1" title="Requires Prescription">Rx</span>
+                                                <?php endif; ?>
                                             </td>
 
                                             <!-- SKU -->
@@ -184,12 +192,51 @@ function getPageUrl($pageNumber, $queryParams) {
                                             <td>
                                                 Rs. <?= number_format((float) $row['unit_price'], 2); ?>
                                             </td>
-                                            
-                                            <!-- Quantity -->
-                                            <td>
-                                                <?= htmlspecialchars($row['stock_quantity'] ?? 'N/A'); ?>
-                                            </td></td>
 
+                                            <!-- TOTAL BATCH STOCK -->
+                                            <td>
+                                                <?php 
+                                                $stock = (int)$row['total_stock'];
+                                                $batches = (int)$row['total_batches'];
+                                                
+                                                if ($stock <= 0) {
+                                                    $stockBadge = 'bg-label-danger';
+                                                } elseif ($stock <= 10) {
+                                                    $stockBadge = 'bg-label-warning';
+                                                } else {
+                                                    $stockBadge = 'bg-label-success';
+                                                }
+                                                ?>
+                                                <a href="product-batches.php?product_id=<?= $row['product_id']; ?>" class="badge <?= $stockBadge; ?> text-decoration-none" title="View Batches">
+                                                    <?= $stock; ?> units (<?= $batches; ?> <?= $batches === 1 ? 'batch' : 'batches'; ?>)
+                                                </a>
+                                            </td>
+
+                                            <!-- EARLIEST EXPIRY -->
+                                            <td>
+                                                <?php if (!empty($row['earliest_expiry'])): ?>
+                                                    <?php 
+                                                    $expiryDate = strtotime($row['earliest_expiry']);
+                                                    $today = strtotime(date('Y-m-d'));
+                                                    $daysLeft = floor(($expiryDate - $today) / (60 * 60 * 24));
+
+                                                    if ($daysLeft < 0) {
+                                                        $expiryBadge = 'bg-label-danger';
+                                                        $label = 'Expired (' . date('M d, Y', $expiryDate) . ')';
+                                                    } elseif ($daysLeft <= 30) {
+                                                        $expiryBadge = 'bg-label-warning';
+                                                        $label = date('M d, Y', $expiryDate) . ' (' . $daysLeft . 'd left)';
+                                                    } else {
+                                                        $expiryBadge = 'bg-label-secondary';
+                                                        $label = date('M d, Y', $expiryDate);
+                                                    }
+                                                    ?>
+                                                    <span class="badge <?= $expiryBadge; ?>"><?= $label; ?></span>
+                                                <?php else: ?>
+                                                    <span class="text-muted small">No Active Batch</span>
+                                                <?php endif; ?>
+                                            </td>
+                                            
                                             <!-- STATUS -->
                                             <td>
                                                 <?php
@@ -213,7 +260,7 @@ function getPageUrl($pageNumber, $queryParams) {
 
                                             <!-- CREATED AT -->
                                             <td>
-                                                <?= htmlspecialchars($row['created_at'] ?? 'N/A'); ?>
+                                                <?= htmlspecialchars(date('M d, Y', strtotime($row['created_at']))); ?>
                                             </td>
 
                                             <!-- ACTIONS -->
@@ -223,6 +270,9 @@ function getPageUrl($pageNumber, $queryParams) {
                                                         <i class="bx bx-dots-vertical-rounded"></i>
                                                     </button>
                                                     <div class="dropdown-menu">
+                                                        <a class="dropdown-item" href="manage-batch.php?product_id=<?= $row['product_id']; ?>">
+                                                            <i class="bx bx-package me-1"></i> View Batches
+                                                        </a>
                                                         <a class="dropdown-item" href="add-products.php?id=<?= $row['product_id']; ?>">
                                                             <i class="bx bx-edit-alt me-1"></i> Edit
                                                         </a>
@@ -250,7 +300,7 @@ function getPageUrl($pageNumber, $queryParams) {
 
                                     <!-- NO PRODUCTS FOUND -->
                                     <tr>
-                                        <td colspan="9" class="text-center">
+                                        <td colspan="11" class="text-center">
                                             No products found.
                                         </td>
                                     </tr>

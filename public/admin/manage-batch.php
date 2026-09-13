@@ -8,6 +8,8 @@ require_once '../../includes/db.php';
 $success = '';
 $delete_error = '';
 
+// Capture parameters
+$product_id = isset($_GET['product_id']) && is_numeric($_GET['product_id']) ? (int)$_GET['product_id'] : 0;
 $search = trim($_GET['search'] ?? '');
 $expiry_filter = $_GET['expiry'] ?? 'all';
 
@@ -15,6 +17,21 @@ if (!in_array($expiry_filter, ['all', 'active', 'expiring', 'expired'], true)) {
     $expiry_filter = 'all';
 }
 
+// Fetch single product info if product_id is specified
+$filter_product = null;
+if ($product_id > 0) {
+    $p_stmt = $conn->prepare("SELECT product_name, sku FROM products WHERE product_id = ?");
+    $p_stmt->bind_param("i", $product_id);
+    $p_stmt->execute();
+    $filter_product = $p_stmt->get_result()->fetch_assoc();
+    $p_stmt->close();
+}
+
+/*
+|--------------------------------------------------------------------------
+| Build Main Batches Query
+|--------------------------------------------------------------------------
+*/
 $sql = "
     SELECT
         pb.batch_id,
@@ -38,6 +55,12 @@ $sql = "
 $params = [];
 $types = "";
 
+if ($product_id > 0) {
+    $sql .= " AND pb.product_id = ? ";
+    $params[] = $product_id;
+    $types .= "i";
+}
+
 if ($search !== '') {
     $sql .= "
         AND (
@@ -48,32 +71,21 @@ if ($search !== '') {
     ";
 
     $search_value = "%" . $search . "%";
-
     $params[] = $search_value;
     $params[] = $search_value;
     $params[] = $search_value;
-
     $types .= "sss";
 }
 
 if ($expiry_filter === 'expired') {
-    $sql .= "
-        AND pb.expiry_date < CURDATE()
-    ";
+    $sql .= " AND pb.expiry_date < CURDATE() ";
 } elseif ($expiry_filter === 'expiring') {
-    $sql .= "
-        AND pb.expiry_date >= CURDATE()
-        AND pb.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-    ";
+    $sql .= " AND pb.expiry_date >= CURDATE() AND pb.expiry_date <= DATE_ADD(CURDATE(), INTERVAL 30 DAY) ";
 } elseif ($expiry_filter === 'active') {
-    $sql .= "
-        AND pb.expiry_date > DATE_ADD(CURDATE(), INTERVAL 30 DAY)
-    ";
+    $sql .= " AND pb.expiry_date > DATE_ADD(CURDATE(), INTERVAL 30 DAY) ";
 }
 
-$sql .= "
-    ORDER BY pb.expiry_date ASC
-";
+$sql .= " ORDER BY pb.expiry_date ASC ";
 
 $stmt = $conn->prepare($sql);
 
@@ -88,7 +100,12 @@ if (!empty($params)) {
 $stmt->execute();
 $result = $stmt->get_result();
 
-$stats_query = $conn->query("
+/*
+|--------------------------------------------------------------------------
+| Build Statistics Query (Scoped to product_id if set)
+|--------------------------------------------------------------------------
+*/
+$stats_sql = "
     SELECT
         COUNT(*) AS total_batches,
         COALESCE(SUM(quantity_on_hand), 0) AS total_quantity,
@@ -103,13 +120,30 @@ $stats_query = $conn->query("
             0
         ) AS expired_batches
     FROM product_batches
-");
+    WHERE 1 = 1
+";
 
-if (!$stats_query) {
+$stats_params = [];
+$stats_types = "";
+
+if ($product_id > 0) {
+    $stats_sql .= " AND product_id = ? ";
+    $stats_params[] = $product_id;
+    $stats_types .= "i";
+}
+
+$stats_stmt = $conn->prepare($stats_sql);
+if (!$stats_stmt) {
     die("Statistics error: " . $conn->error);
 }
 
-$stats = $stats_query->fetch_assoc();
+if (!empty($stats_params)) {
+    $stats_stmt->bind_param($stats_types, ...$stats_params);
+}
+
+$stats_stmt->execute();
+$stats = $stats_stmt->get_result()->fetch_assoc();
+$stats_stmt->close();
 
 ?>
 <!DOCTYPE html>
@@ -133,13 +167,26 @@ $stats = $stats_query->fetch_assoc();
                 <?php require_once 'includes/header.php'; ?>
                 <div class="content-wrapper">
                     <div class="container-xxl flex-grow-1 container-p-y">
-                        <div class="batch-page-header">
+                        
+                        <div class="batch-page-header d-flex justify-content-between align-items-center mb-3">
                             <div>
-                                <h4 class="fw-bold py-3 mb-0">Product Batches</h4>
+                                <h4 class="fw-bold py-3 mb-0">
+                                    Product Batches 
+                                    <?php if ($filter_product): ?>
+                                        <span class="text-muted fw-light">/ <?= htmlspecialchars($filter_product['product_name']) ?> (<?= htmlspecialchars($filter_product['sku']) ?>)</span>
+                                    <?php endif; ?>
+                                </h4>
                             </div>
-                            <a href="add-product-batch.php" class="btn btn-primary add-batch-btn">
-                                <i class="bx bx-plus"></i> Add Batch
-                            </a>
+                            <div class="d-flex gap-2">
+                                <?php if ($product_id > 0): ?>
+                                    <a href="manage-batch.php" class="btn btn-outline-secondary">
+                                        <i class="bx bx-left-arrow-alt me-1"></i> View All Batches
+                                    </a>
+                                <?php endif; ?>
+                                <a href="add-product-batch.php<?= $product_id > 0 ? '?product_id=' . $product_id : '' ?>" class="btn btn-primary add-batch-btn">
+                                    <i class="bx bx-plus me-1"></i> Add Batch
+                                </a>
+                            </div>
                         </div>
 
                         <?php if ($success !== ''): ?>
@@ -158,12 +205,13 @@ $stats = $stats_query->fetch_assoc();
                             </div>
                         <?php endif; ?>
 
+                        <!-- STATS CARDS -->
                         <div class="row mb-4">
                             <div class="col-lg-4 col-md-6 col-sm-12 mb-4">
                                 <div class="card batch-stat-card">
                                     <div class="card-body">
                                         <span class="fw-semibold d-block mb-1">Total Batches</span>
-                                        <div class="batch-stat-number">
+                                        <div class="batch-stat-number fs-3 fw-bold">
                                             <?= (int)$stats['total_batches'] ?>
                                         </div>
                                     </div>
@@ -174,7 +222,7 @@ $stats = $stats_query->fetch_assoc();
                                 <div class="card batch-stat-card">
                                     <div class="card-body">
                                         <span class="fw-semibold d-block mb-1">Total Quantity</span>
-                                        <div class="batch-stat-number">
+                                        <div class="batch-stat-number fs-3 fw-bold">
                                             <?= (int)$stats['total_quantity'] ?>
                                         </div>
                                     </div>
@@ -185,7 +233,7 @@ $stats = $stats_query->fetch_assoc();
                                 <div class="card batch-stat-card">
                                     <div class="card-body">
                                         <span class="fw-semibold d-block mb-1">Expired Batches</span>
-                                        <div class="batch-stat-number">
+                                        <div class="batch-stat-number fs-3 fw-bold text-danger">
                                             <?= (int)$stats['expired_batches'] ?>
                                         </div>
                                     </div>
@@ -193,11 +241,18 @@ $stats = $stats_query->fetch_assoc();
                             </div>
                         </div>
 
+                        <!-- FILTER & SEARCH FORM -->
                         <div class="card mb-4">
                             <div class="card-body">
                                 <form method="GET" action="manage-batch.php">
-                                    <div class="batch-filter-row">
-                                        <div class="batch-search">
+                                    
+                                    <!-- Retain product_id across searches -->
+                                    <?php if ($product_id > 0): ?>
+                                        <input type="hidden" name="product_id" value="<?= $product_id; ?>">
+                                    <?php endif; ?>
+
+                                    <div class="batch-filter-row d-flex flex-wrap gap-2">
+                                        <div class="batch-search flex-grow-1">
                                             <div class="input-group">
                                                 <span class="input-group-text">
                                                     <i class="bx bx-search"></i>
@@ -228,17 +283,23 @@ $stats = $stats_query->fetch_assoc();
                                         </div>
 
                                         <div>
-                                            <a href="manage-batch.php" class="btn btn-outline-secondary">Reset</a>
+                                            <a href="manage-batch.php<?= $product_id > 0 ? '?product_id=' . $product_id : '' ?>" class="btn btn-outline-secondary">Reset</a>
                                         </div>
                                     </div>
                                 </form>
                             </div>
                         </div>
 
+                        <!-- BATCHES TABLE CARD -->
                         <div class="card">
-                            <h5 class="card-header">Manage Product Batches</h5>
+                            <h5 class="card-header">
+                                Manage Product Batches
+                                <?php if ($filter_product): ?>
+                                    <span class="badge bg-label-primary ms-2"><?= htmlspecialchars($filter_product['product_name']); ?></span>
+                                <?php endif; ?>
+                            </h5>
                             <div class="table-responsive text-nowrap">
-                                <table class="table batch-table">
+                                <table class="table batch-table table-hover">
                                     <thead>
                                         <tr>
                                             <th>Batch No.</th>
@@ -274,7 +335,7 @@ $stats = $stats_query->fetch_assoc();
                                                         <strong><?= htmlspecialchars($row['batch_number']) ?></strong>
                                                     </td>
                                                     <td><?= htmlspecialchars($row['product_name']) ?></td>
-                                                    <td><?= htmlspecialchars($row['sku']) ?></td>
+                                                    <td><code><?= htmlspecialchars($row['sku']) ?></code></td>
                                                     <td><?= (int)$row['quantity_on_hand'] ?></td>
                                                     <td><?= date('d/m/Y', strtotime($row['received_date'])) ?></td>
                                                     <td>
@@ -287,38 +348,32 @@ $stats = $stats_query->fetch_assoc();
                                                     </td>
                                                     <td>
                                                         <div class="batch-actions">
-                                                            <form
-                                                                method="POST"
-                                                                style="display:inline;"
-                                                                onsubmit="return confirm('Are you sure you want to delete this product batch?');"
+                                                            <button 
+                                                                type="button" 
+                                                                class="btn btn-sm btn-outline-danger" 
+                                                                title="Delete"
+                                                                onclick="openDeleteConfirm(
+                                                                    event, 
+                                                                    <?= (int)$row['batch_id']; ?>, 
+                                                                    '<?= htmlspecialchars($row['batch_number'], ENT_QUOTES); ?>', 
+                                                                    'handlers/product-batch-handler.php?action=delete&batch_id=<?= (int)$row['batch_id']; ?>'
+                                                                )"
                                                             >
-                                                                <input type="hidden" name="batch_id" value="<?= (int)$row['batch_id'] ?>">
-                                                                <button 
-                                                                    type="button" 
-                                                                    class="btn btn-sm btn-outline-danger" 
-                                                                    title="Delete"
-                                                                    onclick="openDeleteConfirm(
-                                                                        event, 
-                                                                        <?= (int)$row['batch_id']; ?>, 
-                                                                        '<?= htmlspecialchars($row['batch_number'], ENT_QUOTES); ?>', 
-                                                                        'handlers/product-batch-handler.php?action=delete&batch_id=<?= (int)$row['batch_id']; ?>'
-                                                                    )"
-                                                                >
-                                                                    <i class="bx bx-trash"></i>
-                                                                </button>
-                                                            </form>
+                                                                <i class="bx bx-trash"></i>
+                                                            </button>
                                                         </div>
                                                     </td>
                                                 </tr>
                                             <?php endwhile; ?>
                                         <?php else: ?>
                                             <tr>
-                                                <td colspan="8" class="empty-batches">
-                                                    <i class="bx bx-package"></i>
-                                                    <br><br>
-                                                    <h5>No Product Batches Found</h5>
-                                                    <p>You haven't added any product batches yet.</p>
-                                                    <a href="add-product-batch.php" class="btn btn-primary">
+                                                <td colspan="8" class="text-center py-5">
+                                                    <i class="bx bx-package display-4 text-muted"></i>
+                                                    <h5 class="mt-3">No Product Batches Found</h5>
+                                                    <p class="text-muted">
+                                                        <?= $product_id > 0 ? 'No batches available for this specific product.' : 'You haven\'t added any product batches yet.'; ?>
+                                                    </p>
+                                                    <a href="add-product-batch.php<?= $product_id > 0 ? '?product_id=' . $product_id : '' ?>" class="btn btn-primary">
                                                         <i class="bx bx-plus me-1"></i> Add Batch
                                                     </a>
                                                 </td>
