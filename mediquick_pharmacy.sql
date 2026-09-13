@@ -388,33 +388,34 @@ CREATE TABLE IF NOT EXISTS `prescriptions` (
   `verified_date` timestamp NULL DEFAULT NULL,
   `rejection_reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` enum('pending','verified','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
+  `customer_status` enum('pending','confirmed','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
+  `customer_confirmed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`prescription_id`),
   KEY `fk_presc_staff` (`staff_id`),
   KEY `idx_prescriptions_customer` (`customer_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `prescriptions`
---
-
-INSERT INTO `prescriptions` (`prescription_id`, `customer_id`, `staff_id`, `doctor_name`, `doctor_license_no`, `file_path`, `issue_date`, `upload_date`, `verified_date`, `rejection_reason`, `status`, `created_at`, `updated_at`) VALUES
-(1, 1, 3, 'Dr. Gregory House', 'MD-10029', '/uploads/prescriptions/p1.pdf', '2024-05-01', '2026-08-27 08:55:58', '2024-05-01 05:00:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(2, 2, 4, 'Dr. Meredith Grey', 'MD-20045', '/uploads/prescriptions/p2.pdf', '2024-05-02', '2026-08-27 08:55:58', '2024-05-02 05:45:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(3, 3, 3, 'Dr. Stephen Strange', 'MD-30012', '/uploads/prescriptions/p3.pdf', '2024-05-03', '2026-08-27 08:55:58', '2026-08-30 08:18:12', 'sdsadsdsa', 'rejected', '2026-08-29 19:38:49', '2026-08-30 08:18:12'),
-(4, 4, 7, 'Dr. John Watson', 'MD-40088', '/uploads/prescriptions/p4.pdf', '2024-05-05', '2026-08-27 08:55:58', '2024-05-05 04:15:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(5, 5, NULL, 'Dr. Michaela Stone', 'MD-50067', '/uploads/prescriptions/p5.pdf', '2024-05-06', '2026-08-27 08:55:58', NULL, 'Illegible signature', 'rejected', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(6, 6, 8, 'Dr. Leonard McCoy', 'MD-60033', '/uploads/prescriptions/p6.pdf', '2024-05-07', '2026-08-27 08:55:58', '2024-05-07 10:50:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(7, 7, 10, 'Dr. Shaun Murphy', 'MD-70019', '/uploads/prescriptions/p7.pdf', '2024-05-08', '2026-08-27 08:55:58', '2024-05-08 06:30:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(8, 8, NULL, 'Dr. Martin Ellingham', 'MD-80054', '/uploads/prescriptions/p8.pdf', '2024-05-10', '2026-08-27 08:55:58', '2026-08-30 08:16:05', 'sdsads', 'rejected', '2026-08-29 19:38:49', '2026-08-30 08:16:05'),
-(9, 9, 11, 'Dr. Doogie Howser', 'MD-90081', '/uploads/prescriptions/p9.pdf', '2024-05-11', '2026-08-27 08:55:58', '2024-05-11 10:00:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(10, 10, 14, 'Dr. Beverly Crusher', 'MD-11022', '/uploads/prescriptions/p10.pdf', '2024-05-12', '2026-08-27 08:55:58', '2024-05-12 04:30:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(11, 11, NULL, 'Dr. Sanjay Gupta', 'MD-12044', '/uploads/prescriptions/p11.pdf', '2024-05-14', '2026-08-27 08:55:58', '2026-08-30 08:17:09', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-30 08:17:09'),
-(12, 12, 4, 'Dr. Allison Cameron', 'MD-13099', '/uploads/prescriptions/p12.pdf', '2024-05-15', '2026-08-27 08:55:58', '2024-05-15 07:40:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(13, 13, 7, 'Dr. Robert Chase', 'MD-14055', '/uploads/prescriptions/p13.pdf', '2024-05-16', '2026-08-27 08:55:58', '2026-09-06 11:22:22', NULL, 'verified', '2026-08-29 19:38:49', '2026-09-06 11:22:22'),
-(14, 14, NULL, 'Dr. Eric Foreman', 'MD-15077', 'uploads/prescriptions/p14.jpg', '2024-05-18', '2026-08-27 08:55:58', '2026-09-06 11:22:06', 'this is why', 'rejected', '2026-08-29 19:38:49', '2026-09-06 11:22:06');
-
+INSERT INTO `prescriptions` (
+  `prescription_id`, `customer_id`, `staff_id`, `doctor_name`, `doctor_license_no`, 
+  `file_path`, `issue_date`, `upload_date`, `verified_date`, `rejection_reason`, 
+  `status`, `customer_status`, `customer_confirmed_at`, `created_at`, `updated_at`
+) VALUES
+(1, 1, 3, 'Dr. Gregory House', 'MD-10029', '/uploads/prescriptions/p1.pdf', '2024-05-01', '2026-08-27 08:55:58', '2026-08-27 09:30:00', NULL, 'verified', 'confirmed', '2026-08-27 10:15:22', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(2, 2, 4, 'Dr. Meredith Grey', 'MD-20045', '/uploads/prescriptions/p2.pdf', '2024-05-02', '2026-08-27 08:55:58', '2026-08-27 09:45:00', NULL, 'verified', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(3, 3, 3, 'Dr. Stephen Strange', 'MD-30012', '/uploads/prescriptions/p3.pdf', '2024-05-03', '2026-08-27 08:55:58', '2026-08-30 08:18:12', 'Unclear image resolution', 'rejected', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-30 08:18:12'),
+(4, 4, 7, 'Dr. John Watson', 'MD-40088', '/uploads/prescriptions/p4.pdf', '2024-05-05', '2026-08-27 08:55:58', '2026-08-27 11:15:00', NULL, 'verified', 'confirmed', '2026-08-27 12:00:10', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(5, 5, NULL, 'Dr. Michaela Stone', 'MD-50067', '/uploads/prescriptions/p5.pdf', '2024-05-06', '2026-08-27 08:55:58', NULL, 'Illegible signature', 'rejected', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(6, 6, 8, 'Dr. Leonard McCoy', 'MD-60033', '/uploads/prescriptions/p6.pdf', '2024-05-07', '2026-08-27 08:55:58', '2026-08-27 10:50:00', NULL, 'verified', 'rejected', NULL, '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(7, 7, 10, 'Dr. Shaun Murphy', 'MD-70019', '/uploads/prescriptions/p7.pdf', '2024-05-08', '2026-08-27 08:55:58', '2026-08-27 14:30:00', NULL, 'verified', 'confirmed', '2026-08-27 15:10:45', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(8, 8, NULL, 'Dr. Martin Ellingham', 'MD-80054', '/uploads/prescriptions/p8.pdf', '2024-05-10', '2026-08-27 08:55:58', '2026-08-30 08:16:05', 'Expired prescription date', 'rejected', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-30 08:16:05'),
+(9, 9, 11, 'Dr. Doogie Howser', 'MD-90081', '/uploads/prescriptions/p9.pdf', '2024-05-11', '2026-08-27 08:55:58', '2026-08-27 10:00:00', NULL, 'verified', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(10, 10, 14, 'Dr. Beverly Crusher', 'MD-11022', '/uploads/prescriptions/p10.pdf', '2024-05-12', '2026-08-27 08:55:58', '2026-08-27 16:30:00', NULL, 'verified', 'confirmed', '2026-08-27 17:05:30', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(11, 11, 3, 'Dr. Sanjay Gupta', 'MD-12044', '/uploads/prescriptions/p11.pdf', '2024-05-14', '2026-08-27 08:55:58', '2026-08-30 08:17:09', NULL, 'verified', 'confirmed', '2026-08-30 09:00:00', '2026-08-29 19:38:49', '2026-08-30 08:17:09'),
+(12, 12, 4, 'Dr. Allison Cameron', 'MD-13099', '/uploads/prescriptions/p12.pdf', '2024-05-15', '2026-08-27 08:55:58', '2026-08-27 17:40:00', NULL, 'verified', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(13, 13, 7, 'Dr. Robert Chase', 'MD-14055', '/uploads/prescriptions/p13.pdf', '2024-05-16', '2026-08-27 08:55:58', '2026-09-06 11:22:22', NULL, 'verified', 'confirmed', '2026-09-06 12:15:00', '2026-08-29 19:38:49', '2026-09-06 11:22:22'),
+(14, 14, NULL, 'Dr. Eric Foreman', 'MD-15077', 'uploads/prescriptions/p14.jpg', '2024-05-18', '2026-08-27 08:55:58', '2026-09-06 11:22:06', 'Doctor license not valid', 'rejected', 'pending', NULL, '2026-08-29 19:38:49', '2026-09-06 11:22:06');
 -- --------------------------------------------------------
 
 --

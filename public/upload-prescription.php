@@ -55,6 +55,7 @@ $historySql = "
         prescription_id,
         file_path,
         status,
+        customer_status,
         rejection_reason,
         created_at
     FROM prescriptions
@@ -258,13 +259,28 @@ include_once __DIR__ . '/../includes/header.php';
                                     </td>
 
                                     <td>
-                                        <?php if ($status === 'verified'): ?>
-                                            <a href="confirm-order.php?prescription_id=<?= (int)$row['prescription_id']; ?>"
-                                               class="btn btn-success btn-sm">
-                                                Confirm Order
-                                            </a>
-                                        <?php else: ?>
-                                            <span class="text-muted">-</span>
+                                        <?php 
+                                        $status = strtolower($row['status'] ?? '');
+                                        $customerStatus = strtolower($row['customer_status'] ?? 'pending');
+                                        ?>
+
+                                        <?php if ($status === 'pending'): ?>
+                                            <span class="badge bg-warning text-dark">Under Review</span>
+
+                                        <?php elseif ($status === 'verified' && $customerStatus === 'pending'): ?>
+                                            <form action="handlers/confirm-order-handler.php" method="POST" style="display:inline;">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
+                                                <input type="hidden" name="prescription_id" value="<?= (int)$row['prescription_id']; ?>">
+                                                <button type="submit" class="btn btn-success btn-sm fw-bold">
+                                                    Confirm Order
+                                                </button>
+                                            </form>
+
+                                        <?php elseif ($status === 'verified' && $customerStatus === 'confirmed'): ?>
+                                            <span class="badge bg-info text-dark">Order Confirmed</span>
+
+                                        <?php elseif ($status === 'rejected'): ?>
+                                            <span class="badge bg-danger">Rejected</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
