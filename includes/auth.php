@@ -4,6 +4,20 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+/*
+|--------------------------------------------------------------------------
+| Base URL (public/ folder root)
+|--------------------------------------------------------------------------
+| Using an absolute, app-rooted path here means redirects work the same
+| way no matter how deeply nested the calling script is (public/, or
+| public/handlers/, public/admin/, etc). Update this one line if the
+| app ever moves to a different folder or domain.
+*/
+
+if (!defined('BASE_URL')) {
+    define('BASE_URL', '/GitHub/MediQuick-Pharmacy/public');
+}
+
 
 /*
 |--------------------------------------------------------------------------
@@ -15,7 +29,7 @@ function denyAccess(string $message = "Access denied. You do not have permission
 {
     $_SESSION['auth_error'] = $message;
     http_response_code(403);
-    header("Location: access-denied.php");
+    header("Location: " . BASE_URL . "/access-denied.php");
     exit;
 }
 
@@ -42,7 +56,7 @@ function requireLogin(): void
 {
     if (!isLoggedIn()) {
         $_SESSION['auth_error'] = "Please log in to access this page.";
-        header("Location: ../login.php");
+        header("Location: " . BASE_URL . "/login.php");
         exit;
     }
 }
@@ -112,6 +126,27 @@ function requirePharmacist(): void
         $role !== 'superadmin'
     ) {
         denyAccess("Access denied. Superadmin, Admin, or Pharmacist permission is required.");
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Require Customer
+|--------------------------------------------------------------------------
+| Customer-only pages (cart, prescriptions, account) call this. It first
+| makes sure someone is logged in at all (requireLogin), then makes sure
+| they're specifically logged in as a customer — staff/admin/pharmacist
+| accounts are logged in, but aren't customers, so they get a clear
+| "access denied" instead of being bounced back to the login page.
+*/
+
+function requireCustomer(): void
+{
+    requireLogin();
+
+    if (getUserRole() !== 'customer' || empty($_SESSION['customer_id'])) {
+        denyAccess("Access denied. This page is only available to customer accounts.");
     }
 }
 
