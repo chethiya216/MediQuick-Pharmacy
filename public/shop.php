@@ -55,76 +55,7 @@ function shopFormatPrice($price)
 require_once $rootDir . '/includes/header.php';
 ?>
 
-<style>
-    :root {
-        --mq-shop-primary: #00C391;
-        --mq-shop-primary-hover: #00B4DA;
-        --mq-shop-danger: #00A3FF;
-        --mq-shop-danger-hover: #008FE0;
-        --mq-shop-text: #294052;
-    }
 
-    /* Apply Filters & Add To Cart */
-    .mq-shop-page .shop-filter-btn,
-    .mq-shop-page .shop-add-btn {
-        background: var(--mq-shop-primary) !important;
-        border: 1px solid var(--mq-shop-primary) !important;
-        color: #fff !important;
-        font-weight: 600;
-        transition: all .25s ease;
-    }
-
-    .mq-shop-page .shop-filter-btn:hover,
-    .mq-shop-page .shop-filter-btn:focus,
-    .mq-shop-page .shop-add-btn:hover,
-    .mq-shop-page .shop-add-btn:focus {
-        background: var(--mq-shop-primary-hover) !important;
-        border-color: var(--mq-shop-primary-hover) !important;
-        color: #fff !important;
-        box-shadow: none !important;
-    }
-
-    /* Clear Filters & View Product */
-    .mq-shop-page .shop-clear-btn,
-    .mq-shop-page .shop-view-btn {
-        background: #fff !important;
-        border: 1px solid var(--mq-shop-primary) !important;
-        color: var(--mq-shop-primary) !important;
-        font-weight: 600;
-        transition: all .25s ease;
-    }
-
-    .mq-shop-page .shop-clear-btn:hover,
-    .mq-shop-page .shop-clear-btn:focus,
-    .mq-shop-page .shop-view-btn:hover,
-    .mq-shop-page .shop-view-btn:focus {
-        background: var(--mq-shop-primary) !important;
-        border-color: var(--mq-shop-primary) !important;
-        color: #fff !important;
-        box-shadow: none !important;
-    }
-
-    /* Out of Stock */
-    .mq-shop-page .shop-out-stock-btn,
-    .mq-shop-page .shop-out-stock-btn:disabled {
-        background: var(--mq-shop-danger) !important;
-        border: 1px solid var(--mq-shop-danger) !important;
-        color: #fff !important;
-        font-weight: 600;
-        opacity: 1 !important;
-        cursor: not-allowed !important;
-    }
-
-    /* Button Dimensions */
-    .mq-shop-page .shop-filter-btn,
-    .mq-shop-page .shop-clear-btn,
-    .mq-shop-page .shop-view-btn,
-    .mq-shop-page .shop-add-btn,
-    .mq-shop-page .shop-out-stock-btn {
-        border-radius: 10px !important;
-        min-height: 42px;
-    }
-</style>
 
 <div class="mq-shop-page">
     <div class="container-fluid py-5">
@@ -333,7 +264,7 @@ require_once $rootDir . '/includes/header.php';
         </div>
     </div>
 </div>
-                        
+
 <?php
 require_once $rootDir . '/includes/footer.php';
 ?>

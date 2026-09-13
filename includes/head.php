@@ -34,6 +34,7 @@
     <link href="assets/css/checkout-style.css" rel="stylesheet">
     <link href="assets/css/cart-style.css" rel="stylesheet">
     <link href="assets/css/footer-style.css" rel="stylesheet">
+    <link href="assets/css/shop-style.css" rel="stylesheet">
 
     <!-- Page-specific Stylesheet -->
     <?php if (!empty($page_css)): ?>
