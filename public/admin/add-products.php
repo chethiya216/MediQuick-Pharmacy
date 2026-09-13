@@ -154,6 +154,14 @@ $product_batches = $conn->query($sql_prod_batch);
                                                     </div>
                                                 </div>
                                                 <div class="col-4 mb-3">
+                                                    <label for="quantity" class="form-label">Quantity</label>
+                                                    <div class="input-group">
+                                                        <!-- <span class="input-group-text">Rs.</span> -->
+                                                        <input type="number" step="1" min="0" class="form-control"
+                                                            id="quantity" name="quantity" placeholder="0" value="<?= htmlspecialchars($product['stock_quantity'] ?? ''); ?>" required>
+                                                    </div>
+                                                </div>
+                                                <div class="col-4 mb-3">
                                                     <label for="discount_percent" class="form-label">Discount %</label>
                                                     <input type="number" step="0.01" min="0" max="100" class="form-control"
                                                         id="discount_percent" value="<?= htmlspecialchars($product['discount_percent'] ?? ''); ?>" placeholder="0" name="discount_percent">

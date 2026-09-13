@@ -206,7 +206,10 @@ function getPageUrl($pageNumber, $queryParams) {
                                                     </button>
                                                     <div class="dropdown-menu">
                                                         <a class="dropdown-item" href="verify-prescriptions.php?id=<?= (int) $row['prescription_id']; ?>">
-                                                            <i class="bx bx-show me-1"></i> View / Process
+                                                            <i class="bx bx-show me-1"></i> View Prescription
+                                                        </a>
+                                                        <a class="dropdown-item" href="process-prescription-order.php?id=<?= (int) $row['prescription_id']; ?>">
+                                                            <i class="bx bx-file me-1"></i>Process Prescription
                                                         </a>
                                                         <a class="dropdown-item text-danger" href="javascript:void(0)"
                                                             onclick="openDeleteConfirm(event, <?= (int) $row['prescription_id'] ?>, 'prescription #<?= (int) $row['prescription_id'] ?>', 'handlers/prescription-handler.php')">

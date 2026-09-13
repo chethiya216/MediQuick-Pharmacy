@@ -52,14 +52,17 @@ unset($_SESSION['flash_success'], $_SESSION['flash_error']);
 
 $historySql = "
     SELECT
-        prescription_id,
-        file_path,
-        status,
-        rejection_reason,
-        created_at
-    FROM prescriptions
-    WHERE customer_id = ?
-    ORDER BY prescription_id DESC
+        p.prescription_id,
+        p.file_path,
+        p.status,
+        p.customer_status,
+        p.rejection_reason,
+        p.created_at,
+        o.order_id
+    FROM prescriptions p
+    LEFT JOIN orders o ON p.prescription_id = o.prescription_id
+    WHERE p.customer_id = ?
+    ORDER BY p.prescription_id DESC
 ";
 
 $historyStmt = $conn->prepare($historySql);
@@ -178,6 +181,7 @@ include_once __DIR__ . '/../includes/header.php';
                                 <th>#</th>
                                 <th>Prescription</th>
                                 <th>Status</th>
+                                <th>Order Status</th>
                                 <th>Submitted</th>
                                 <th>Action</th>
                             </tr>
@@ -189,6 +193,7 @@ include_once __DIR__ . '/../includes/header.php';
 
                                 <?php
                                 $status = strtolower(trim($row['status'] ?? 'pending'));
+                                $customerStatus = strtolower(trim($row['customer_status'] ?? 'pending'));
 
                                 $badge = match ($status) {
                                     'verified' => 'bg-success',
@@ -253,18 +258,38 @@ include_once __DIR__ . '/../includes/header.php';
                                         <?php endif; ?>
                                     </td>
 
+                                    <td>
+                                        <?php if (!empty($row['order_id'])): ?>
+                                            <span class="badge bg-success">
+                                                Order Placed (#<?= (int)$row['order_id']; ?>)
+                                            </span>
+                                        <?php else: ?>
+                                            <span class="text-muted small">Not placed yet</span>
+                                        <?php endif; ?>
+                                    </td>
+
                                     <td class="text-nowrap">
                                         <?= htmlspecialchars($row['created_at'] ?? ''); ?>
                                     </td>
 
                                     <td>
-                                        <?php if ($status === 'verified'): ?>
-                                            <a href="confirm-order.php?prescription_id=<?= (int)$row['prescription_id']; ?>"
-                                               class="btn btn-success btn-sm">
-                                                Confirm Order
-                                            </a>
-                                        <?php else: ?>
-                                            <span class="text-muted">-</span>
+                                        <?php if ($status === 'pending'): ?>
+                                            <span class="badge bg-warning text-dark">Under Review</span>
+
+                                        <?php elseif ($status === 'verified' && $customerStatus === 'pending'): ?>
+                                            <form action="handlers/confirm-order-handler.php" method="POST" style="display:inline;">
+                                                <input type="hidden" name="csrf_token" value="<?= htmlspecialchars($_SESSION['csrf_token']); ?>">
+                                                <input type="hidden" name="prescription_id" value="<?= (int)$row['prescription_id']; ?>">
+                                                <button type="submit" class="btn btn-success btn-sm fw-bold">
+                                                    Confirm Order
+                                                </button>
+                                            </form>
+
+                                        <?php elseif ($status === 'verified' && $customerStatus === 'confirmed'): ?>
+                                            <span class="badge bg-info text-dark">Order Confirmed</span>
+
+                                        <?php elseif ($status === 'rejected'): ?>
+                                            <span class="badge bg-danger">Rejected</span>
                                         <?php endif; ?>
                                     </td>
                                 </tr>
@@ -274,7 +299,7 @@ include_once __DIR__ . '/../includes/header.php';
                         <?php else: ?>
 
                             <tr>
-                                <td colspan="5" class="text-center text-muted py-4">
+                                <td colspan="6" class="text-center text-muted py-4">
                                     You haven't uploaded any prescriptions yet.
                                 </td>
                             </tr>

@@ -41,6 +41,7 @@ $sql = "
         p.product_name,
         p.product_image,
         p.sku,
+        p.stock_quantity,
         p.created_at,
         c.category_name,
         p.unit_price,
@@ -127,6 +128,7 @@ function getPageUrl($pageNumber, $queryParams) {
                                         <th>SKU</th>
                                         <th>Category</th>
                                         <th>Price</th>
+                                        <th>Quantity</th>
                                         <th>Status</th>
                                         <th>Created At</th>
                                         <th>Actions</th>
@@ -182,6 +184,11 @@ function getPageUrl($pageNumber, $queryParams) {
                                             <td>
                                                 Rs. <?= number_format((float) $row['unit_price'], 2); ?>
                                             </td>
+                                            
+                                            <!-- Quantity -->
+                                            <td>
+                                                <?= htmlspecialchars($row['stock_quantity'] ?? 'N/A'); ?>
+                                            </td></td>
 
                                             <!-- STATUS -->
                                             <td>

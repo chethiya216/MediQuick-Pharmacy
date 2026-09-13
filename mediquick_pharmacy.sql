@@ -258,6 +258,12 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `tax_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `shipping_fee` decimal(10,2) NOT NULL DEFAULT '0.00',
   `total_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `shipping_address_line1` varchar(255) NOT NULL,
+  `shipping_address_line2` varchar(255) DEFAULT NULL,
+  `shipping_city` varchar(100) NOT NULL,
+  `shipping_state` varchar(100) NOT NULL,
+  `shipping_postal_code` varchar(20) NOT NULL,
+  `shipping_country` varchar(100) NOT NULL DEFAULT 'Sri Lanka',
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`order_id`),
   KEY `idx_orders_customer` (`customer_id`),
@@ -268,23 +274,24 @@ CREATE TABLE IF NOT EXISTS `orders` (
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`order_id`, `customer_id`, `prescription_id`, `order_date`, `status`, `subtotal`, `tax_amount`, `shipping_fee`, `total_amount`, `updated_at`) VALUES
-(1, 1, 1, '2026-08-27 08:55:58', 'delivered', 24.49, 1.96, 5.00, 31.45, '2026-08-27 16:23:47'),
-(2, 2, 2, '2026-08-27 08:55:58', 'delivered', 12.00, 0.96, 5.00, 17.96, '2026-08-27 16:23:47'),
-(3, 3, 3, '2026-08-27 08:55:58', 'delivered', 28.50, 2.28, 5.00, 35.78, '2026-08-27 16:23:47'),
-(4, 4, NULL, '2026-08-27 08:55:58', 'delivered', 19.95, 1.60, 0.00, 21.55, '2026-08-27 16:23:47'),
-(5, 6, 6, '2026-08-27 08:55:58', 'shipped', 15.50, 1.24, 5.00, 21.74, '2026-08-27 16:23:47'),
-(6, 7, 7, '2026-08-27 08:55:58', 'shipped', 20.75, 1.66, 5.00, 27.41, '2026-08-27 16:23:47'),
-(7, 9, 9, '2026-08-27 08:55:58', 'confirmed', 22.00, 1.76, 5.00, 28.76, '2026-08-27 16:23:47'),
-(8, 10, 10, '2026-08-27 08:55:58', 'confirmed', 24.79, 1.98, 5.00, 31.77, '2026-08-27 16:23:47'),
-(9, 12, 12, '2026-08-27 08:55:58', 'pending', 12.00, 0.96, 5.00, 17.96, '2026-08-27 16:23:47'),
-(10, 13, 13, '2026-08-27 08:55:58', 'pending', 11.75, 0.94, 5.00, 17.69, '2026-08-27 16:23:47'),
-(11, 1, NULL, '2026-08-27 08:55:58', 'delivered', 14.25, 1.14, 0.00, 15.39, '2026-08-27 16:23:47'),
-(12, 2, NULL, '2026-08-27 08:55:58', 'delivered', 18.00, 1.44, 0.00, 19.44, '2026-08-27 16:23:47'),
-(13, 4, NULL, '2026-08-27 08:55:58', 'delivered', 26.98, 2.16, 5.00, 34.14, '2026-08-27 16:23:47'),
-(14, 6, NULL, '2026-08-27 08:55:58', 'cancelled', 6.50, 0.52, 5.00, 12.02, '2026-08-27 16:23:47'),
-(15, 15, 15, '2026-08-27 08:55:58', 'pending', 16.80, 1.34, 5.00, 23.14, '2026-08-27 16:23:47');
-
+INSERT INTO `orders` 
+  (`order_id`, `customer_id`, `prescription_id`, `order_date`, `status`, `subtotal`, `tax_amount`, `shipping_fee`, `total_amount`, `shipping_address_line1`, `shipping_address_line2`, `shipping_city`, `shipping_state`, `shipping_postal_code`, `shipping_country`, `updated_at`) 
+VALUES
+  (1, 1, 1, '2026-08-27 08:55:58', 'delivered', 24.49, 1.96, 5.00, 31.45, '742 Evergreen Terrace', NULL, 'Springfield', 'OR', '97477', 'USA', '2026-08-27 16:23:47'),
+  (2, 2, 2, '2026-08-27 08:55:58', 'delivered', 12.00, 0.96, 5.00, 17.96, '123 Main Street', 'Apt 4B', 'New York', 'NY', '10001', 'USA', '2026-08-27 16:23:47'),
+  (3, 3, 3, '2026-08-27 08:55:58', 'delivered', 28.50, 2.28, 5.00, 35.78, '456 Oak Avenue', NULL, 'Los Angeles', 'CA', '90001', 'USA', '2026-08-27 16:23:47'),
+  (4, 4, NULL, '2026-08-27 08:55:58', 'delivered', 19.95, 1.60, 0.00, 21.55, '789 Pine Road', 'Suite 200', 'Chicago', 'IL', '60601', 'USA', '2026-08-27 16:23:47'),
+  (5, 6, 6, '2026-08-27 08:55:58', 'shipped', 15.50, 1.24, 5.00, 21.74, '321 Maple Lane', NULL, 'Houston', 'TX', '77001', 'USA', '2026-08-27 16:23:47'),
+  (6, 7, 7, '2026-08-27 08:55:58', 'shipped', 20.75, 1.66, 5.00, 27.41, '654 Cedar Court', NULL, 'Phoenix', 'AZ', '85001', 'USA', '2026-08-27 16:23:47'),
+  (7, 9, 9, '2026-08-27 08:55:58', 'confirmed', 22.00, 1.76, 5.00, 28.76, '987 Elm Street', 'Apt 12A', 'Philadelphia', 'PA', '19101', 'USA', '2026-08-27 16:23:47'),
+  (8, 10, 10, '2026-08-27 08:55:58', 'confirmed', 24.79, 1.98, 5.00, 31.77, '147 Walnut Drive', NULL, 'San Antonio', 'TX', '78201', 'USA', '2026-08-27 16:23:47'),
+  (9, 12, 12, '2026-08-27 08:55:58', 'pending', 12.00, 0.96, 5.00, 17.96, '258 Birch Boulevard', NULL, 'San Diego', 'CA', '92101', 'USA', '2026-08-27 16:23:47'),
+  (10, 13, 13, '2026-08-27 08:55:58', 'pending', 11.75, 0.94, 5.00, 17.69, '369 Spruce Way', 'Unit B', 'Dallas', 'TX', '75201', 'USA', '2026-08-27 16:23:47'),
+  (11, 1, NULL, '2026-08-27 08:55:58', 'delivered', 14.25, 1.14, 0.00, 15.39, '742 Evergreen Terrace', NULL, 'Springfield', 'OR', '97477', 'USA', '2026-08-27 16:23:47'),
+  (12, 2, NULL, '2026-08-27 08:55:58', 'delivered', 18.00, 1.44, 0.00, 19.44, '123 Main Street', 'Apt 4B', 'New York', 'NY', '10001', 'USA', '2026-08-27 16:23:47'),
+  (13, 4, NULL, '2026-08-27 08:55:58', 'delivered', 26.98, 2.16, 5.00, 34.14, '789 Pine Road', 'Suite 200', 'Chicago', 'IL', '60601', 'USA', '2026-08-27 16:23:47'),
+  (14, 6, NULL, '2026-08-27 08:55:58', 'cancelled', 6.50, 0.52, 5.00, 12.02, '321 Maple Lane', NULL, 'Houston', 'TX', '77001', 'USA', '2026-08-27 16:23:47'),
+  (15, 15, 15, '2026-08-27 08:55:58', 'pending', 16.80, 1.34, 5.00, 23.14, '159 Willow Path', NULL, 'San Jose', 'CA', '95101', 'USA', '2026-08-27 16:23:47');
 -- --------------------------------------------------------
 
 --
@@ -388,33 +395,34 @@ CREATE TABLE IF NOT EXISTS `prescriptions` (
   `verified_date` timestamp NULL DEFAULT NULL,
   `rejection_reason` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `status` enum('pending','verified','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
+  `customer_status` enum('pending','confirmed','rejected') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT 'pending',
+  `customer_confirmed_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`prescription_id`),
   KEY `fk_presc_staff` (`staff_id`),
   KEY `idx_prescriptions_customer` (`customer_id`)
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
---
--- Dumping data for table `prescriptions`
---
-
-INSERT INTO `prescriptions` (`prescription_id`, `customer_id`, `staff_id`, `doctor_name`, `doctor_license_no`, `file_path`, `issue_date`, `upload_date`, `verified_date`, `rejection_reason`, `status`, `created_at`, `updated_at`) VALUES
-(1, 1, 3, 'Dr. Gregory House', 'MD-10029', '/uploads/prescriptions/p1.pdf', '2024-05-01', '2026-08-27 08:55:58', '2024-05-01 05:00:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(2, 2, 4, 'Dr. Meredith Grey', 'MD-20045', '/uploads/prescriptions/p2.pdf', '2024-05-02', '2026-08-27 08:55:58', '2024-05-02 05:45:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(3, 3, 3, 'Dr. Stephen Strange', 'MD-30012', '/uploads/prescriptions/p3.pdf', '2024-05-03', '2026-08-27 08:55:58', '2026-08-30 08:18:12', 'sdsadsdsa', 'rejected', '2026-08-29 19:38:49', '2026-08-30 08:18:12'),
-(4, 4, 7, 'Dr. John Watson', 'MD-40088', '/uploads/prescriptions/p4.pdf', '2024-05-05', '2026-08-27 08:55:58', '2024-05-05 04:15:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(5, 5, NULL, 'Dr. Michaela Stone', 'MD-50067', '/uploads/prescriptions/p5.pdf', '2024-05-06', '2026-08-27 08:55:58', NULL, 'Illegible signature', 'rejected', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(6, 6, 8, 'Dr. Leonard McCoy', 'MD-60033', '/uploads/prescriptions/p6.pdf', '2024-05-07', '2026-08-27 08:55:58', '2024-05-07 10:50:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(7, 7, 10, 'Dr. Shaun Murphy', 'MD-70019', '/uploads/prescriptions/p7.pdf', '2024-05-08', '2026-08-27 08:55:58', '2024-05-08 06:30:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(8, 8, NULL, 'Dr. Martin Ellingham', 'MD-80054', '/uploads/prescriptions/p8.pdf', '2024-05-10', '2026-08-27 08:55:58', '2026-08-30 08:16:05', 'sdsads', 'rejected', '2026-08-29 19:38:49', '2026-08-30 08:16:05'),
-(9, 9, 11, 'Dr. Doogie Howser', 'MD-90081', '/uploads/prescriptions/p9.pdf', '2024-05-11', '2026-08-27 08:55:58', '2024-05-11 10:00:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(10, 10, 14, 'Dr. Beverly Crusher', 'MD-11022', '/uploads/prescriptions/p10.pdf', '2024-05-12', '2026-08-27 08:55:58', '2024-05-12 04:30:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(11, 11, NULL, 'Dr. Sanjay Gupta', 'MD-12044', '/uploads/prescriptions/p11.pdf', '2024-05-14', '2026-08-27 08:55:58', '2026-08-30 08:17:09', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-30 08:17:09'),
-(12, 12, 4, 'Dr. Allison Cameron', 'MD-13099', '/uploads/prescriptions/p12.pdf', '2024-05-15', '2026-08-27 08:55:58', '2024-05-15 07:40:00', NULL, 'verified', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
-(13, 13, 7, 'Dr. Robert Chase', 'MD-14055', '/uploads/prescriptions/p13.pdf', '2024-05-16', '2026-08-27 08:55:58', '2026-09-06 11:22:22', NULL, 'verified', '2026-08-29 19:38:49', '2026-09-06 11:22:22'),
-(14, 14, NULL, 'Dr. Eric Foreman', 'MD-15077', 'uploads/prescriptions/p14.jpg', '2024-05-18', '2026-08-27 08:55:58', '2026-09-06 11:22:06', 'this is why', 'rejected', '2026-08-29 19:38:49', '2026-09-06 11:22:06');
-
+INSERT INTO `prescriptions` (
+  `prescription_id`, `customer_id`, `staff_id`, `doctor_name`, `doctor_license_no`, 
+  `file_path`, `issue_date`, `upload_date`, `verified_date`, `rejection_reason`, 
+  `status`, `customer_status`, `customer_confirmed_at`, `created_at`, `updated_at`
+) VALUES
+(1, 1, 3, 'Dr. Gregory House', 'MD-10029', '/uploads/prescriptions/p1.pdf', '2024-05-01', '2026-08-27 08:55:58', '2026-08-27 09:30:00', NULL, 'verified', 'confirmed', '2026-08-27 10:15:22', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(2, 2, 4, 'Dr. Meredith Grey', 'MD-20045', '/uploads/prescriptions/p2.pdf', '2024-05-02', '2026-08-27 08:55:58', '2026-08-27 09:45:00', NULL, 'verified', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(3, 3, 3, 'Dr. Stephen Strange', 'MD-30012', '/uploads/prescriptions/p3.pdf', '2024-05-03', '2026-08-27 08:55:58', '2026-08-30 08:18:12', 'Unclear image resolution', 'rejected', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-30 08:18:12'),
+(4, 4, 7, 'Dr. John Watson', 'MD-40088', '/uploads/prescriptions/p4.pdf', '2024-05-05', '2026-08-27 08:55:58', '2026-08-27 11:15:00', NULL, 'verified', 'confirmed', '2026-08-27 12:00:10', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(5, 5, NULL, 'Dr. Michaela Stone', 'MD-50067', '/uploads/prescriptions/p5.pdf', '2024-05-06', '2026-08-27 08:55:58', NULL, 'Illegible signature', 'rejected', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(6, 6, 8, 'Dr. Leonard McCoy', 'MD-60033', '/uploads/prescriptions/p6.pdf', '2024-05-07', '2026-08-27 08:55:58', '2026-08-27 10:50:00', NULL, 'verified', 'rejected', NULL, '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(7, 7, 10, 'Dr. Shaun Murphy', 'MD-70019', '/uploads/prescriptions/p7.pdf', '2024-05-08', '2026-08-27 08:55:58', '2026-08-27 14:30:00', NULL, 'verified', 'confirmed', '2026-08-27 15:10:45', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(8, 8, NULL, 'Dr. Martin Ellingham', 'MD-80054', '/uploads/prescriptions/p8.pdf', '2024-05-10', '2026-08-27 08:55:58', '2026-08-30 08:16:05', 'Expired prescription date', 'rejected', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-30 08:16:05'),
+(9, 9, 11, 'Dr. Doogie Howser', 'MD-90081', '/uploads/prescriptions/p9.pdf', '2024-05-11', '2026-08-27 08:55:58', '2026-08-27 10:00:00', NULL, 'verified', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(10, 10, 14, 'Dr. Beverly Crusher', 'MD-11022', '/uploads/prescriptions/p10.pdf', '2024-05-12', '2026-08-27 08:55:58', '2026-08-27 16:30:00', NULL, 'verified', 'confirmed', '2026-08-27 17:05:30', '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(11, 11, 3, 'Dr. Sanjay Gupta', 'MD-12044', '/uploads/prescriptions/p11.pdf', '2024-05-14', '2026-08-27 08:55:58', '2026-08-30 08:17:09', NULL, 'verified', 'confirmed', '2026-08-30 09:00:00', '2026-08-29 19:38:49', '2026-08-30 08:17:09'),
+(12, 12, 4, 'Dr. Allison Cameron', 'MD-13099', '/uploads/prescriptions/p12.pdf', '2024-05-15', '2026-08-27 08:55:58', '2026-08-27 17:40:00', NULL, 'verified', 'pending', NULL, '2026-08-29 19:38:49', '2026-08-27 16:23:47'),
+(13, 13, 7, 'Dr. Robert Chase', 'MD-14055', '/uploads/prescriptions/p13.pdf', '2024-05-16', '2026-08-27 08:55:58', '2026-09-06 11:22:22', NULL, 'verified', 'confirmed', '2026-09-06 12:15:00', '2026-08-29 19:38:49', '2026-09-06 11:22:22'),
+(14, 14, NULL, 'Dr. Eric Foreman', 'MD-15077', 'uploads/prescriptions/p14.jpg', '2024-05-18', '2026-08-27 08:55:58', '2026-09-06 11:22:06', 'Doctor license not valid', 'rejected', 'pending', NULL, '2026-08-29 19:38:49', '2026-09-06 11:22:06');
 -- --------------------------------------------------------
 
 --
@@ -476,6 +484,7 @@ CREATE TABLE IF NOT EXISTS `products` (
   `discount_percent` decimal(5,2) DEFAULT '0.00',
   `requires_prescription` tinyint(1) DEFAULT '0',
   `reorder_level` int DEFAULT '0',
+  `stock_quantity` int NOT NULL DEFAULT '0',
   `product_image` varchar(255) DEFAULT NULL,
   `status` enum('active','draft','archived') DEFAULT 'active',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -489,27 +498,26 @@ CREATE TABLE IF NOT EXISTS `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`product_id`, `product_name`, `generic_name`, `description`, `sku`, `barcode`, `category_id`, `dosage_form`, `strength`, `unit_price`, `discount_percent`, `requires_prescription`, `reorder_level`, `product_image`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Panadol Extra', 'Paracetamol / Caffeine', 'Fast and effective relief for severe headache, toothache, and joint pain.', 'PAN-EXT-500', '8901234567011', 1, 'tablet', '500mg / 65mg', 15.00, 0.00, 0, 100, 'uploads/products/panadol-extra.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(2, 'Amoxil', 'Amoxicillin', 'Broad-spectrum antibiotic used to treat bacterial infections of the chest, ears, and throat.', 'AMX-CAP-250', '8901234567028', 2, 'capsule', '250mg', 45.50, 5.00, 1, 50, 'uploads/products/amoxil-250.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(3, 'Neurobion Forte', 'Vitamin B1, B6, B12', 'Vitamin B-complex supplement to support nerve health and energy metabolism.', 'NEU-FOR-100', '8901234567035', 3, 'tablet', '100mg', 22.00, 0.00, 0, 30, 'uploads/products/neurobion.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(4, 'Cetaphil Gentle Cleanser', 'Cetyl / Stearyl Alcohol', 'Dermatologist recommended daily soothing cleanser for sensitive and dry skin.', 'CET-CLN-250ML', '8901234567042', 4, 'cream', '250ml', 1250.00, 10.00, 0, 15, 'uploads/products/cetaphil-cleanser.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(5, 'Augmentin 625 Duo', 'Amoxicillin / Clavulanate Potassium', 'High-potency antibacterial combination for severe respiratory and skin infections.', 'AUG-TAB-625', '8901234567059', 2, 'tablet', '625mg', 120.00, 0.00, 1, 40, 'uploads/products/augmentin-625.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(6, 'Benadryl Cough Syrup', 'Diphenhydramine HCl', 'Provides effective relief from dry cough, chest congestion, and allergy symptoms.', 'BEN-SYR-100ML', '8901234567066', 1, 'syrup', '100ml', 185.00, 2.50, 0, 25, 'uploads/products/benadryl-syrup.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(7, 'Seven Seas Cod Liver Oil', 'Omega-3 / Vitamin A & D', 'Daily dietary supplement rich in Omega-3 fatty acids for heart and brain development.', 'SEV-CAP-500', '8901234567073', 3, 'capsule', '500mg', 850.00, 0.00, 0, 20, 'uploads/products/seven-seas.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(8, 'Voltaren Emulgel', 'Diclofenac Diethylamine', 'Topical anti-inflammatory gel for targeted relief from muscle pain and joint inflammation.', 'VOL-GEL-50G', '8901234567080', 1, 'cream', '50g', 340.00, 5.00, 0, 15, 'uploads/products/voltaren-gel.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(9, 'Insulin Humalog', 'Insulin Lispro', 'Fast-acting human insulin analog used to control high blood sugar in patients with diabetes.', 'INS-INJ-100U', '8901234567097', 1, 'injection', '100 IU/ml', 1450.00, 0.00, 1, 10, 'uploads/products/humalog-injection.jpg', 'draft', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(10, 'Disprin Soluble', 'Aspirin', 'Fast-dissolving aspirin tablets for immediate relief of migraine and fever.', 'DIS-SOL-300', '8901234567103', 1, 'tablet', '300mg', 8.00, 0.00, 0, 150, 'uploads/products/disprin.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(11, 'dawdw', NULL, NULL, '34534gdgd', NULL, 3, 'cream', NULL, 12.00, 0.00, 0, 0, NULL, 'active', '2026-08-29 08:16:07', '2026-08-29 08:16:07'),
-(12, 'test1', NULL, NULL, 'test', NULL, 2, 'capsule', NULL, 12222.00, 0.00, 0, 0, NULL, 'active', '2026-08-29 08:47:42', '2026-08-29 08:47:42'),
-(13, 'dwadtttttttttttttttt', NULL, NULL, 'ssssssssss', NULL, 4, 'tablet', NULL, 1000.00, 0.00, 0, 0, NULL, 'active', '2026-08-29 09:29:32', '2026-08-29 09:29:32'),
-(14, 'dsdad', 'sdasdsad', 'dsdsadsd', 'dsasdad', 'dsdasd', 3, 'cream', NULL, 1111.00, 10.00, 0, 0, NULL, 'active', '2026-08-29 09:50:12', '2026-08-29 09:50:12'),
-(15, 'test 2', 'sdasd', 'sdasd', 'sdsda', 'dsads', 8, 'cream', '111', 11111.00, 10.00, 1, 110, 'uploads/products/prod_ebbc1ba31dd45f16.jpg', 'active', '2026-08-29 11:46:56', '2026-08-29 11:46:56'),
-(16, 'Candid B', 'adawsd', 'dsadas', 'sdda', 'dssad', 13, 'cream', '200', 550.00, 6.00, 1, 10, 'uploads/products/prod_2c9cc80536bb2b49.png', 'active', '2026-08-29 12:45:48', '2026-08-29 12:45:48'),
-(17, 'HP099', 'dsdad', 'dsdasd', 'sdsd', 'dsdas', 14, 'tablet', '111', 11111.00, 10.00, 1, 1, 'uploads/products/prod_f27c84778726ad76.png', 'active', '2026-08-29 12:47:12', '2026-08-29 12:47:12'),
-(19, 'dwadawd', 'sdads', 'dsadasd', 'sdads', 'dsadsad', 2, 'injection', '1111', 11111.00, 10.00, 1, 10, 'uploads/products/prod_a01ba6b3207a1bed.jpg', 'active', '2026-08-29 13:09:55', '2026-08-29 13:09:55'),
-(20, 'Test Image Edit', 'fesfsef', 'sdsadsad', 'dsdsad', 'sdsad', 11, 'injection', '11111', 1111.00, 10.00, 1, 10, 'uploads/products/prod_4d5eea6b0132e1b5.jpg', 'active', '2026-08-29 13:36:04', '2026-08-29 18:57:10');
-
+INSERT INTO `products` (`product_id`, `product_name`, `generic_name`, `description`, `sku`, `barcode`, `category_id`, `dosage_form`, `strength`, `unit_price`, `discount_percent`, `requires_prescription`, `reorder_level`, `stock_quantity`, `product_image`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Panadol Extra', 'Paracetamol / Caffeine', 'Fast and effective relief for severe headache, toothache, and joint pain.', 'PAN-EXT-500', '8901234567011', 1, 'tablet', '500mg / 65mg', 15.00, 0.00, 0, 100, 500, 'uploads/products/panadol-extra.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(2, 'Amoxil', 'Amoxicillin', 'Broad-spectrum antibiotic used to treat bacterial infections of the chest, ears, and throat.', 'AMX-CAP-250', '8901234567028', 2, 'capsule', '250mg', 45.50, 5.00, 1, 50, 250, 'uploads/products/amoxil-250.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(3, 'Neurobion Forte', 'Vitamin B1, B6, B12', 'Vitamin B-complex supplement to support nerve health and energy metabolism.', 'NEU-FOR-100', '8901234567035', 3, 'tablet', '100mg', 22.00, 0.00, 0, 30, 150, 'uploads/products/neurobion.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(4, 'Cetaphil Gentle Cleanser', 'Cetyl / Stearyl Alcohol', 'Dermatologist recommended daily soothing cleanser for sensitive and dry skin.', 'CET-CLN-250ML', '8901234567042', 4, 'cream', '250ml', 1250.00, 10.00, 0, 15, 80, 'uploads/products/cetaphil-cleanser.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(5, 'Augmentin 625 Duo', 'Amoxicillin / Clavulanate Potassium', 'High-potency antibacterial combination for severe respiratory and skin infections.', 'AUG-TAB-625', '8901234567059', 2, 'tablet', '625mg', 120.00, 0.00, 1, 40, 200, 'uploads/products/augmentin-625.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(6, 'Benadryl Cough Syrup', 'Diphenhydramine HCl', 'Provides effective relief from dry cough, chest congestion, and allergy symptoms.', 'BEN-SYR-100ML', '8901234567066', 1, 'syrup', '100ml', 185.00, 2.50, 0, 25, 120, 'uploads/products/benadryl-syrup.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(7, 'Seven Seas Cod Liver Oil', 'Omega-3 / Vitamin A & D', 'Daily dietary supplement rich in Omega-3 fatty acids for heart and brain development.', 'SEV-CAP-500', '8901234567073', 3, 'capsule', '500mg', 850.00, 0.00, 0, 20, 90, 'uploads/products/seven-seas.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(8, 'Voltaren Emulgel', 'Diclofenac Diethylamine', 'Topical anti-inflammatory gel for targeted relief from muscle pain and joint inflammation.', 'VOL-GEL-50G', '8901234567080', 1, 'cream', '50g', 340.00, 5.00, 0, 15, 60, 'uploads/products/voltaren-gel.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(9, 'Insulin Humalog', 'Insulin Lispro', 'Fast-acting human insulin analog used to control high blood sugar in patients with diabetes.', 'INS-INJ-100U', '8901234567097', 1, 'injection', '100 IU/ml', 1450.00, 0.00, 1, 10, 45, 'uploads/products/humalog-injection.jpg', 'draft', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(10, 'Disprin Soluble', 'Aspirin', 'Fast-dissolving aspirin tablets for immediate relief of migraine and fever.', 'DIS-SOL-300', '8901234567103', 1, 'tablet', '300mg', 8.00, 0.00, 0, 150, 600, 'uploads/products/disprin.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(11, 'dawdw', NULL, NULL, '34534gdgd', NULL, 3, 'cream', NULL, 12.00, 0.00, 0, 0, 10, NULL, 'active', '2026-08-29 08:16:07', '2026-08-29 08:16:07'),
+(12, 'test1', NULL, NULL, 'test', NULL, 2, 'capsule', NULL, 12222.00, 0.00, 0, 0, 5, NULL, 'active', '2026-08-29 08:47:42', '2026-08-29 08:47:42'),
+(13, 'dwadtttttttttttttttt', NULL, NULL, 'ssssssssss', NULL, 4, 'tablet', NULL, 1000.00, 0.00, 0, 0, 20, NULL, 'active', '2026-08-29 09:29:32', '2026-08-29 09:29:32'),
+(14, 'dsdad', 'sdasdsad', 'dsdsadsd', 'dsasdad', 'dsdasd', 3, 'cream', NULL, 1111.00, 10.00, 0, 0, 15, NULL, 'active', '2026-08-29 09:50:12', '2026-08-29 09:50:12'),
+(15, 'test 2', 'sdasd', 'sdasd', 'sdsda', 'dsads', 8, 'cream', '111', 11111.00, 10.00, 1, 110, 50, 'uploads/products/prod_ebbc1ba31dd45f16.jpg', 'active', '2026-08-29 11:46:56', '2026-08-29 11:46:56'),
+(16, 'Candid B', 'adawsd', 'dsadas', 'sdda', 'dssad', 13, 'cream', '200', 550.00, 6.00, 1, 10, 30, 'uploads/products/prod_2c9cc80536bb2b49.png', 'active', '2026-08-29 12:45:48', '2026-08-29 12:45:48'),
+(17, 'HP099', 'dsdad', 'dsdasd', 'sdsd', 'dsdas', 14, 'tablet', '111', 11111.00, 10.00, 1, 1, 10, 'uploads/products/prod_f27c84778726ad76.png', 'active', '2026-08-29 12:47:12', '2026-08-29 12:47:12'),
+(19, 'dwadawd', 'sdads', 'dsadasd', 'sdads', 'dsadsad', 2, 'injection', '1111', 11111.00, 10.00, 1, 10, 15, 'uploads/products/prod_a01ba6b3207a1bed.jpg', 'active', '2026-08-29 13:09:55', '2026-08-29 13:09:55'),
+(20, 'Test Image Edit', 'fesfsef', 'sdsadsad', 'dsdsad', 'sdsad', 11, 'injection', '11111', 1111.00, 10.00, 1, 10, 40, 'uploads/products/prod_4d5eea6b0132e1b5.jpg', 'active', '2026-08-29 13:36:04', '2026-08-29 18:57:10');
 -- --------------------------------------------------------
 
 --

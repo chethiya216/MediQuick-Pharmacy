@@ -70,11 +70,6 @@ $currentPage = basename($_SERVER['PHP_SELF']);
           </a>
         </li>
 
-        <li class="menu-item <?php echo ($currentPage == 'verify-prescriptions.php') ? 'active' : ''; ?>">
-          <a href="verify-prescriptions.php" class="menu-link">
-            <div data-i18n="Verify">Verify Prescription</div>
-          </a>
-        </li>
       </ul>
     </li>
     <?php endif; ?>
