@@ -258,6 +258,12 @@ CREATE TABLE IF NOT EXISTS `orders` (
   `tax_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
   `shipping_fee` decimal(10,2) NOT NULL DEFAULT '0.00',
   `total_amount` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `shipping_address_line1` varchar(255) NOT NULL,
+  `shipping_address_line2` varchar(255) DEFAULT NULL,
+  `shipping_city` varchar(100) NOT NULL,
+  `shipping_state` varchar(100) NOT NULL,
+  `shipping_postal_code` varchar(20) NOT NULL,
+  `shipping_country` varchar(100) NOT NULL DEFAULT 'Sri Lanka',
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`order_id`),
   KEY `idx_orders_customer` (`customer_id`),
@@ -268,23 +274,24 @@ CREATE TABLE IF NOT EXISTS `orders` (
 -- Dumping data for table `orders`
 --
 
-INSERT INTO `orders` (`order_id`, `customer_id`, `prescription_id`, `order_date`, `status`, `subtotal`, `tax_amount`, `shipping_fee`, `total_amount`, `updated_at`) VALUES
-(1, 1, 1, '2026-08-27 08:55:58', 'delivered', 24.49, 1.96, 5.00, 31.45, '2026-08-27 16:23:47'),
-(2, 2, 2, '2026-08-27 08:55:58', 'delivered', 12.00, 0.96, 5.00, 17.96, '2026-08-27 16:23:47'),
-(3, 3, 3, '2026-08-27 08:55:58', 'delivered', 28.50, 2.28, 5.00, 35.78, '2026-08-27 16:23:47'),
-(4, 4, NULL, '2026-08-27 08:55:58', 'delivered', 19.95, 1.60, 0.00, 21.55, '2026-08-27 16:23:47'),
-(5, 6, 6, '2026-08-27 08:55:58', 'shipped', 15.50, 1.24, 5.00, 21.74, '2026-08-27 16:23:47'),
-(6, 7, 7, '2026-08-27 08:55:58', 'shipped', 20.75, 1.66, 5.00, 27.41, '2026-08-27 16:23:47'),
-(7, 9, 9, '2026-08-27 08:55:58', 'confirmed', 22.00, 1.76, 5.00, 28.76, '2026-08-27 16:23:47'),
-(8, 10, 10, '2026-08-27 08:55:58', 'confirmed', 24.79, 1.98, 5.00, 31.77, '2026-08-27 16:23:47'),
-(9, 12, 12, '2026-08-27 08:55:58', 'pending', 12.00, 0.96, 5.00, 17.96, '2026-08-27 16:23:47'),
-(10, 13, 13, '2026-08-27 08:55:58', 'pending', 11.75, 0.94, 5.00, 17.69, '2026-08-27 16:23:47'),
-(11, 1, NULL, '2026-08-27 08:55:58', 'delivered', 14.25, 1.14, 0.00, 15.39, '2026-08-27 16:23:47'),
-(12, 2, NULL, '2026-08-27 08:55:58', 'delivered', 18.00, 1.44, 0.00, 19.44, '2026-08-27 16:23:47'),
-(13, 4, NULL, '2026-08-27 08:55:58', 'delivered', 26.98, 2.16, 5.00, 34.14, '2026-08-27 16:23:47'),
-(14, 6, NULL, '2026-08-27 08:55:58', 'cancelled', 6.50, 0.52, 5.00, 12.02, '2026-08-27 16:23:47'),
-(15, 15, 15, '2026-08-27 08:55:58', 'pending', 16.80, 1.34, 5.00, 23.14, '2026-08-27 16:23:47');
-
+INSERT INTO `orders` 
+  (`order_id`, `customer_id`, `prescription_id`, `order_date`, `status`, `subtotal`, `tax_amount`, `shipping_fee`, `total_amount`, `shipping_address_line1`, `shipping_address_line2`, `shipping_city`, `shipping_state`, `shipping_postal_code`, `shipping_country`, `updated_at`) 
+VALUES
+  (1, 1, 1, '2026-08-27 08:55:58', 'delivered', 24.49, 1.96, 5.00, 31.45, '742 Evergreen Terrace', NULL, 'Springfield', 'OR', '97477', 'USA', '2026-08-27 16:23:47'),
+  (2, 2, 2, '2026-08-27 08:55:58', 'delivered', 12.00, 0.96, 5.00, 17.96, '123 Main Street', 'Apt 4B', 'New York', 'NY', '10001', 'USA', '2026-08-27 16:23:47'),
+  (3, 3, 3, '2026-08-27 08:55:58', 'delivered', 28.50, 2.28, 5.00, 35.78, '456 Oak Avenue', NULL, 'Los Angeles', 'CA', '90001', 'USA', '2026-08-27 16:23:47'),
+  (4, 4, NULL, '2026-08-27 08:55:58', 'delivered', 19.95, 1.60, 0.00, 21.55, '789 Pine Road', 'Suite 200', 'Chicago', 'IL', '60601', 'USA', '2026-08-27 16:23:47'),
+  (5, 6, 6, '2026-08-27 08:55:58', 'shipped', 15.50, 1.24, 5.00, 21.74, '321 Maple Lane', NULL, 'Houston', 'TX', '77001', 'USA', '2026-08-27 16:23:47'),
+  (6, 7, 7, '2026-08-27 08:55:58', 'shipped', 20.75, 1.66, 5.00, 27.41, '654 Cedar Court', NULL, 'Phoenix', 'AZ', '85001', 'USA', '2026-08-27 16:23:47'),
+  (7, 9, 9, '2026-08-27 08:55:58', 'confirmed', 22.00, 1.76, 5.00, 28.76, '987 Elm Street', 'Apt 12A', 'Philadelphia', 'PA', '19101', 'USA', '2026-08-27 16:23:47'),
+  (8, 10, 10, '2026-08-27 08:55:58', 'confirmed', 24.79, 1.98, 5.00, 31.77, '147 Walnut Drive', NULL, 'San Antonio', 'TX', '78201', 'USA', '2026-08-27 16:23:47'),
+  (9, 12, 12, '2026-08-27 08:55:58', 'pending', 12.00, 0.96, 5.00, 17.96, '258 Birch Boulevard', NULL, 'San Diego', 'CA', '92101', 'USA', '2026-08-27 16:23:47'),
+  (10, 13, 13, '2026-08-27 08:55:58', 'pending', 11.75, 0.94, 5.00, 17.69, '369 Spruce Way', 'Unit B', 'Dallas', 'TX', '75201', 'USA', '2026-08-27 16:23:47'),
+  (11, 1, NULL, '2026-08-27 08:55:58', 'delivered', 14.25, 1.14, 0.00, 15.39, '742 Evergreen Terrace', NULL, 'Springfield', 'OR', '97477', 'USA', '2026-08-27 16:23:47'),
+  (12, 2, NULL, '2026-08-27 08:55:58', 'delivered', 18.00, 1.44, 0.00, 19.44, '123 Main Street', 'Apt 4B', 'New York', 'NY', '10001', 'USA', '2026-08-27 16:23:47'),
+  (13, 4, NULL, '2026-08-27 08:55:58', 'delivered', 26.98, 2.16, 5.00, 34.14, '789 Pine Road', 'Suite 200', 'Chicago', 'IL', '60601', 'USA', '2026-08-27 16:23:47'),
+  (14, 6, NULL, '2026-08-27 08:55:58', 'cancelled', 6.50, 0.52, 5.00, 12.02, '321 Maple Lane', NULL, 'Houston', 'TX', '77001', 'USA', '2026-08-27 16:23:47'),
+  (15, 15, 15, '2026-08-27 08:55:58', 'pending', 16.80, 1.34, 5.00, 23.14, '159 Willow Path', NULL, 'San Jose', 'CA', '95101', 'USA', '2026-08-27 16:23:47');
 -- --------------------------------------------------------
 
 --
