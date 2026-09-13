@@ -76,14 +76,7 @@ if (!$customer) {
 }
 
 
-/*
-|--------------------------------------------------------------------------
-| Load cart items fresh from the database
-|--------------------------------------------------------------------------
-| Prices, discounts, prescription flags, and status are always read from
-| the database here (never trusted from POST data), so a customer can't
-| tamper with the price they pay.
-*/
+
 
 function loadCartItems(mysqli $conn, int $cart_id): array
 {
@@ -199,11 +192,54 @@ $total        = $subtotal + $shipping + $tax_amount;
 
 function getProductImage($image)
 {
-    if (!empty($image)) {
-        return 'assets/images/' . htmlspecialchars($image);
+    $image = trim((string) $image);
+
+    // If the database already contains a full URL, use it directly.
+    if ($image !== '' && preg_match('~^(https?:)?//~i', $image)) {
+        return htmlspecialchars($image, ENT_QUOTES, 'UTF-8');
     }
 
-    return 'assets/images/no-image.png';
+    // Clean common values stored in the database.
+    $cleanImage = ltrim(str_replace('\\', '/', $image), '/');
+    $cleanImage = preg_replace('~^(?:public/)+~i', '', $cleanImage);
+
+    // Try the common image locations used by the MediQuick project.
+    $candidates = [];
+
+    if ($cleanImage !== '') {
+        if (stripos($cleanImage, 'assets/') === 0) {
+            $candidates[] = $cleanImage;
+        } elseif (stripos($cleanImage, 'uploads/') === 0) {
+            $candidates[] = $cleanImage;
+        } else {
+            $candidates[] = 'assets/images/' . $cleanImage;
+            $candidates[] = 'uploads/products/' . $cleanImage;
+            $candidates[] = 'uploads/' . $cleanImage;
+        }
+    }
+
+    foreach ($candidates as $relativePath) {
+        $relativePath = ltrim($relativePath, '/');
+
+        if (is_file(__DIR__ . '/' . $relativePath)) {
+            return htmlspecialchars($relativePath, ENT_QUOTES, 'UTF-8');
+        }
+    }
+
+    // Fallback image.
+    $fallback = 'assets/images/no-image.png';
+    if (is_file(__DIR__ . '/' . $fallback)) {
+        return $fallback;
+    }
+
+    // Final fallback so the browser never shows a broken-image icon.
+    return 'data:image/svg+xml;charset=UTF-8,' . rawurlencode(
+        '<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
+            <rect width="300" height="300" fill="#f5f5f5"/>
+            <text x="150" y="150" text-anchor="middle" dominant-baseline="middle"
+                  font-family="Arial" font-size="22" fill="#777">No Image</text>
+        </svg>'
+    );
 }
 
 function generateTransactionReference(): string
@@ -272,15 +308,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
 
             $prescription_id = null;
 
-            /*
-            |----------------------------------------------------------------
-            | Save delivery details onto the customer's profile
-            |----------------------------------------------------------------
-            | The `orders` table has no address/phone columns of its own, so
-            | we keep using the customer's saved details as the source of
-            | truth and just update them here if the customer changed them
-            | on this page.
-            */
+        
+
 
             $update_customer_sql = "
                 UPDATE customers
@@ -375,9 +404,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
             |----------------------------------------------------------------
             | Simulated payment
             |----------------------------------------------------------------
-            | There is no real payment gateway wired up. We record the
-            | chosen method and mark it completed immediately, then move
-            | the order to "confirmed".
+
             */
 
             $transaction_reference = generateTransactionReference();
@@ -505,6 +532,7 @@ require_once __DIR__ . '/../includes/header.php';
                                 <div class="product-image">
                                     <img
                                         src="<?= getProductImage($item['product_image']) ?>"
+                                         loading="lazy"
                                         alt="<?= htmlspecialchars($item['product_name']) ?>"
                                     >
                                 </div>
@@ -524,13 +552,13 @@ require_once __DIR__ . '/../includes/header.php';
                                     <p class="item-meta">
                                         Qty: <?= (int) $item['quantity'] ?>
                                         &times;
-                                        $<?= number_format($item['discounted_price'], 2) ?>
+                                        LKR <?= number_format($item['discounted_price'], 2) ?>
                                     </p>
 
                                 </div>
 
                                 <div class="item-total">
-                                    $<?= number_format($item['item_subtotal'], 2) ?>
+                                    LKR <?= number_format($item['item_subtotal'], 2) ?>
                                 </div>
 
                             </div>
@@ -630,17 +658,17 @@ require_once __DIR__ . '/../includes/header.php';
 
                 <div class="summary-row">
                     <span>Subtotal</span>
-                    <span>$<?= number_format($subtotal, 2) ?></span>
+                    <span>LKR <?= number_format($subtotal, 2) ?></span>
                 </div>
 
                 <div class="summary-row">
                     <span>Shipping</span>
-                    <span>$<?= number_format($shipping, 2) ?></span>
+                    <span>LKR <?= number_format($shipping, 2) ?></span>
                 </div>
 
                 <div class="summary-row summary-total">
                     <span>Total</span>
-                    <strong>$<?= number_format($total, 2) ?></strong>
+                    <strong>LKR <?= number_format($total, 2) ?></strong>
                 </div>
 
                 <button
