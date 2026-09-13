@@ -46,10 +46,10 @@ require_once __DIR__ . '/../includes/header.php';
 
                                 <div class="price">
                                     <?php if ($item['discount_percent'] > 0): ?>
-                                        <span class="old-price">$<?= number_format($item['unit_price'], 2) ?></span>
+                                        <span class="old-price">LKR <?= number_format($item['unit_price'], 2) ?></span>
                                         <span class="discount"><?= number_format($item['discount_percent'], 0) ?>% OFF</span>
                                     <?php endif; ?>
-                                    <strong>$<?= number_format($item['discounted_price'], 2) ?></strong>
+                                    <strong>LKR <?= number_format($item['discounted_price'], 2) ?></strong>
                                     <span class="per-item">/ item</span>
                                 </div>
 
@@ -67,7 +67,7 @@ require_once __DIR__ . '/../includes/header.php';
                             </div>
 
                             <div class="item-total">
-                                $<?= number_format($item['item_subtotal'], 2) ?>
+                                LKR <?= number_format($item['item_subtotal'], 2) ?>
                             </div>
                         </div>
                     <?php endforeach; ?>
@@ -78,15 +78,15 @@ require_once __DIR__ . '/../includes/header.php';
                     <h2>Order Summary</h2>
                     <div class="summary-row">
                         <span>Subtotal</span>
-                        <span>$<?= number_format($subtotal, 2) ?></span>
+                        <span>LKR <?= number_format($subtotal, 2) ?></span>
                     </div>
                     <div class="summary-row">
                         <span>Shipping</span>
-                        <span>$<?= number_format($shipping, 2) ?></span>
+                        <span>LKR <?= number_format($shipping, 2) ?></span>
                     </div>
                     <div class="summary-row summary-total">
                         <span>Total</span>
-                        <strong>$<?= number_format($total, 2) ?></strong>
+                        <strong>LKR <?= number_format($total, 2) ?></strong>
                     </div>
 
                     <a href="checkout.php" class="checkout-btn">Proceed to Checkout</a>
