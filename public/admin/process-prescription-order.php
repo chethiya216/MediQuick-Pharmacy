@@ -1,11 +1,12 @@
 <?php
+// public/admin/process-prescription-order.php
 session_start();
 
-// 1. Check Pharmacist Authentication
 require_once __DIR__ . '/../../includes/auth.php';
 requirePharmacist();
 
 require_once __DIR__ . '/../../includes/db.php';
+require_once __DIR__ . '/includes/prescription-functions.php';
 
 $pageTitle = "Process Prescription - MediQuick";
 
@@ -15,138 +16,17 @@ if ($prescription_id <= 0) {
     die("Invalid Prescription ID.");
 }
 
-// 2. Fetch Prescription details along with Customer details
-$sql = "
-    SELECT 
-        p.prescription_id,
-        p.file_path,
-        p.customer_id,
-        p.status,
-        p.customer_status,
-        p.created_at,
-        c.first_name,
-        c.last_name,
-        c.email,
-        c.phone
-    FROM prescriptions p
-    INNER JOIN customers c ON c.customer_id = p.customer_id
-    WHERE p.prescription_id = ?
-      AND p.status = 'verified'
-      AND p.customer_status = 'confirmed'
-    LIMIT 1
-";
-
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $prescription_id);
-$stmt->execute();
-$prescription = $stmt->get_result()->fetch_assoc();
-$stmt->close();
+$prescription = getConfirmedPrescriptionById($conn, $prescription_id);
 
 if (!$prescription) {
     die("Prescription not found or not yet confirmed by customer.");
 }
 
-$error = '';
+$products = getActiveProducts($conn);
 
-// 3. Handle Order Placement (POST Request)
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['place_order'])) {
-    $selected_items = json_decode($_POST['items_json'] ?? '[]', true);
-    
-    // Shipping Address Input Fields
-    $address_line1 = trim($_POST['shipping_address_line1'] ?? '');
-    $address_line2 = trim($_POST['shipping_address_line2'] ?? '');
-    $city          = trim($_POST['shipping_city'] ?? '');
-    $state         = trim($_POST['shipping_state'] ?? '');
-    $postal_code   = trim($_POST['shipping_postal_code'] ?? '');
-    $country       = trim($_POST['shipping_country'] ?? 'Sri Lanka');
-
-    if (empty($selected_items)) {
-        $error = "Please select at least one product before placing the order.";
-    } elseif (empty($address_line1) || empty($city) || empty($state) || empty($postal_code)) {
-        $error = "Please provide all required shipping address fields.";
-    } else {
-        $conn->begin_transaction();
-
-        try {
-            // Calculate Totals
-            $subtotal = 0;
-            foreach ($selected_items as $item) {
-                $subtotal += (float)$item['price'] * (int)$item['quantity'];
-            }
-            $tax_amount = round($subtotal * 0.08, 2); // 8% Tax Calculation
-            $shipping_fee = 5.00;
-            $total_amount = $subtotal + $tax_amount + $shipping_fee;
-
-            // Insert into Orders Table
-            $order_sql = "
-                INSERT INTO orders 
-                (customer_id, prescription_id, subtotal, tax_amount, shipping_fee, total_amount, status, 
-                 shipping_address_line1, shipping_address_line2, shipping_city, shipping_state, shipping_postal_code, shipping_country)
-                VALUES (?, ?, ?, ?, ?, ?, 'confirmed', ?, ?, ?, ?, ?, ?)
-            ";
-            
-            $order_stmt = $conn->prepare($order_sql);
-            $order_stmt->bind_param(
-                "iiddddssssss", 
-                $prescription['customer_id'], 
-                $prescription_id, 
-                $subtotal, 
-                $tax_amount, 
-                $shipping_fee, 
-                $total_amount,
-                $address_line1,
-                $address_line2,
-                $city,
-                $state,
-                $postal_code,
-                $country
-            );
-            
-            $order_stmt->execute();
-            $order_id = $conn->insert_id;
-            $order_stmt->close();
-
-            // Insert Order Items & Update Inventory Stock using exact DB column names
-            $item_sql = "INSERT INTO order_items (order_id, product_id, quantity, unit_price_at_purchase, item_subtotal) VALUES (?, ?, ?, ?, ?)";
-            $stock_sql = "UPDATE products SET stock_quantity = stock_quantity - ? WHERE product_id = ?";
-            
-            $item_stmt = $conn->prepare($item_sql);
-            $stock_stmt = $conn->prepare($stock_sql);
-
-            foreach ($selected_items as $item) {
-                $qty = (int)$item['quantity'];
-                $price = (float)$item['price'];
-                $item_total = $price * $qty;
-                $product_id = (int)$item['product_id'];
-                
-                $item_stmt->bind_param("iiidd", $order_id, $product_id, $qty, $price, $item_total);
-                $item_stmt->execute();
-
-                $stock_stmt->bind_param("ii", $qty, $product_id);
-                $stock_stmt->execute();
-            }
-
-            $item_stmt->close();
-            $stock_stmt->close();
-
-            $conn->commit();
-            
-            header("Location: manage-order.php?success=order_created&order_id=" . $order_id);
-            exit;
-
-        } catch (Exception $e) {
-            $conn->rollback();
-            $error = "Order processing failed: " . $e->getMessage();
-        }
-    }
-}
-
-// 4. Load Active Products for Selector Dropdown
-$products_res = $conn->query("SELECT product_id, product_name, generic_name, unit_price, stock_quantity FROM products WHERE status = 'active' ORDER BY product_name ASC");
-$products = [];
-while ($row = $products_res->fetch_assoc()) {
-    $products[] = $row;
-}
+// Flash error reading and clearing
+$error = $_SESSION['flash_error'] ?? '';
+unset($_SESSION['flash_error']);
 ?>
 <!DOCTYPE html>
 <html
@@ -235,8 +115,10 @@ while ($row = $products_res->fetch_assoc()) {
                   </div>
                   <div class="card-body pt-4">
                     
-                    <form method="POST" id="order_form" onsubmit="return prepareFormSubmission();">
-                      
+                    <!-- Form posts to isolated Handler script -->
+                    <form action="handlers/process-order-handler.php" method="POST" id="order_form" onsubmit="return prepareFormSubmission();">
+                      <input type="hidden" name="prescription_id" value="<?= $prescription_id ?>">
+
                       <!-- Product Selector -->
                       <h6 class="fw-bold text-dark mb-3">1. Select Prescribed Products</h6>
                       <div class="mb-3">
