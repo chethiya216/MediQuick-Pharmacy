@@ -1,8 +1,4 @@
 <?php
-/**
- * MediQuick Pharmacy - My Orders (Customer Portal)
- * Location: public/my-orders.php
- */
 
 session_start();
 
@@ -54,7 +50,7 @@ while ($row = $result->fetch_assoc()) {
 }
 $stmt->close();
 
-// Status badge helper function (handles your 'status' column values)
+// Status badge helper function (handles 'status' column values)
 function getStatusBadge(string $status): string {
     switch (strtolower($status)) {
         case 'completed':
@@ -191,7 +187,7 @@ function getStatusBadge(string $status): string {
 
                             <!-- Action Button -->
                             <div class="col-md-2 col-4 text-end">
-                                <a href="order-details.php?id=<?= $order['order_id'] ?>" class="btn btn-action-view btn-sm w-100 py-2">
+                                <a href="view-order-details.php?id=<?= $order['order_id'] ?>" class="btn btn-action-view btn-sm w-100 py-2">
                                     View Details <i class="bi bi-chevron-right ms-1"></i></i>
                                 </a>
                             </div>

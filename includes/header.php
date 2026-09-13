@@ -81,6 +81,7 @@ if ($headerCartStmt) {
                         <a href="cart.php" class="dropdown-item <?= $currentPage === 'cart.php' ? 'active' : '' ?>">
                             <span><i class="fas fa-shopping-cart me-2"></i> My Cart</span>
                         </a>
+
                         <a href="my-orders.php" class="dropdown-item <?= $currentPage === 'cart.php' ? 'active' : '' ?>">
                             <span><i class="fas fa-box me-2"></i> My Orders</span>
                         </a>
@@ -226,6 +227,11 @@ if ($headerCartStmt) {
                         <!-- Upload Prescription Nav Link -->
                         <a href="upload-prescription.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'upload-prescription.php' ? 'active' : '' ?>">
                             <i class="fas fa-file-medical me-1"></i> Upload Prescription
+                        </a>
+
+                        <!-- My Orders Nav Link -->
+                        <a href="my-orders.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'my-orders.php.php' ? 'active' : '' ?>">
+                            <i class="fas fa-box me-2"></i> My Orders
                         </a>
 
                         <?php if(isLoggedIn()): ?>
