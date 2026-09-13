@@ -155,7 +155,7 @@ if ($headerCartStmt) {
                             <i class="fas fa-shopping-cart"></i>
                         </a>
                         <span class="mq-cart-info">
-                            Balance: $<?= number_format($headerCartTotal, 2) ?>
+                            LKR: <?= number_format($headerCartTotal, 2) ?>
                         </span>
                     </div>
                 </div>

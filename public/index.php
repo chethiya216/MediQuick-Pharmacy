@@ -211,14 +211,14 @@ function productImage($product)
                             <div class="product-price mb-2">
                                 <?php if ($discountPercent > 0): ?>
                                     <span class="text-muted text-decoration-line-through me-2">
-                                        $<?= number_format($originalPrice, 2) ?>
+                                        LKR <?= number_format($originalPrice, 2) ?>
                                     </span>
                                     <span class="text-primary fw-bold fs-5">
-                                        $<?= number_format($discountedPrice, 2) ?>
+                                        LKR <?= number_format($discountedPrice, 2) ?>
                                     </span>
                                 <?php else: ?>
                                     <span class="text-primary fw-bold fs-5">
-                                        $<?= number_format($originalPrice, 2) ?>
+                                        LKR <?= number_format($originalPrice, 2) ?>
                                     </span>
                                 <?php endif; ?>
                             </div>
