@@ -8,12 +8,9 @@ requireAdmin();
 require_once __DIR__ . '/../../../includes/db.php';
 
 /*
-
 --------   HANDLE DELETE ACTION
-
 */
 $action = $_GET['action'] ?? $_POST['action'] ?? '';
-
 
 if ($action === 'delete') {
     $productId = !empty($_GET['product_id']) ? (int)$_GET['product_id'] : (!empty($_POST['product_id']) ? (int)$_POST['product_id'] : 0);
@@ -61,7 +58,6 @@ if ($action === 'delete') {
         }
 
     } catch (mysqli_sql_exception $e) {
-        // Handle Foreign Key constraints (e.g. product linked to sales or inventory logs)
         if ($e->getCode() === 1451) {
             $_SESSION['form_errors'] = ["Cannot delete product because it is linked to existing orders or transactions."];
         } else {
@@ -95,6 +91,7 @@ $categoryId     = !empty($_POST['category_id']) ? (int)$_POST['category_id'] : n
 $dosageForm     = trim($_POST['dosage_form'] ?? '');
 $strength       = trim($_POST['strength'] ?? '') ?: null;
 $unitPrice      = $_POST['unit_price'] ?? '';
+$quantity       = $_POST['quantity'] ?? 0;
 $discountPct    = $_POST['discount_percent'] ?? '0';
 $requiresRx     = isset($_POST['requires_prescription']) ? (int)$_POST['requires_prescription'] : 0;
 $reorderLevel   = (int)($_POST['reorder_level'] ?? 0);
@@ -130,6 +127,9 @@ if (empty($categoryId)) {
 
 if ($unitPrice === '' || !is_numeric($unitPrice) || (float)$unitPrice < 0) {
     $errors[] = "Unit price must be a valid non-negative number.";
+}
+if ($quantity === '' || !is_numeric($quantity) || (float)$quantity < 0) {
+    $errors[] = "Quantity must be a valid non-negative number.";
 }
 
 if (!in_array($status, ['active', 'draft', 'archived'], true)) {
@@ -212,9 +212,7 @@ if (isset($_FILES['product_image']) && $_FILES['product_image']['error'] !== UPL
 }
 
 /*
-
 ---------------- If validation failed, bounce back to form
-
 */
 
 if (!empty($errors)) {
@@ -227,15 +225,14 @@ if (!empty($errors)) {
 }
 
 /*
-
 --------------- Save/Update Product (Database Transaction)
-
 */
 
 $conn->begin_transaction();
 
 try {
-    $unitPriceFloat = (float)$unitPrice;
+    $unitPriceFloat   = (float)$unitPrice;
+    $stockQtyInt      = (int)$quantity;
     $discountPctFloat = (float)$discountPct;
 
     if ($isEdit) {
@@ -246,17 +243,18 @@ try {
                 UPDATE products SET
                     product_name = ?, generic_name = ?, description = ?, sku = ?, barcode = ?,
                     category_id = ?, dosage_form = ?, strength = ?, unit_price = ?, discount_percent = ?,
-                    requires_prescription = ?, reorder_level = ?, product_image = ?, status = ?
+                    requires_prescription = ?, reorder_level = ?, stock_quantity = ?, product_image = ?, status = ?
                 WHERE product_id = ?
             ";
             $stmt = $conn->prepare($sql);
             if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
 
+            // Types: sssss i s s d d i i i s s i (16 total)
             $stmt->bind_param(
-                "sssssissddiissi",
+                "sssssissddiiissi",
                 $productName, $genericName, $description, $sku, $barcode,
                 $categoryId, $dosageForm, $strength, $unitPriceFloat, $discountPctFloat,
-                $requiresRx, $reorderLevel, $productImagePath, $status, $productId
+                $requiresRx, $reorderLevel, $stockQtyInt, $productImagePath, $status, $productId
             );
         } else {
             // Keep existing image -> skip updating product_image
@@ -264,17 +262,18 @@ try {
                 UPDATE products SET
                     product_name = ?, generic_name = ?, description = ?, sku = ?, barcode = ?,
                     category_id = ?, dosage_form = ?, strength = ?, unit_price = ?, discount_percent = ?,
-                    requires_prescription = ?, reorder_level = ?, status = ?
+                    requires_prescription = ?, reorder_level = ?, stock_quantity = ?, status = ?
                 WHERE product_id = ?
             ";
             $stmt = $conn->prepare($sql);
             if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
 
+            // Types: sssss i s s d d i i i s i (15 total)
             $stmt->bind_param(
-                "sssssissddiisi",
+                "sssssissddiiisi",
                 $productName, $genericName, $description, $sku, $barcode,
                 $categoryId, $dosageForm, $strength, $unitPriceFloat, $discountPctFloat,
-                $requiresRx, $reorderLevel, $status, $productId
+                $requiresRx, $reorderLevel, $stockQtyInt, $status, $productId
             );
         }
 
@@ -292,18 +291,19 @@ try {
             INSERT INTO products (
                 product_name, generic_name, description, sku, barcode,
                 category_id, dosage_form, strength, unit_price, discount_percent,
-                requires_prescription, reorder_level, product_image, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                requires_prescription, reorder_level, stock_quantity, product_image, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new Exception("Prepare failed: " . $conn->error);
 
+        // Types: sssss i s s d d i i i s s (15 total)
         $stmt->bind_param(
-            "sssssissddiiss",
+            "sssssissddiiiss",
             $productName, $genericName, $description, $sku, $barcode,
             $categoryId, $dosageForm, $strength, $unitPriceFloat, $discountPctFloat,
-            $requiresRx, $reorderLevel, $productImagePath, $status
+            $requiresRx, $reorderLevel, $stockQtyInt, $productImagePath, $status
         );
 
         if (!$stmt->execute()) {
@@ -360,4 +360,3 @@ try {
     header("Location: " . $redirectUrl);
     exit;
 }
-
