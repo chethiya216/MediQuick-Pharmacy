@@ -4,7 +4,15 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
-
+/*
+|--------------------------------------------------------------------------
+| Base URL (public/ folder root)
+|--------------------------------------------------------------------------
+| Using an absolute, app-rooted path here means redirects work the same
+| way no matter how deeply nested the calling script is (public/, or
+| public/handlers/, public/admin/, etc). Update this one line if the
+| app ever moves to a different folder or domain.
+*/
 
 if (!defined('BASE_URL')) {
     define('BASE_URL', '/GitHub/MediQuick-Pharmacy/public');
@@ -17,7 +25,7 @@ if (!defined('BASE_URL')) {
 |--------------------------------------------------------------------------
 */
 
-function denyAccess(string $message = "Access denied. You do not have permission to view this resource.", string $redirectPath = "/access-denied.php"): void
+function denyAccess(string $message = "Access denied. You do not have permission to view this resource.", string $redirectPath = "/admin/access-denied.php"): void
 {
     $_SESSION['auth_error'] = $message;
     http_response_code(403);
