@@ -5,17 +5,23 @@ if (session_status() === PHP_SESSION_NONE) {
 }
 
 
+
+if (!defined('BASE_URL')) {
+    define('BASE_URL', '/GitHub/MediQuick-Pharmacy/public');
+}
+
+
 /*
 |--------------------------------------------------------------------------
 | Access Denied Redirect Helper
 |--------------------------------------------------------------------------
 */
 
-function denyAccess(string $message = "Access denied. You do not have permission to view this resource."): void
+function denyAccess(string $message = "Access denied. You do not have permission to view this resource.", string $redirectPath = "/access-denied.php"): void
 {
     $_SESSION['auth_error'] = $message;
     http_response_code(403);
-    header("Location: access-denied.php");
+    header("Location: " . BASE_URL . $redirectPath);
     exit;
 }
 
@@ -42,7 +48,7 @@ function requireLogin(): void
 {
     if (!isLoggedIn()) {
         $_SESSION['auth_error'] = "Please log in to access this page.";
-        header("Location: ../login.php");
+        header("Location: " . BASE_URL . "/login.php");
         exit;
     }
 }
@@ -73,7 +79,7 @@ function requireAdmin(): void
     $role = getUserRole();
 
     if ($role !== 'admin' && $role !== 'superadmin') {
-        denyAccess("Access denied. Admin or Superadmin permission is required.");
+        denyAccess("Access denied. Admin or Superadmin permission is required.", "/admin/access-denied.php");
     }
 }
 
@@ -89,7 +95,7 @@ function requireSuperAdmin(): void
     requireLogin();
 
     if (getUserRole() !== 'superadmin') {
-        denyAccess("Access denied. Superadmin permission is required.");
+        denyAccess("Access denied. Superadmin permission is required.", "/admin/access-denied.php");
     }
 }
 
@@ -111,7 +117,28 @@ function requirePharmacist(): void
         $role !== 'admin' &&
         $role !== 'superadmin'
     ) {
-        denyAccess("Access denied. Superadmin, Admin, or Pharmacist permission is required.");
+        denyAccess("Access denied. Superadmin, Admin, or Pharmacist permission is required.", "/admin/access-denied.php");
+    }
+}
+
+
+/*
+|--------------------------------------------------------------------------
+| Require Customer
+|--------------------------------------------------------------------------
+| Customer-only pages (cart, prescriptions, account) call this. It first
+| makes sure someone is logged in at all (requireLogin), then makes sure
+| they're specifically logged in as a customer — staff/admin/pharmacist
+| accounts are logged in, but aren't customers, so they get a clear
+| "access denied" instead of being bounced back to the login page.
+*/
+
+function requireCustomer(): void
+{
+    requireLogin();
+
+    if (getUserRole() !== 'customer' || empty($_SESSION['customer_id'])) {
+        denyAccess("Access denied. This page is only available to customer accounts.");
     }
 }
 
