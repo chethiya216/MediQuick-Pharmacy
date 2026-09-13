@@ -484,7 +484,6 @@ CREATE TABLE IF NOT EXISTS `products` (
   `discount_percent` decimal(5,2) DEFAULT '0.00',
   `requires_prescription` tinyint(1) DEFAULT '0',
   `reorder_level` int DEFAULT '0',
-  `stock_quantity` int NOT NULL DEFAULT '0',
   `product_image` varchar(255) DEFAULT NULL,
   `status` enum('active','draft','archived') DEFAULT 'active',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -498,27 +497,26 @@ CREATE TABLE IF NOT EXISTS `products` (
 -- Dumping data for table `products`
 --
 
-INSERT INTO `products` (`product_id`, `product_name`, `generic_name`, `description`, `sku`, `barcode`, `category_id`, `dosage_form`, `strength`, `unit_price`, `discount_percent`, `requires_prescription`, `reorder_level`, `stock_quantity`, `product_image`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Panadol Extra', 'Paracetamol / Caffeine', 'Fast and effective relief for severe headache, toothache, and joint pain.', 'PAN-EXT-500', '8901234567011', 1, 'tablet', '500mg / 65mg', 15.00, 0.00, 0, 100, 500, 'uploads/products/panadol-extra.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(2, 'Amoxil', 'Amoxicillin', 'Broad-spectrum antibiotic used to treat bacterial infections of the chest, ears, and throat.', 'AMX-CAP-250', '8901234567028', 2, 'capsule', '250mg', 45.50, 5.00, 1, 50, 250, 'uploads/products/amoxil-250.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(3, 'Neurobion Forte', 'Vitamin B1, B6, B12', 'Vitamin B-complex supplement to support nerve health and energy metabolism.', 'NEU-FOR-100', '8901234567035', 3, 'tablet', '100mg', 22.00, 0.00, 0, 30, 150, 'uploads/products/neurobion.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(4, 'Cetaphil Gentle Cleanser', 'Cetyl / Stearyl Alcohol', 'Dermatologist recommended daily soothing cleanser for sensitive and dry skin.', 'CET-CLN-250ML', '8901234567042', 4, 'cream', '250ml', 1250.00, 10.00, 0, 15, 80, 'uploads/products/cetaphil-cleanser.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(5, 'Augmentin 625 Duo', 'Amoxicillin / Clavulanate Potassium', 'High-potency antibacterial combination for severe respiratory and skin infections.', 'AUG-TAB-625', '8901234567059', 2, 'tablet', '625mg', 120.00, 0.00, 1, 40, 200, 'uploads/products/augmentin-625.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(6, 'Benadryl Cough Syrup', 'Diphenhydramine HCl', 'Provides effective relief from dry cough, chest congestion, and allergy symptoms.', 'BEN-SYR-100ML', '8901234567066', 1, 'syrup', '100ml', 185.00, 2.50, 0, 25, 120, 'uploads/products/benadryl-syrup.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(7, 'Seven Seas Cod Liver Oil', 'Omega-3 / Vitamin A & D', 'Daily dietary supplement rich in Omega-3 fatty acids for heart and brain development.', 'SEV-CAP-500', '8901234567073', 3, 'capsule', '500mg', 850.00, 0.00, 0, 20, 90, 'uploads/products/seven-seas.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(8, 'Voltaren Emulgel', 'Diclofenac Diethylamine', 'Topical anti-inflammatory gel for targeted relief from muscle pain and joint inflammation.', 'VOL-GEL-50G', '8901234567080', 1, 'cream', '50g', 340.00, 5.00, 0, 15, 60, 'uploads/products/voltaren-gel.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(9, 'Insulin Humalog', 'Insulin Lispro', 'Fast-acting human insulin analog used to control high blood sugar in patients with diabetes.', 'INS-INJ-100U', '8901234567097', 1, 'injection', '100 IU/ml', 1450.00, 0.00, 1, 10, 45, 'uploads/products/humalog-injection.jpg', 'draft', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(10, 'Disprin Soluble', 'Aspirin', 'Fast-dissolving aspirin tablets for immediate relief of migraine and fever.', 'DIS-SOL-300', '8901234567103', 1, 'tablet', '300mg', 8.00, 0.00, 0, 150, 600, 'uploads/products/disprin.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
-(11, 'dawdw', NULL, NULL, '34534gdgd', NULL, 3, 'cream', NULL, 12.00, 0.00, 0, 0, 10, NULL, 'active', '2026-08-29 08:16:07', '2026-08-29 08:16:07'),
-(12, 'test1', NULL, NULL, 'test', NULL, 2, 'capsule', NULL, 12222.00, 0.00, 0, 0, 5, NULL, 'active', '2026-08-29 08:47:42', '2026-08-29 08:47:42'),
-(13, 'dwadtttttttttttttttt', NULL, NULL, 'ssssssssss', NULL, 4, 'tablet', NULL, 1000.00, 0.00, 0, 0, 20, NULL, 'active', '2026-08-29 09:29:32', '2026-08-29 09:29:32'),
-(14, 'dsdad', 'sdasdsad', 'dsdsadsd', 'dsasdad', 'dsdasd', 3, 'cream', NULL, 1111.00, 10.00, 0, 0, 15, NULL, 'active', '2026-08-29 09:50:12', '2026-08-29 09:50:12'),
-(15, 'test 2', 'sdasd', 'sdasd', 'sdsda', 'dsads', 8, 'cream', '111', 11111.00, 10.00, 1, 110, 50, 'uploads/products/prod_ebbc1ba31dd45f16.jpg', 'active', '2026-08-29 11:46:56', '2026-08-29 11:46:56'),
-(16, 'Candid B', 'adawsd', 'dsadas', 'sdda', 'dssad', 13, 'cream', '200', 550.00, 6.00, 1, 10, 30, 'uploads/products/prod_2c9cc80536bb2b49.png', 'active', '2026-08-29 12:45:48', '2026-08-29 12:45:48'),
-(17, 'HP099', 'dsdad', 'dsdasd', 'sdsd', 'dsdas', 14, 'tablet', '111', 11111.00, 10.00, 1, 1, 10, 'uploads/products/prod_f27c84778726ad76.png', 'active', '2026-08-29 12:47:12', '2026-08-29 12:47:12'),
-(19, 'dwadawd', 'sdads', 'dsadasd', 'sdads', 'dsadsad', 2, 'injection', '1111', 11111.00, 10.00, 1, 10, 15, 'uploads/products/prod_a01ba6b3207a1bed.jpg', 'active', '2026-08-29 13:09:55', '2026-08-29 13:09:55'),
-(20, 'Test Image Edit', 'fesfsef', 'sdsadsad', 'dsdsad', 'sdsad', 11, 'injection', '11111', 1111.00, 10.00, 1, 10, 40, 'uploads/products/prod_4d5eea6b0132e1b5.jpg', 'active', '2026-08-29 13:36:04', '2026-08-29 18:57:10');
--- --------------------------------------------------------
+INSERT INTO `products` (`product_id`, `product_name`, `generic_name`, `description`, `sku`, `barcode`, `category_id`, `dosage_form`, `strength`, `unit_price`, `discount_percent`, `requires_prescription`, `reorder_level`, `product_image`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Panadol Extra', 'Paracetamol / Caffeine', 'Fast and effective relief for severe headache, toothache, and joint pain.', 'PAN-EXT-500', '8901234567011', 1, 'tablet', '500mg / 65mg', 15.00, 0.00, 0, 100, 'uploads/products/panadol-extra.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(2, 'Amoxil', 'Amoxicillin', 'Broad-spectrum antibiotic used to treat bacterial infections of the chest, ears, and throat.', 'AMX-CAP-250', '8901234567028', 2, 'capsule', '250mg', 45.50, 5.00, 1, 50, 'uploads/products/amoxil-250.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(3, 'Neurobion Forte', 'Vitamin B1, B6, B12', 'Vitamin B-complex supplement to support nerve health and energy metabolism.', 'NEU-FOR-100', '8901234567035', 3, 'tablet', '100mg', 22.00, 0.00, 0, 30, 'uploads/products/neurobion.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(4, 'Cetaphil Gentle Cleanser', 'Cetyl / Stearyl Alcohol', 'Dermatologist recommended daily soothing cleanser for sensitive and dry skin.', 'CET-CLN-250ML', '8901234567042', 4, 'cream', '250ml', 1250.00, 10.00, 0, 15, 'uploads/products/cetaphil-cleanser.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(5, 'Augmentin 625 Duo', 'Amoxicillin / Clavulanate Potassium', 'High-potency antibacterial combination for severe respiratory and skin infections.', 'AUG-TAB-625', '8901234567059', 2, 'tablet', '625mg', 120.00, 0.00, 1, 40, 'uploads/products/augmentin-625.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(6, 'Benadryl Cough Syrup', 'Diphenhydramine HCl', 'Provides effective relief from dry cough, chest congestion, and allergy symptoms.', 'BEN-SYR-100ML', '8901234567066', 1, 'syrup', '100ml', 185.00, 2.50, 0, 25, 'uploads/products/benadryl-syrup.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(7, 'Seven Seas Cod Liver Oil', 'Omega-3 / Vitamin A & D', 'Daily dietary supplement rich in Omega-3 fatty acids for heart and brain development.', 'SEV-CAP-500', '8901234567073', 3, 'capsule', '500mg', 850.00, 0.00, 0, 20, 'uploads/products/seven-seas.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(8, 'Voltaren Emulgel', 'Diclofenac Diethylamine', 'Topical anti-inflammatory gel for targeted relief from muscle pain and joint inflammation.', 'VOL-GEL-50G', '8901234567080', 1, 'cream', '50g', 340.00, 5.00, 0, 15, 'uploads/products/voltaren-gel.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(9, 'Insulin Humalog', 'Insulin Lispro', 'Fast-acting human insulin analog used to control high blood sugar in patients with diabetes.', 'INS-INJ-100U', '8901234567097', 1, 'injection', '100 IU/ml', 1450.00, 0.00, 1, 10, 'uploads/products/humalog-injection.jpg', 'draft', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(10, 'Disprin Soluble', 'Aspirin', 'Fast-dissolving aspirin tablets for immediate relief of migraine and fever.', 'DIS-SOL-300', '8901234567103', 1, 'tablet', '300mg', 8.00, 0.00, 0, 150, 'uploads/products/disprin.jpg', 'active', '2026-08-28 17:29:15', '2026-08-28 17:29:15'),
+(11, 'dawdw', NULL, NULL, '34534gdgd', NULL, 3, 'cream', NULL, 12.00, 0.00, 0, 0, NULL, 'active', '2026-08-29 08:16:07', '2026-08-29 08:16:07'),
+(12, 'test1', NULL, NULL, 'test', NULL, 2, 'capsule', NULL, 12222.00, 0.00, 0, 0, NULL, 'active', '2026-08-29 08:47:42', '2026-08-29 08:47:42'),
+(13, 'dwadtttttttttttttttt', NULL, NULL, 'ssssssssss', NULL, 4, 'tablet', NULL, 1000.00, 0.00, 0, 0, NULL, 'active', '2026-08-29 09:29:32', '2026-08-29 09:29:32'),
+(14, 'dsdad', 'sdasdsad', 'dsdsadsd', 'dsasdad', 'dsdasd', 3, 'cream', NULL, 1111.00, 10.00, 0, 0, NULL, 'active', '2026-08-29 09:50:12', '2026-08-29 09:50:12'),
+(15, 'test 2', 'sdasd', 'sdasd', 'sdsda', 'dsads', 8, 'cream', '111', 11111.00, 10.00, 1, 110, 'uploads/products/prod_ebbc1ba31dd45f16.jpg', 'active', '2026-08-29 11:46:56', '2026-08-29 11:46:56'),
+(16, 'Candid B', 'adawsd', 'dsadas', 'sdda', 'dssad', 13, 'cream', '200', 550.00, 6.00, 1, 10, 'uploads/products/prod_2c9cc80536bb2b49.png', 'active', '2026-08-29 12:45:48', '2026-08-29 12:45:48'),
+(17, 'HP099', 'dsdad', 'dsdasd', 'sdsd', 'dsdas', 14, 'tablet', '111', 11111.00, 10.00, 1, 1, 'uploads/products/prod_f27c84778726ad76.png', 'active', '2026-08-29 12:47:12', '2026-08-29 12:47:12'),
+(19, 'dwadawd', 'sdads', 'dsadasd', 'sdads', 'dsadsad', 2, 'injection', '1111', 11111.00, 10.00, 1, 10, 'uploads/products/prod_a01ba6b3207a1bed.jpg', 'active', '2026-08-29 13:09:55', '2026-08-29 13:09:55'),
+(20, 'Test Image Edit', 'fesfsef', 'sdsadsad', 'dsdsad', 'sdsad', 11, 'injection', '11111', 1111.00, 10.00, 1, 10, 'uploads/products/prod_4d5eea6b0132e1b5.jpg', 'active', '2026-08-29 13:36:04', '2026-08-29 18:57:10');-- --------------------------------------------------------
 
 --
 -- Table structure for table `product_batches`

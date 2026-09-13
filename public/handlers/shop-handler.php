@@ -142,7 +142,6 @@ $productSql = "
         p.sku,
         p.category_id,
         p.dosage_form,
-        p.stock_quantity,
         p.strength,
         p.unit_price,
         p.requires_prescription,
