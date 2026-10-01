@@ -1,6 +1,6 @@
 # 💊 Pharmacy Management System
 
-A web-based Pharmacy & Inventory Management System built with **PHP**, **MySQL**, and the **Sneat Bootstrap 5 Admin Template**. Designed specifically for retail pharmacies and medical dispensaries to manage products, dynamic batch stock, suppliers, and customer profiles.
+A web-based Pharmacy & Inventory Management System built with **PHP**, **MySQL**. Designed specifically for retail pharmacies and medical dispensaries to manage products, dynamic batch stock, suppliers, and customer profiles.
 
 ---
 
