@@ -3,6 +3,9 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$isLoggedIn = isset($_SESSION['customer_id']);
+$uploadHref = $isLoggedIn ? 'upload-prescription.php' : 'login.php?redirect=upload-prescription.php';
+
 require_once('../includes/db.php');
 require_once('../includes/auth.php');
 require_once('../includes/head.php');
@@ -225,7 +228,7 @@ if ($headerCartStmt) {
                         </a>
                         
                         <!-- Upload Prescription Nav Link -->
-                        <a href="upload-prescription.php" class="nav-item nav-link mq-nav-link <?= $currentPage === 'upload-prescription.php' ? 'active' : '' ?>">
+                        <a href="<?= $uploadHref ?>" class="nav-item nav-link mq-nav-link <?= $currentPage === 'upload-prescription.php' ? 'active' : '' ?>">
                             <i class="fas fa-file-medical me-1"></i> Upload Prescription
                         </a>
 
