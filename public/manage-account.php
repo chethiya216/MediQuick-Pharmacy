@@ -4,6 +4,7 @@ require_once('../includes/db.php');
 require_once('../includes/auth.php');
 
 isLoggedIn();
+requireLogin();
 
 $customerId = !empty($_SESSION['user_id'])
     ? (int) $_SESSION['user_id']
