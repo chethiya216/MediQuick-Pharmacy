@@ -4,12 +4,54 @@ ini_set('display_errors', 1);
 
 include_once __DIR__ . '/../includes/auth.php';
 
+// 1. Ensure the user is logged in (redirects guests to login.php)
 requireLogin();
 
+// 2. Check if the logged-in user is an admin/staff member
+$role = $_SESSION['role'] ?? $_SESSION['user_type'] ?? '';
+$isStaff = in_array($role, ['admin', 'superadmin', 'pharmacist', 'staff'], true) || isset($_SESSION['staff_id']);
+
+if ($isStaff) {
+    http_response_code(403);
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Access Denied - MediQuick</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light d-flex align-items-center justify-content-center min-vh-100 p-3">
+        <div class="card border-0 shadow-sm text-center p-4" style="max-width: 480px; width: 100%;">
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="badge bg-danger bg-opacity-10 text-danger p-3 rounded-circle">
+                        <i class="bx bx-error-circle fs-1"></i>
+                    </span>
+                </div>
+                <h4 class="fw-bold mb-2">Admin Account Restricted</h4>
+                <p class="text-muted mb-4">
+                    Admin and staff accounts cannot upload prescriptions. Please log in with a customer account to continue.
+                </p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="../admin/dashboard.php" class="btn btn-primary">Go to Admin Dashboard</a>
+                    <a href="logout.php" class="btn btn-outline-secondary">Switch Account</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
+}
+
+// 3. Enforce customer session for normal users
 if (function_exists('requireCustomer')) {
     requireCustomer();
 } elseif (empty($_SESSION['customer_id'])) {
-    header('Location: login.php');
+    header('Location: login.php?redirect=upload-prescription.php');
     exit;
 }
 
@@ -31,7 +73,6 @@ if (empty($_SESSION['csrf_token'])) {
 
 $csrfToken = $_SESSION['csrf_token'];
 
-
 /*
 |--------------------------------------------------------------------------
 | FLASH MESSAGES
@@ -42,7 +83,6 @@ $flashSuccess = $_SESSION['flash_success'] ?? null;
 $flashError   = $_SESSION['flash_error'] ?? null;
 
 unset($_SESSION['flash_success'], $_SESSION['flash_error']);
-
 
 /*
 |--------------------------------------------------------------------------
