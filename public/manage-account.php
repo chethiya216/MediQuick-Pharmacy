@@ -31,10 +31,56 @@ function getCustomer(mysqli $conn, int $customerId): ?array
     return $customer ?: null;
 }
 
-$customer = getCustomer($conn, $customerId);
+// $customer = getCustomer($conn, $customerId);
+$role = $_SESSION['role'] ?? $_SESSION['user_type'] ?? '';
+$isStaff = in_array($role, ['admin', 'superadmin', 'super_admin', 'pharmacist', 'staff'], true) || isset($_SESSION['staff_id']);
+
+$customer = $isStaff ? null : getCustomer($conn, $customerId);
 
 if (!$customer) {
-    die('Customer not found. Please use a valid customer_id, for example manage-account.php?customer_id=1');
+    // die('Customer not found. Please use a valid customer_id, for example manage-account.php?customer_id=1');
+    http_response_code($isStaff ? 403 : 404);
+    $pageErrorTitle   = $isStaff ? 'Access Denied (403)' : 'Customer Not Found (404)';
+    $pageErrorHeading = $isStaff ? 'Admin Account Restricted' : 'Customer Account Not Found';
+    $pageErrorMessage = $isStaff
+        ? 'You are currently logged in with an admin/staff account. Please log in with a customer account to access the Manage Account page.'
+        : 'We could not find a customer matching that ID. Please make sure you are logged into a valid customer account.';
+    $primaryBtnHref   = $isStaff ? 'admin/index.php' : 'index.php';
+    $primaryBtnText   = $isStaff ? 'Back to Admin Dashboard' : 'Back to Home';
+    ?>
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><?= htmlspecialchars($pageErrorTitle) ?> - MediQuick</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light d-flex align-items-center justify-content-center min-vh-100 p-3">
+        <div class="card border-0 shadow-sm text-center p-4" style="max-width: 480px; width: 100%;">
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="badge bg-danger bg-opacity-10 text-danger p-3 rounded-circle">
+                        <i class="bx bx-error-circle fs-1"></i>
+                    </span>
+                </div>
+                <h4 class="fw-bold mb-2"><?= htmlspecialchars($pageErrorHeading) ?></h4>
+                <p class="text-muted mb-4"><?= htmlspecialchars($pageErrorMessage) ?></p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="<?= htmlspecialchars($primaryBtnHref) ?>" class="btn btn-primary">
+                        <?= htmlspecialchars($primaryBtnText) ?>
+                    </a>
+                    <?php if ($isStaff): ?>
+                        <a href="logout.php" class="btn btn-outline-secondary">Switch Account</a>
+                    <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

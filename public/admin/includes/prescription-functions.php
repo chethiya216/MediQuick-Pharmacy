@@ -66,7 +66,7 @@ function getActiveProducts(mysqli $conn): array {
     return $products;
 }
 
-/**
+/** 
  * Execute order creation, order items insertion, and batch inventory updates (FEFO strategy).
  */
 function createPrescriptionOrder(mysqli $conn, int $customerId, int $prescriptionId, array $items, array $shippingAddress): int {
