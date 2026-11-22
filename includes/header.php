@@ -3,8 +3,11 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 
+$role = $_SESSION['role'] ?? $_SESSION['user_type'] ?? '';
 $isLoggedIn = isset($_SESSION['customer_id']);
-$uploadHref = $isLoggedIn ? 'upload-prescription.php' : 'login.php?redirect=upload-prescription.php';
+$isStaff = in_array($role, ['admin', 'superadmin', 'super_admin', 'pharmacist', 'staff'], true) || isset($_SESSION['staff_id']);
+$uploadHref = ($isLoggedIn || $isStaff) ? 'upload-prescription.php' : 'login.php?redirect=upload-prescription.php';
+
 
 require_once('../includes/db.php');
 require_once('../includes/auth.php');
@@ -90,7 +93,7 @@ if ($headerCartStmt) {
                         </a>
 
                         <!-- Upload Prescription - Added Link -->
-                        <a href="upload-prescription.php" class="dropdown-item <?= $currentPage === 'upload-prescription.php' ? 'active' : '' ?>">
+                        <a href="<?= $uploadHref ?>" class="dropdown-item <?= $currentPage === 'upload-prescription.php' ? 'active' : '' ?>">
                             <span><i class="fas fa-file-medical me-2"></i> Upload Prescription</span>
                         </a>
 
