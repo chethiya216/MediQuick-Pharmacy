@@ -125,11 +125,11 @@ if ($isAdmin) {
                                                     <div class="card-body p-3">
                                                         <div class="d-flex align-items-center justify-content-between mb-2">
                                                             <div class="avatar flex-shrink-0">
-                                                                <span class="avatar-initial rounded bg-label-danger"><i class="bx bx-error"></i></span>
+                                                                <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-error"></i></span>
                                                             </div>
                                                         </div>
                                                         <span class="fw-semibold d-block text-truncate small">Total Orders</span>
-                                                        <h4 class="card-title mb-0 text-danger"><?php echo number_format($total_orders_count); ?></h4>
+                                                        <h4 class="card-title mb-0 text-primary"><?php echo number_format($total_orders_count); ?></h4>
                                                     </div>
                                                 </div>
                                             </div>
@@ -171,11 +171,11 @@ if ($isAdmin) {
                                                     <div class="card-body p-3">
                                                         <div class="d-flex align-items-center justify-content-between mb-2">
                                                             <div class="avatar flex-shrink-0">
-                                                                <span class="avatar-initial rounded bg-label-primary"><i class="bx bx-envelope"></i></span>
+                                                                <span class="avatar-initial rounded bg-label-danger"><i class="bx bx-envelope"></i></span>
                                                             </div>
                                                         </div>
                                                         <span class="fw-semibold d-block text-truncate small">Unread Msgs</span>
-                                                        <h4 class="card-title mb-0 text-primary"><?php echo number_format($unread_messages); ?></h4>
+                                                        <h4 class="card-title mb-0 text-danger"><?php echo number_format($unread_messages); ?></h4>
                                                     </div>
                                                 </div>
                                             </div>
