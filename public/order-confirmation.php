@@ -123,13 +123,16 @@ $payment_stmt->close();
 
 function getProductImage($image)
 {
-    if (!empty($image)) {
-        return 'assets/images/' . htmlspecialchars($image);
+    if (empty($image)) {
+        return 'uploads/products/no-image.png';
     }
 
-    return 'assets/images/no-image.png';
-}
+    if (strpos($image, 'uploads/') === 0) {
+        return htmlspecialchars($image);
+    }
 
+    return 'uploads/products/' . htmlspecialchars($image);
+}
 
 require_once __DIR__ . '/../includes/header.php';
 
@@ -183,12 +186,12 @@ require_once __DIR__ . '/../includes/header.php';
                                 <p class="item-meta">
                                     Qty: <?= (int) $item['quantity'] ?>
                                     &times;
-                                    $<?= number_format($item['unit_price_at_purchase'], 2) ?>
+                                    LKR <?= number_format($item['unit_price_at_purchase'], 2) ?>
                                 </p>
                             </div>
 
                             <div class="item-total">
-                                $<?= number_format($item['item_subtotal'], 2) ?>
+                                LKR <?= number_format($item['item_subtotal'], 2) ?>
                             </div>
 
                         </div>
@@ -231,17 +234,17 @@ require_once __DIR__ . '/../includes/header.php';
 
                 <div class="summary-row">
                     <span>Subtotal</span>
-                    <span>$<?= number_format($order['subtotal'], 2) ?></span>
+                    <span>LKR <?= number_format($order['subtotal'], 2) ?></span>
                 </div>
 
                 <div class="summary-row">
                     <span>Shipping</span>
-                    <span>$<?= number_format($order['shipping_fee'], 2) ?></span>
+                    <span>LKR <?= number_format($order['shipping_fee'], 2) ?></span>
                 </div>
 
                 <div class="summary-row summary-total">
                     <span>Total</span>
-                    <strong>$<?= number_format($order['total_amount'], 2) ?></strong>
+                    <strong>LKR <?= number_format($order['total_amount'], 2) ?></strong>
                 </div>
 
             </div>
