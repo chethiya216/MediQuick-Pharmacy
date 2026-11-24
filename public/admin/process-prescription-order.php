@@ -163,14 +163,14 @@ unset($_SESSION['flash_error']);
                       <h6 class="fw-bold text-dark mb-3">1. Select Prescribed Products</h6>
                       <div class="mb-3">
                         <select id="product_select" class="form-select">
-                          <option value="">-- Choose Product --</option>
+                          <option value="">Choose Product</option>
                           <?php foreach ($products as $p): ?>
                             <option 
                               value="<?= $p['product_id'] ?>" 
                               data-name="<?= htmlspecialchars($p['product_name']) ?>" 
                               data-price="<?= $p['unit_price'] ?>"
                             >
-                              <?= htmlspecialchars($p['product_name']) ?> (Stock: <?= $p['stock_quantity'] ?>) - $<?= number_format($p['unit_price'], 2) ?>
+                              <?= htmlspecialchars($p['product_name']) ?> (Stock: <?= $p['stock_quantity'] ?>) - LKR <?= number_format($p['unit_price'], 2) ?>
                             </option>
                           <?php endforeach; ?>
                         </select>
@@ -210,20 +210,20 @@ unset($_SESSION['flash_error']);
                       <div class="bg-light p-3 rounded mb-4">
                         <div class="d-flex justify-content-between mb-1">
                           <span>Subtotal:</span>
-                          <strong>$<span id="summary_subtotal">0.00</span></strong>
+                          <strong>LKR <span id="summary_subtotal">0.00</span></strong>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                           <span>Tax (8%):</span>
-                          <strong>$<span id="summary_tax">0.00</span></strong>
+                          <strong>LKR <span id="summary_tax">0.00</span></strong>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                           <span>Shipping Fee:</span>
-                          <strong>$<span id="summary_shipping">5.00</span></strong>
+                          <strong>LKR <span id="summary_shipping">250.00</span></strong>
                         </div>
                         <hr class="my-2">
                         <div class="d-flex justify-content-between fs-5 text-dark">
                           <strong>Grand Total:</strong>
-                          <strong>$<span id="summary_total">5.00</span></strong>
+                          <strong>LKR <span id="summary_total">5.00</span></strong>
                         </div>
                       </div>
 
@@ -281,7 +281,7 @@ unset($_SESSION['flash_error']);
 
 <script>
 let selectedProducts = [];
-const SHIPPING_FEE = 5.00;
+const SHIPPING_FEE = 250.00;
 const TAX_RATE = 0.08;
 
 function addProductToTable() {
@@ -346,9 +346,9 @@ function renderTable() {
             const row = document.createElement('tr');
             row.innerHTML = `
                 <td><strong>${escapeHtml(item.name)}</strong></td>
-                <td>$${item.price.toFixed(2)}</td>
+                <td>LKR ${item.price.toFixed(2)}</td>
                 <td>${item.quantity}</td>
-                <td>$${itemTotal.toFixed(2)}</td>
+                <td>LKR ${itemTotal.toFixed(2)}</td>
                 <td class="text-center">
                     <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeProduct(${item.product_id})">
                         <i class="bx bx-trash"></i>
