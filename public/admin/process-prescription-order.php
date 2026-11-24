@@ -11,15 +11,54 @@ require_once __DIR__ . '/includes/prescription-functions.php';
 $pageTitle = "Process Prescription - MediQuick";
 
 $prescription_id = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-
-if ($prescription_id <= 0) {
-    die("Invalid Prescription ID.");
-}
-
-$prescription = getConfirmedPrescriptionById($conn, $prescription_id);
+$prescription = ($prescription_id > 0) ? getConfirmedPrescriptionById($conn, $prescription_id) : null;
 
 if (!$prescription) {
-    die("Prescription not found or not yet confirmed by customer.");
+    http_response_code($prescription_id <= 0 ? 400 : 404);
+    $errorTitle   = ($prescription_id <= 0) ? 'Invalid Prescription ID' : 'Prescription Not Found';
+    $errorHeading = ($prescription_id <= 0) ? 'Invalid Prescription Reference' : 'Prescription Unavailable';
+    $errorMessage = ($prescription_id <= 0)
+        ? 'The prescription ID provided in the URL is missing or invalid.'
+        : 'This prescription could not be found, has already been processed, or has not yet been confirmed by the customer.';
+    ?>
+    <!DOCTYPE html>
+    <html
+        lang="en"
+        class="light-style layout-menu-fixed"
+        dir="ltr"
+        data-theme="theme-default"
+        data-assets-path="../admin-assets/assets/"
+        data-template="vertical-menu-template-free"
+    >
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title><?= htmlspecialchars($errorTitle) ?> - MediQuick</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+        <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light d-flex align-items-center justify-content-center min-vh-100 p-3">
+        <div class="card border-0 shadow-sm text-center p-4" style="max-width: 480px; width: 100%;">
+            <div class="card-body">
+                <div class="mb-3">
+                    <span class="badge bg-warning bg-opacity-10 text-warning p-3 rounded-circle">
+                        <i class="bx bx-file-find fs-1"></i>
+                    </span>
+                </div>
+                <h4 class="fw-bold mb-2"><?= htmlspecialchars($errorHeading) ?></h4>
+                <p class="text-muted mb-4"><?= htmlspecialchars($errorMessage) ?></p>
+                <div class="d-flex justify-content-center gap-2">
+                    <a href="manage-prescriptions.php" class="btn btn-primary px-3">
+                        <i class="bx bx-arrow-back me-1"></i> Back to Prescriptions
+                    </a>
+                    <a href="index.php" class="btn btn-outline-secondary">Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </body>
+    </html>
+    <?php
+    exit;
 }
 
 $products = getActiveProducts($conn);
@@ -28,6 +67,7 @@ $products = getActiveProducts($conn);
 $error = $_SESSION['flash_error'] ?? '';
 unset($_SESSION['flash_error']);
 ?>
+
 <!DOCTYPE html>
 <html
   lang="en"

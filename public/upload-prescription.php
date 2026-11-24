@@ -36,7 +36,7 @@ if ($isStaff) {
                     Admin and staff accounts cannot upload prescriptions. Please log in with a customer account to continue.
                 </p>
                 <div class="d-flex justify-content-center gap-2">
-                    <a href="../admin/dashboard.php" class="btn btn-primary">Go to Admin Dashboard</a>
+                    <a href="../public/admin/index.php" class="btn btn-primary">Go to Admin Dashboard</a>
                     <a href="logout.php" class="btn btn-outline-secondary">Switch Account</a>
                 </div>
             </div>
